@@ -11,7 +11,7 @@ from os import curdir, sep
 
 class Walker:
     def __init__(self):
-        self.allowdFiles = ['.mp3', '.m4a']
+        self.allowdFiles = ['.mp3', '.m4a', '.wma']
         self.mediafiles = []
         self.media_albums = None
         self.streams = []
