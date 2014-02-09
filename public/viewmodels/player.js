@@ -16,7 +16,12 @@ var playervm = (function() {
 
         self.setCurrentInfo = function (data) {
             self.hasCover(data.cover == "" ? false : true);
-            self.Cover('Cover/' + data.cover);
+            if(data.cover.indexOf("http") != -1){
+                self.Cover(data.cover);
+            }
+            else{
+                self.Cover('Cover/' + data.cover);
+            }
             self.Album(data.album);
             self.Name(data.title);
             self.Volumn(data.Volume);

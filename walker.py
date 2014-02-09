@@ -120,11 +120,10 @@ class Walker:
 
     def getStreams(self):
         if len(self.streams) == 0:
-            curdir = os.getcwd()
-            dir = os.path.join(curdir, "Streams")
-            for path, directories, files in os.walk(dir):
+            streamDir = os.path.join(curdir, "Streams")
+            for path, directories, files in os.walk(streamDir):
                 for filename in files:
-                    filepath = os.path.join(dir, filename)
+                    filepath = os.path.join(streamDir, filename)
                     with open(filepath) as filecontent:
                         #content = filecontent.read()
                         jsonContent = json.load(filecontent)
@@ -133,10 +132,12 @@ class Walker:
         data["streams"] = self.streams
         return data
 
-
-
-
-
+    def getStream(self, stream):
+        if(len(self.streams) > 0):
+            for s in self.streams:
+                if(s["stream"] == stream):
+                    return s
+        return None
 
 
 

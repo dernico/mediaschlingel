@@ -75,9 +75,11 @@ class APlayer(threading.Thread):
         print "try playing " + stream
         self.player.set_state(gst.STATE_NULL)
         self.player.set_property('uri', stream)
+        s = self.walker.getStream(stream)
         self.currentlyPlaying = {}
-        self.currentlyPlaying['path'] = stream
-        self.currentlyPlaying['title'] = stream
+        self.currentlyPlaying['path'] = s["stream"]
+        self.currentlyPlaying['title'] = s["format"]
+        self.currentlyPlaying['cover'] = s["image"]
         self.play()
 
         print "play " + stream
