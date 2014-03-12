@@ -17,7 +17,18 @@ class MediaModelFactory():
 
     #def __init__(self):
 
-    def createMediaModel(self, id, path, file, coverdir):
+    def createMediaModelFromJson(self, id, json):
+        model = MediaModel()
+        model.ID = id
+        model.IsLocal = False
+        model.Album = json["album"]
+        model.Artist = json["artist"]
+        model.Cover = json["cover"]
+        model.Title = json["title"]
+        model.WebPath = json["webpath"]
+        return model
+
+    def createMediaModel(self, id, path, file, coverdir, ipAddress, isLocal=False):
         filepath = os.path.join(path, file)
         audiofile = mutagen.File(filepath)
         tags = audiofile.tags
@@ -31,6 +42,7 @@ class MediaModelFactory():
         model.Artist = ""
         model.Album = ""
         model.Title = ""
+        model.IsLocal = isLocal
 
         if tags is not None and _ARTIST in tags:
             model.Artist = str(tags[_ARTIST])
@@ -49,7 +61,8 @@ class MediaModelFactory():
 
         model.Cover = self.getCoverName(model.Album)
         model.ID = id
-        model.Filepath = filepath
+        model.Path = filepath
+        model.WebPath = 'http://' + ipAddress + ":8000/mediafile/" + str(id)
 
         if tags is not None and _COVER in tags:
             #covername = base64.b64encode(album) + ".jpg"

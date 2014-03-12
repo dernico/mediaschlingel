@@ -42,24 +42,39 @@ class MediaModel(dict):
     def Cover(self, value):
         self['cover'] = value
 
+    @property
+    def WebPath(self):
+        return self['webpath']
+
+    @WebPath.setter
+    def WebPath(self, value):
+        self['webpath'] = value
+
+    @property
+    def Path(self):
+        return self.path
+
+    @Path.setter
+    def Path(self, value):
+        self.path = value
+
+    @property
+    def IsLocal(self):
+        return self['islocal']
+
+    @IsLocal.setter
+    def IsLocal(self, value):
+        self['islocal'] = value
+
     def __init__(self):
+        self.path = ""
         self.ID = ""
         self.Title = ""
         self.Artist = ""
         self.Album = ""
         self.Cover = ""
-        '''
-        self.id = id
-        self.file = file
-        self.dir = path
-        self.filepath = os.path.join(path,file)
-        self.artist = ""
-        self.title = file
-        self.album = path
-        self.coverdir = coverdir
-        self.covername = ""
-        self.loadID3()
-        '''
+        self.WebPath = ""
+        self.IsLocal = False
 
 
     def toDict(self):

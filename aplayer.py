@@ -1,43 +1,85 @@
-import pygst
-pygst.require('0.10')
-import gst
+try:
+    import pygst
+    pygst.require('0.10')
+    import gst
+    import gobject
+except Exception:
+    print "Could not load pygst"
+
 import sys
 from walker import Walker
 import threading
 from random import choice
-import gobject
 
 class APlayer(threading.Thread):
-#class APlayer():
+
+    player = None
+    mainloop = None
+
     def __init__(self):
-        self.pipeline = gst.Pipeline
-        self.player = gst.element_factory_make("playbin2", "player")
-        bus = self.player.get_bus()
-        bus.add_signal_watch_full(1)
-        bus.connect("message", self.on_message)
         self.volume = 5.0
         self.isPlaying = False
         self.isRandom = False
         self.walker = Walker()
         self.currentlyPlaying = {}
-        threading.Thread.__init__(self)
-        #self._stop = threading.Event()
         self.nextId = []
         self.setVolume(self.volume)
-        self.mainloop = gobject.MainLoop()
-        #gobject.threads_init()
-        #context = mainloop.get_context()
 
+        try:
+            self.pipeline = gst.Pipeline
+            self.player = gst.element_factory_make("playbin2", "player")
+            bus = self.player.get_bus()
+            bus.add_signal_watch_full(1)
+            bus.connect("message", self.on_message)
+            self.mainloop = gobject.MainLoop()
+        except:
+            print "Could not set any off the gstreamer stuff and also no mainloop :/"
+
+        threading.Thread.__init__(self)
+
+    def _set_state(self, state):
+        try:
+            self.player.set_state(state)
+        except:
+            print "Could not set state {0}".format(state)
+
+    def _set_property(self, prop, val):
+        try:
+            self.player.set_property(prop, val)
+        except:
+            print "Could not set property {0} to {1}".format(prop,val)
+
+    def _set_state_NULL(self):
+        try:
+            self._set_state(gst.STATE_NULL)
+        except Exception, e:
+            print "Set State NULL not possible: {0}".format(str(e))
+
+    def _set_state_Playing(self):
+        try:
+            self._set_state(gst.STATE_PLAYING)
+        except Exception, e:
+            print "Set State Playing not possible: {0}".format(str(e))
+
+    def _set_state_Paused(self):
+        try:
+            self._set_state(gst.STATE_PAUSED)
+        except Exception, e:
+            print "Set State Pause not possible: {0}".format(str(e))
 
     def stop(self):
-        self.player.set_state(gst.STATE_NULL)
+        self._set_state_NULL()
         self._stop.set()
 
     def run(self):
         print "Start Mainloop"
         self.walker.walk()
+        self.walker.discoverSchlingel()
         #self.walker.walkShares()
-        self.mainloop.run()
+        if self.mainloop:
+            self.mainloop.run()
+        else:
+            print "No Mainloop is set. Its None"
 
     def quit(self):
         threading.Event().set()
@@ -64,17 +106,18 @@ class APlayer(threading.Thread):
     def playId(self, id):
         print "Try play id " + str(id)
         media = self.walker.getMedia()[id]
-        self.player.set_state(gst.STATE_NULL)
-        self.player.set_property('uri', 'file://' + media.Filepath)
+        self._set_state_NULL()
+        #self._set_property('uri', 'file://' + media.Path)
+        self._set_property('uri', media.WebPath)
         self.currentlyPlaying = media
         self.play()
 
-        print "play " + media.Filepath
+        print "play " + media.WebPath
 
     def playStream(self, stream):
         print "try playing " + stream
-        self.player.set_state(gst.STATE_NULL)
-        self.player.set_property('uri', stream)
+        self._set_state_NULL()
+        self._set_property('uri', stream)
         s = self.walker.getStream(stream)
         self.currentlyPlaying = {}
         self.currentlyPlaying['path'] = s["stream"]
@@ -97,16 +140,16 @@ class APlayer(threading.Thread):
             self.isRandom = True
 
     def play(self):
-        self.player.set_state(gst.STATE_PLAYING)
+        self._set_state_Playing()
         self.isPlaying = True
 
     def pausePlay(self):
-        self.player.set_state(gst.STATE_PAUSED)
+        self._set_state_Paused()
         self.isPlaying = False
 
     def playNext(self):
         print "play next ..."
-        self.player.set_state(gst.STATE_NULL)
+        self._set_state_NULL()
         nextid = 0
         if len(self.nextId) > 0:
             nextid = self.nextId[0]
@@ -122,12 +165,12 @@ class APlayer(threading.Thread):
             self.playId(nextid)
         else:
             print "Leider keine id gefunden"
-            self.player.set_state(gst.STATE_NULL)
+            self._set_state_NULL()
             self.isPlaying = False
 
     def playPrev(self):
         print "play prev ..."
-        self.player.set_state(gst.STATE_NULL)
+        self._set_state_NULL()
         nextid = self.currentlyPlaying["id"] - 1
         if nextid < 0:
             nextid = 0
@@ -135,7 +178,7 @@ class APlayer(threading.Thread):
             self.playId(nextid)
         else:
             print "Leider keine id gefunden"
-            self.player.set_state(gst.STATE_NULL)
+            self._set_state_NULL()
             self.isPlaying = False
 
     def search(self, term):
@@ -147,7 +190,7 @@ class APlayer(threading.Thread):
     def setVolume(self, vol):
         vol = vol / 10
         print "Volume: " + str(vol)
-        self.player.set_property('volume', vol)
+        self._set_property('volume', vol)
 
     def volUp(self):
         if self.volume < 10:

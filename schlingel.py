@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
-
 import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
-import gobject
 import urllib
 import os
 from os import curdir, sep
@@ -22,8 +20,6 @@ from Config import getMediaDir, getOutputDir
 
 define("port", default=8000, help="run on the given port", type=int)
 
-Player = APlayer()
-
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
         #user_json = self.get_secure_cookie("chatdemo_user")
@@ -34,12 +30,24 @@ class MainHandler(BaseHandler):
     index = None
 
     def get(self):
-        if(self.index is None):
-            f = open(curdir + sep + 'public' + sep + 'index.html')
-            self.index = f.read()
-            f.close()
+        #if(self.index is None):
+        f = open(curdir + sep + 'public' + sep + 'index.html')
+        self.index = f.read()
+        f.close()
         self.write(self.index)
         self.flush()
+
+class MediaHandler(BaseHandler):
+    def get(self, id):
+        id = int(id)
+        media = Player.walker.getMedia()[id]
+        if(media):
+            self.set_header("Content-Type", 'audio/mpeg')
+            with open(media.Path, 'rb') as mediafile:
+                for line in mediafile:
+                    self.write(line)
+                self.flush()
+
 
 class CoverHandler(BaseHandler):
 
@@ -83,6 +91,14 @@ class HandleList(BaseHandler):
         })
         self.flush()
 
+class HandleListComplete(BaseHandler):
+    def get(self):
+        files = Player.walker.getLocalMedia()
+        self.write({
+            'count': len(files),
+            'list': files    
+        })
+
 class HandleAlbums(BaseHandler):
 
     def get(self):
@@ -99,9 +115,9 @@ class HandleVote(BaseHandler):
 
 class HandleNext(BaseHandler):
     def post(self):
-            files = Player.playNext()
-            self.write(Player.getinfo())
-            self.flush()
+        files = Player.playNext()
+        self.write(Player.getinfo())
+        self.flush()
 
 class HandlePrev(BaseHandler):
     def post(self):
@@ -209,9 +225,25 @@ class HandleGetStreams(BaseHandler):
         self.write(streams)
         self.flush()
 
+class HandleDiscover(BaseHandler):
+    def get(self):
+        Player.walker.discoverSchlingel()
+
+class CustomStaticFileHandler(tornado.web.StaticFileHandler):
+    def set_extra_headers(self, path):
+        # Disable cache
+        self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+
+Player = APlayer()
+
 def main():
     print "Starte Server"
-    gobject.threads_init()
+    try:
+        import gobject
+        gobject.threads_init()
+    except Exception:
+        print "Could not load gobject"
+
     #Player.run()
     Player.start()
     public = os.path.join(os.path.dirname(__file__), "public")
@@ -219,11 +251,13 @@ def main():
         [
             (r"/", MainHandler),
             (r"/Cover/([^/]+)", CoverHandler),
+            (r"/mediafile/([^/]+)", MediaHandler),
             (r"/api/music/playpause", HandlePlayPause),
             (r"/api/music/playStream", HandlePlayStream),
             (r"/api/music/play", HandlePlay),
             (r"/api/music/info", HandleInfo),
             (r"/api/music/list", HandleList),
+            (r"/api/music/listcomplete", HandleListComplete),
             (r"/api/music/albums", HandleAlbums),
             (r"/api/music/vote", HandleVote),
             (r"/api/music/next", HandleNext),
@@ -234,7 +268,8 @@ def main():
             (r"/api/music/volumeDown", HandleVolumeDown),
             (r"/api/music/streams", HandleGetStreams),
             (r"/api/music/grabcover", CoverGrabberHandler),
-            (r"/(.*)", tornado.web.StaticFileHandler, dict(path=public))
+            (r"/api/music/discover", HandleDiscover),
+            (r"/(.*)", CustomStaticFileHandler, dict(path=public))
         ]
     )
     app.listen(options.port)

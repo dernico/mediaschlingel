@@ -1,13 +1,12 @@
-import sys
-import os
+import urllib2
 import smb.smbclient
 import socket
 import json
 from Factory.MediaModelFactory import MediaModelFactory
 from Config import getOutputDir
-
-from os import curdir, sep
-
+from os import curdir
+from thread import allocate_lock
+from threading import Thread
 
 class Walker:
     def __init__(self):
@@ -21,25 +20,27 @@ class Walker:
                     username="xxx",
                     password="xxxx",
                     domain="WORKGROUP")
-        #self.ipAdress = self.getIpAdress()
+        self.ipAdress = self.getIpAdress()
+        self.lock = allocate_lock()
 
     def getCoverDir(self):
         return getOutputDir()
 
 
     def getIpAdress(self):
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("google.com", 80))
-        ip = s.getsockname()[0]
-        s.close()
-        return ip
+        return socket.gethostbyname(socket.gethostname())
+        #s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        #s.connect(("google.com", 80))
+        #ip = s.getsockname()[0]
+        #s.close()
+        #return ip
 
-    def walk(self, dir='/home/nico/Music'):
+    def walk(self, dir='C:\\Users\\Nico\\Music'):
         for path, directories, files in os.walk(dir):
             for directory in directories:
                 self.walk(directory)
             for filename in files:
-                self.addFile(path, filename)
+                self.addFile(path, filename, True)
 
     def walkShares(self, dir="/Musik"):
         for file in self.smb.listdir(dir):
@@ -52,14 +53,13 @@ class Walker:
                 #path, filename = os.path.split(file)
                 self.addFile(dir, file)
 
-    def addFile(self, path, file):
+    def addFile(self, path, file, isLocal=False):
         #print "Path: " + path + "   Datei: " + file
         name, ext = os.path.splitext(file)
 
         for extension in self.allowdFiles:
             if extension == ext:
-                #model = MediaModel(len(self.mediafiles), path, file, self.getCoverDir())
-                model = self.factory.createMediaModel(len(self.mediafiles), path, file, self.getCoverDir())
+                model = self.factory.createMediaModel(len(self.mediafiles), path, file, self.getCoverDir(), self.ipAdress, isLocal)
                 self.mediafiles.append(model)
 
     def getAlbums(self):
@@ -73,8 +73,20 @@ class Walker:
 
         return self.media_albums
 
+    def getLocalMedia(self):
+        result = []
+        for media in self.mediafiles:
+            if media.IsLocal:
+                result.append(media)
+        return result
+
     def getMedia(self):
         return self.mediafiles
+
+    def containsMediaWebPath(self, webpath):
+        for media in self.mediafiles:
+            if(media.WebPath == webpath):
+                return True
 
     def filterMedia(self, term):
         if term == "":
@@ -87,7 +99,7 @@ class Walker:
         for media in self.mediafiles:
 
             foundCount = 0
-            path = media.Filepath.lower()
+            path = media.Path.lower()
             artist = media.Artist.lower()
             title = media.Title.lower()
             album = media.Album.lower()
@@ -140,11 +152,79 @@ class Walker:
         return None
 
 
+    def discoverSchlingel(self):
+        tmp = self.ipAdress.split('.')
+        ipparts = tmp[0:3]
+        baseIp = ".".join(ipparts)
+        for i in range(0, 27):
+            start = i * 10
+            end = ((i+1) * 10)-1
+            if(end > 254):
+                end = 254
+            #print "Starte Threads from {0} to {1}".format(start, end)
+            t = Thread(target = self.downloadRange, args=(baseIp, start, end))
+            t.start()
+
+    def downloadRange(self, baseIp, start, end):
+        for i in range(start, end):
+            index = str(i)
+            ip = baseIp + "." + index
+            if(self.ipAdress == ip):
+                testUrl = "http://" + ip + ":8000/api/music/listcomplete"
+                print "download content from: {0}".format(testUrl)
+                self.downloadString(testUrl, self.discoverFinished)
+
+
+    def discoverFinished(self, data):
+        self.lock.acquire()
+        result = json.loads(data)
+        list = result["list"]
+        for external in list:
+            mediaModel = self.factory.createMediaModelFromJson(len(self.mediafiles), external)
+            if not self.containsMediaWebPath(mediaModel.WebPath):
+                self.mediafiles.append(mediaModel)
+        self.lock.release();
+
+    def downloadString(self, url, callback):
+        content = ""
+        try:
+            c = urllib2.urlopen(url, timeout=2)
+            content = c.read();
+        except Exception as ex:
+            print "Error: {0}".format(str(ex))
+            content = ""
+
+        callback(content)
+
+    def parsem3u(self, content):
+        urls = []
+        lines = content.split('\n')
+        for line in lines:
+            if line.startswith('http'):
+                if '.m3u' in line:
+                    filecontent = self.downloadString(line)
+                    nexturls = self.parsePls(filecontent)
+                    for url in nexturls:
+                        urls.append(url)
+                elif '.pls' in line:
+                    filecontent = self.downloadString(line)
+                    nexturls = self.parsePls(filecontent)
+                    for url in nexturls:
+                        urls.append(url)
+        return urls
 
 
 
-
-
+    def parsePls(self, content):
+        lines = content.spint('\n')
+        urls = []
+        for line in lines:
+            line = line.lowercase()
+            if line.startswith('file'):
+                tmp = line.split('=')
+                if len(tmp) == 2:
+                    urls.append(tmp[1])
+        return urls
 
 
 

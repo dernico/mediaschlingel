@@ -14,6 +14,10 @@ var settingsvm = (function() {
             api.get({ action: "refreshData", params: "" });
         };
 
+        self.discover = function () {
+            api.get({ action: "discover", params: "" });
+        };
+
         self.grabcover = function(){
             api.get({action: "grabcover", params: ""});
         };
