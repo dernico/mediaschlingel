@@ -7,6 +7,7 @@ from Config import getOutputDir
 from os import curdir
 from thread import allocate_lock
 from threading import Thread
+from Helper import Helper
 
 class Walker:
     def __init__(self):
@@ -169,10 +170,10 @@ class Walker:
         for i in range(start, end):
             index = str(i)
             ip = baseIp + "." + index
-            if(self.ipAdress == ip):
+            if(self.ipAdress != ip):
                 testUrl = "http://" + ip + ":8000/api/music/listcomplete"
                 print "download content from: {0}".format(testUrl)
-                self.downloadString(testUrl, self.discoverFinished)
+                Helper.downloadString(testUrl, self.discoverFinished)
 
 
     def discoverFinished(self, data):
@@ -184,48 +185,6 @@ class Walker:
             if not self.containsMediaWebPath(mediaModel.WebPath):
                 self.mediafiles.append(mediaModel)
         self.lock.release();
-
-    def downloadString(self, url, callback):
-        content = ""
-        try:
-            c = urllib2.urlopen(url, timeout=2)
-            content = c.read();
-        except Exception as ex:
-            print "Error: {0}".format(str(ex))
-            content = ""
-
-        callback(content)
-
-    def parsem3u(self, content):
-        urls = []
-        lines = content.split('\n')
-        for line in lines:
-            if line.startswith('http'):
-                if '.m3u' in line:
-                    filecontent = self.downloadString(line)
-                    nexturls = self.parsePls(filecontent)
-                    for url in nexturls:
-                        urls.append(url)
-                elif '.pls' in line:
-                    filecontent = self.downloadString(line)
-                    nexturls = self.parsePls(filecontent)
-                    for url in nexturls:
-                        urls.append(url)
-        return urls
-
-
-
-    def parsePls(self, content):
-        lines = content.spint('\n')
-        urls = []
-        for line in lines:
-            line = line.lowercase()
-            if line.startswith('file'):
-                tmp = line.split('=')
-                if len(tmp) == 2:
-                    urls.append(tmp[1])
-        return urls
-
 
 
 
