@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import urllib2
+import socket
 
 try:
     import cover_grabber
@@ -10,13 +11,22 @@ except:
 def grab_cover(mediadir, outputdir, overwrite = False):
     media_walker = MediaDirWalker(mediadir, outputdir, overwrite).do_walk_path()
 
+
+def getIpAdress():
+    return socket.gethostbyname(socket.gethostname())
+    #s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    #s.connect(("google.com", 80))
+    #ip = s.getsockname()[0]
+    #s.close()
+    #return ip
+
 def downloadString(url, callback):
     content = ""
     try:
         c = urllib2.urlopen(url, timeout=2)
         content = c.read();
     except Exception as ex:
-        print "Error: {0}".format(str(ex))
+        #print "Error: {0}".format(str(ex))
         content = ""
 
     if callback: callback(content)

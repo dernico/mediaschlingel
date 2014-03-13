@@ -225,6 +225,12 @@ class HandleGetStreams(BaseHandler):
         self.write(streams)
         self.flush()
 
+class HandleAddStream(BaseHandler):
+
+    def post(self):
+        path = self.get_argument('item', None)
+        Player.walker.addStream(path)
+
 class HandleDiscover(BaseHandler):
     def get(self):
         Player.walker.discoverSchlingel()
@@ -267,6 +273,7 @@ def main():
             (r"/api/music/volumeUp", HandleVolumeUp),
             (r"/api/music/volumeDown", HandleVolumeDown),
             (r"/api/music/streams", HandleGetStreams),
+            (r"/api/music/addListenPls", HandleAddStream),
             (r"/api/music/grabcover", CoverGrabberHandler),
             (r"/api/music/discover", HandleDiscover),
             (r"/(.*)", CustomStaticFileHandler, dict(path=public))

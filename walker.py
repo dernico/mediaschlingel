@@ -1,8 +1,8 @@
 import urllib2
 import smb.smbclient
-import socket
 import json
 from Factory.MediaModelFactory import MediaModelFactory
+from Factory.StreamModelFactory import StreamModelFactory
 from Config import getOutputDir
 from os import curdir
 from thread import allocate_lock
@@ -15,26 +15,19 @@ class Walker:
         self.mediafiles = []
         self.media_albums = None
         self.streams = []
-        self.factory = MediaModelFactory()
+        self.mediafactory = MediaModelFactory()
+        self.streamfactory = StreamModelFactory()
         self.smb = smb.smbclient.SambaClient(server="111.1111.111.11",
                     share="folder",
                     username="xxx",
                     password="xxxx",
                     domain="WORKGROUP")
-        self.ipAdress = self.getIpAdress()
+        self.ipAdress = Helper.getIpAdress()
         self.lock = allocate_lock()
+        self.streamDir = os.path.join(curdir, "Streams")
 
     def getCoverDir(self):
         return getOutputDir()
-
-
-    def getIpAdress(self):
-        return socket.gethostbyname(socket.gethostname())
-        #s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        #s.connect(("google.com", 80))
-        #ip = s.getsockname()[0]
-        #s.close()
-        #return ip
 
     def walk(self, dir='C:\\Users\\Nico\\Music'):
         for path, directories, files in os.walk(dir):
@@ -60,7 +53,7 @@ class Walker:
 
         for extension in self.allowdFiles:
             if extension == ext:
-                model = self.factory.createMediaModel(len(self.mediafiles), path, file, self.getCoverDir(), self.ipAdress, isLocal)
+                model = self.mediafactory.createMediaModel(len(self.mediafiles), path, file, self.getCoverDir(), self.ipAdress, isLocal)
                 self.mediafiles.append(model)
 
     def getAlbums(self):
@@ -133,10 +126,9 @@ class Walker:
 
     def getStreams(self):
         if len(self.streams) == 0:
-            streamDir = os.path.join(curdir, "Streams")
-            for path, directories, files in os.walk(streamDir):
+            for path, directories, files in os.walk(self.streamDir):
                 for filename in files:
-                    filepath = os.path.join(streamDir, filename)
+                    filepath = os.path.join(self.streamDir, filename)
                     with open(filepath) as filecontent:
                         #content = filecontent.read()
                         jsonContent = json.load(filecontent)
@@ -151,6 +143,28 @@ class Walker:
                 if(s["stream"] == stream):
                     return s
         return None
+
+    def addStream(self, path):
+        print "Try add Path: {0}".format(path)
+        streams = []
+        if '.m3u' in path or '.pls' in path:
+            content = Helper.downloadString(path)
+            print "Content: {0}".format(content)
+            urls = Helper.parsem3u(content)
+            for url in urls:
+                stream = self.streamfactory.createFromUrl(url)
+                streams.append(stream)
+        else:
+            #Hopefully it is a streamurl
+            stream = self.streamfactory.createFromUrl(path)
+            streams.append(stream)
+        for stream in streams:
+            newstream = os.path.join(self.streamDir, stream.Url)
+            newstream.replace(':','_').replace('//','_')
+            if not os.path.exists(newstream):
+                with open(newstream, 'a') as file:
+                    file.write(json.dumps(stream))
+                    print "Added file {0}".format(newstream)
 
 
     def discoverSchlingel(self):
@@ -172,18 +186,19 @@ class Walker:
             ip = baseIp + "." + index
             if(self.ipAdress != ip):
                 testUrl = "http://" + ip + ":8000/api/music/listcomplete"
-                print "download content from: {0}".format(testUrl)
+                #print "download content from: {0}".format(testUrl)
                 Helper.downloadString(testUrl, self.discoverFinished)
 
 
     def discoverFinished(self, data):
         self.lock.acquire()
-        result = json.loads(data)
-        list = result["list"]
-        for external in list:
-            mediaModel = self.factory.createMediaModelFromJson(len(self.mediafiles), external)
-            if not self.containsMediaWebPath(mediaModel.WebPath):
-                self.mediafiles.append(mediaModel)
+        if data != None and data != "":
+            result = json.loads(data)
+            list = result["list"]
+            for external in list:
+                mediaModel = self.mediafactory.createMediaModelFromJson(len(self.mediafiles), external)
+                if not self.containsMediaWebPath(mediaModel.WebPath):
+                    self.mediafiles.append(mediaModel)
         self.lock.release();
 
 
