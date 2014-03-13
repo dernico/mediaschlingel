@@ -168,6 +168,7 @@ class Walker:
 
 
     def discoverSchlingel(self):
+        print "Start Discovering. My ip is {0}".format(self.ipAdress)
         tmp = self.ipAdress.split('.')
         ipparts = tmp[0:3]
         baseIp = ".".join(ipparts)
@@ -193,6 +194,7 @@ class Walker:
     def discoverFinished(self, data):
         self.lock.acquire()
         if data != None and data != "":
+            print "Find some Stuff"
             result = json.loads(data)
             list = result["list"]
             for external in list:

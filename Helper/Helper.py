@@ -13,17 +13,19 @@ def grab_cover(mediadir, outputdir, overwrite = False):
 
 
 def getIpAdress():
-    return socket.gethostbyname(socket.gethostname())
-    #s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    #s.connect(("google.com", 80))
-    #ip = s.getsockname()[0]
-    #s.close()
-    #return ip
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("google.com", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except:
+        return socket.gethostbyname(socket.gethostname())
 
 def downloadString(url, callback):
     content = ""
     try:
-        c = urllib2.urlopen(url, timeout=2)
+        c = urllib2.urlopen(url, timeout=5)
         content = c.read();
     except Exception as ex:
         #print "Error: {0}".format(str(ex))
