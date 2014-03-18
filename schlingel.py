@@ -235,6 +235,15 @@ class HandleDiscover(BaseHandler):
     def get(self):
         Player.walker.discoverSchlingel()
 
+from Radio import api
+class HandleRadio(BaseHandler):
+    def get(self):
+        topstations = api.get_top_stations()
+        result = {}
+        result["topstations"] = topstations
+        self.write(result)
+        self.flush()
+
 class CustomStaticFileHandler(tornado.web.StaticFileHandler):
     def set_extra_headers(self, path):
         # Disable cache
@@ -276,6 +285,7 @@ def main():
             (r"/api/music/addListenPls", HandleAddStream),
             (r"/api/music/grabcover", CoverGrabberHandler),
             (r"/api/music/discover", HandleDiscover),
+            (r"/api/music/radio", HandleRadio),
             (r"/(.*)", CustomStaticFileHandler, dict(path=public))
         ]
     )
