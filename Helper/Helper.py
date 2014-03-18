@@ -22,7 +22,7 @@ def getIpAdress():
     except:
         return socket.gethostbyname(socket.gethostname())
 
-def downloadString(url, callback):
+def downloadString(url, callback=None):
     content = ""
     try:
         c = urllib2.urlopen(url, timeout=5)
@@ -35,31 +35,30 @@ def downloadString(url, callback):
     else: return content
 
 def parsem3u(content):
-    urls = []
     lines = content.split('\n')
     for line in lines:
         if line.startswith('http'):
+            stream = ""
             if '.m3u' in line:
                 filecontent = downloadString(line)
-                nexturls = parsePls(filecontent)
-                for url in nexturls:
-                    urls.append(url)
+                stream = parsePls(filecontent)
+                #for url in nexturls:
+                    #urls.append(url)
             elif '.pls' in line:
                 filecontent = downloadString(line)
-                nexturls = parsePls(filecontent)
-                for url in nexturls:
-                    urls.append(url)
-    return urls
+                stream = parsePls(filecontent)
+                #for url in nexturls:
+                #    urls.append(url)
+
+            return stream
 
 
 
 def parsePls(content):
     lines = content.spint('\n')
-    urls = []
     for line in lines:
         line = line.lowercase()
         if line.startswith('file'):
             tmp = line.split('=')
             if len(tmp) == 2:
-                urls.append(tmp[1])
-    return urls
+                return tmp[1]
