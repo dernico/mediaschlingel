@@ -131,8 +131,8 @@ class Walker:
                     filepath = os.path.join(self.streamDir, filename)
                     with open(filepath) as filecontent:
                         #content = filecontent.read()
-                        jsonContent = json.load(filecontent)
-                        self.streams.append(jsonContent)
+                        streamModel = self.streamfactory.createFromJson(json.load(filecontent))
+                        self.streams.append(streamModel)
         data = {}
         data["streams"] = self.streams
         return data
@@ -145,27 +145,32 @@ class Walker:
         return None
 
     def addStream(self, path):
-        print "Try add Path: {0}".format(path)
-        streams = []
-        if '.m3u' in path or '.pls' in path:
-            content = Helper.downloadString(path)
-            print "Content: {0}".format(content)
-            urls = Helper.parsem3u(content)
-            for url in urls:
-                stream = self.streamfactory.createFromUrl(url)
-                streams.append(stream)
-        else:
-            #Hopefully it is a streamurl
-            stream = self.streamfactory.createFromUrl(path)
-            streams.append(stream)
-        for stream in streams:
-            newstream = os.path.join(self.streamDir, stream.Url)
-            newstream.replace(':','_').replace('//','_')
-            if not os.path.exists(newstream):
-                with open(newstream, 'a') as file:
-                    file.write(json.dumps(stream))
-                    print "Added file {0}".format(newstream)
+        if path is None or path == "": return
 
+        if '.m3u' in path:
+            content = Helper.downloadString(path)
+            print "Content m3u: {0}".format(content)
+            url = Helper.parsem3u(content)
+            path = self.streamfactory.createFromUrl(url)
+        elif '.pls' in path:
+            content = Helper.downloadString(path)
+            print "Content pls: {0}".format(content)
+            url = Helper.parsePls(content)
+            path = self.streamfactory.createFromUrl(url)
+
+        stream = self.streamfactory.createFromUrl(path)
+        streamfile = os.path.join(self.streamDir, stream.Stream)
+        streamfile = streamfile.replace(':','').replace('/','_')
+        streamfile = streamfile + ".json"
+        print "Try write new Streamfile: {0}".format(streamfile)
+        if not os.path.exists(streamfile):
+            try:
+                with open(streamfile, 'a') as file:
+                    file.write(json.dumps(stream))
+                    print "Added file {0}".format(streamfile)
+                    self.streams = []
+            except Exception as ex:
+                print "Error: {0}".format(str(ex))
 
     def discoverSchlingel(self):
         print "Start Discovering. My ip is {0}".format(self.ipAdress)
