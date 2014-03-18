@@ -16,7 +16,7 @@ class StreamModel(dict):
 
     @Image.setter
     def Image(self, value):
-        self['title'] = value
+        self['image'] = value
 
     @property
     def Format(self):
