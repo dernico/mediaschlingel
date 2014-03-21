@@ -12,11 +12,12 @@ import tornado.ioloop
 import tornado.web
 
 from aplayer import APlayer
+from Radio import api
 
 from tornado.options import define, options
 
 from Helper.Helper import grab_cover
-from Config import getMediaDir, getOutputDir
+from Config import getMediaDirs, getOutputDir
 
 define("port", default=8000, help="run on the given port", type=int)
 
@@ -64,7 +65,8 @@ class CoverHandler(BaseHandler):
 class CoverGrabberHandler(BaseHandler):
 
     def get(self):
-        grab_cover(getMediaDir(), getOutputDir())
+        for mediadir in getMediaDirs():
+            grab_cover(mediadir, getOutputDirs())
 
 class HandlePlayPause(BaseHandler):
 
@@ -235,12 +237,15 @@ class HandleDiscover(BaseHandler):
     def get(self):
         Player.walker.discoverSchlingel()
 
-from Radio import api
 class HandleRadio(BaseHandler):
-    def get(self):
-        topstations = api.get_top_stations()
+    def get(self, topic):
         result = {}
-        result["topstations"] = topstations
+        if topic == 'topstatios':
+            result["result"] = api.get_top_stations()
+        elif topic == 'search':
+            term = self.get_argument('search', None)
+            result["result"] = api.get_search(term)
+
         self.write(result)
         self.flush()
 

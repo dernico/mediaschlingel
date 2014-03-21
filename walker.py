@@ -29,12 +29,14 @@ class Walker:
     def getCoverDir(self):
         return getOutputDir()
 
-    def walk(self, dir='C:\\Users\\Nico\\Music'):
-        for path, directories, files in os.walk(dir):
-            for directory in directories:
-                self.walk(directory)
-            for filename in files:
-                self.addFile(path, filename, True)
+    def walk(self, dir):
+        if os.path.exists(dir):
+            print "Search {0} for media".format(dir)
+            for path, directories, files in os.walk(dir):
+                for directory in directories:
+                    self.walk(directory)
+                for filename in files:
+                    self.addFile(path, filename, True)
 
     def walkShares(self, dir="/Musik"):
         for file in self.smb.listdir(dir):

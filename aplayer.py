@@ -10,6 +10,7 @@ import sys
 from walker import Walker
 import threading
 from random import choice
+from Config import getMediaDirs
 
 class APlayer(threading.Thread):
 
@@ -73,7 +74,9 @@ class APlayer(threading.Thread):
 
     def run(self):
         print "Start Mainloop"
-        self.walker.walk()
+        
+        for dir in getMediaDirs():
+            self.walker.walk(dir)
         self.walker.discoverSchlingel()
         #self.walker.walkShares()
         if self.mainloop:

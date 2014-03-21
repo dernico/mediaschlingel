@@ -2,8 +2,8 @@
 
 import os
 
-def getMediaDir():
-    return "/home/nico/Music"
+def getMediaDirs():
+    return ["/home/nico/Music", "C:\\Users\\Nico\\Music"]
 
 def getOutputDir():
     coverdir = os.path.join(os.curdir, "Cover")
