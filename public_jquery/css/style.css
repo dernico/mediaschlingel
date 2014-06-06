@@ -1,0 +1,324 @@
+/*
+    Seiten einstellungen
+*/
+.display-true{
+  display: block;
+}
+
+.display-false{
+  display: none;
+}
+
+.clearboth {
+    clear: both;
+}
+
+.left {
+    float: left;
+}
+
+.right {
+    float: right;
+}
+
+
+.header-splitter {
+    height: 100px;
+}
+
+.container-fluid{
+    padding-top: 85px;
+}
+#pageContainer {
+    padding-right: 70px;
+}
+.page .page-header .page-header-content{
+    height: 80px;
+    min-height: 80px;
+    width: 100%;
+    position: relative;
+    display: block;
+}
+
+.background-white {
+    background-color: white;
+}
+
+.color-black {
+    color: #1e1e1e;
+}
+
+.fontSmall{
+    font-size: 12px;
+}
+
+.fontBold{
+    font-weight: bold;
+}
+
+.fontSize16 {
+    font-size: 16px;
+}
+
+.fontSize18 {
+    font-size: 18px;
+}
+
+.margin20 {
+    margin: 20px;
+}
+
+.marginTop15 {
+    margin-top: 15px;
+}
+
+.marginTop10 {
+    margin-top: 10px;
+}
+
+.wrap-text {
+    white-space: normal !important;
+}
+
+/*@media (max-width: 480px){
+    h1 {
+        font-size: 26pt;
+        line-height: 45px;
+    }
+
+    .tile {
+        height: 130px;
+        width: auto;
+    }
+}*/
+
+
+/*
+    Navigation
+*/
+/*.navbar{*position:relative;*z-index:2;margin-bottom:5px;overflow:visible}
+.navbar-inner{min-height:40px;padding-right:20px;padding-left:20px;background-color:#fafafa;background-image:-moz-linear-gradient(top,#fff,#f2f2f2);background-image:-webkit-gradient(linear,0 0,0 100%,from(#fff),to(#f2f2f2));background-image:-webkit-linear-gradient(top,#fff,#f2f2f2);background-image:-o-linear-gradient(top,#fff,#f2f2f2);background-image:linear-gradient(to bottom,#fff,#f2f2f2);background-repeat:repeat-x;border:1px solid #d4d4d4;-webkit-border-radius:4px;-moz-border-radius:4px;border-radius:4px;filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffffff',endColorstr='#fff2f2f2',GradientType=0);*zoom:1;-webkit-box-shadow:0 1px 4px rgba(0,0,0,0.065);-moz-box-shadow:0 1px 4px rgba(0,0,0,0.065);box-shadow:0 1px 4px rgba(0,0,0,0.065)}
+.navbar-inner:before,.navbar-inner:after {
+    display:table;line-height:0;content:""
+}
+.nav {
+    display: inline-block;
+    padding: 0px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.nav li {
+    list-style: none;
+    float: left;
+    padding-right: 10px;
+    color: gray;
+}*/
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         .navbar-inner:after{clear:both}
+/*
+    TILE
+*/
+
+.tile {
+  display: block;
+  float: left;
+  width: 200px;
+  height: 150px;
+  cursor: pointer;
+  text-decoration: none;
+  color: #1e1e1e;
+  overflow: hidden;
+  position: relative;
+  font-family: 'Segoe UI Semilight', 'Open Sans', Verdana, Arial, Helvetica, sans-serif;
+  font-weight: 300;
+  font-size: 11pt;
+  letter-spacing: 0.02em;
+  line-height: 20px;
+  margin: 0 5px 10px 0;
+  overflow: hidden;
+  border: 3px solid gray;
+}
+
+.tile * {
+  color: #1e1e1e;
+}
+.tile .tile-content {
+  width: 90%;
+  height: 90%;
+  padding: 0;
+  padding-bottom: 30px;
+  vertical-align: top;
+  padding: 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: 'Segoe UI', 'Open Sans', Verdana, Arial, Helvetica, sans-serif;
+  font-weight: 400;
+  font-size: 9pt;
+  color: #1e1e1e;
+  line-height: 16px;
+}
+
+.tile-background {
+  position:absolute; 
+  z-index: -1; 
+  height: 93%;
+  width:95%
+}
+
+.tile-button{
+  position:absolute; 
+  bottom: 2px;
+}
+
+.tile .tile-tile {
+    display: block;
+    float: left;
+    min-width: 50px;
+    height: 50px;
+    cursor: pointer;
+    box-shadow: inset 0px 0px 1px #FFFFCC;
+    text-decoration: none;
+    overflow: hidden;
+    position: relative;
+    overflow: hidden;
+}
+
+.tile-tile .play {
+    float: left;
+}
+
+.vote {
+    position: absolute;
+    bottom: 5px;
+    font-weight: bold;
+    border: 1px solid grey;
+    padding: 5px;
+}
+
+/*
+    Player Control
+*/
+.player-container {
+}
+
+.backface-hidden {
+  -moz-backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.playControl{
+    position: fixed;
+    z-index: 100;
+    right: 0px;
+    bottom: 0px;
+}
+
+.playControl > .tile{
+    float: none;
+    height: 50px;
+    width: 60px;
+    border: none;
+}
+
+.playControl > .double-tile{
+    float: left;
+    width: 40px;
+}
+
+.playControl .tile.half{
+    height: 25px;
+    width: 40px;
+}
+
+.currentMusicInfo {
+    clear: both;
+    text-align: center;
+    padding-right: 70px;
+}
+
+.cover{
+    position: fixed;
+    top: 0px;
+    background-color: white;
+    height: 100%;
+    width: 100%;
+    opacity: 0.2;
+}
+
+.cover-img{
+    height: 100%;
+    width: 100%
+}
+
+.pageing {
+    width: 100%;
+    text-align: center;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+    Icons
+*/
+
+.tile > i {
+    color: #1e1e1e;
+}
+
+.icon-play:before{content:"\f04b" !important}
+.icon-play{
+    background-position: -264px -72px !important;
+    position: absolute;
+}
+
+.icon-forward:before{content:"\f04e"}
+.icon-backward:before{content:"\f04a"}
+.icon-random:before{content:"\f074"}
+.icon-forward{background-position:-336px -72px}
+.icon-backward{background-position:-240px -72px}
+.icon-random{width:16px;background-position:-216px -120px}
+
+.icon-forward, .icon-backward, .icon-random{
+    position: absolute;
+    margin: 15px;
+}
+.icon-volume-down:before{content:"\f027"}
+.icon-volume-up:before{content:"\f028"}
+.icon-volume-off{background-position:-360px -24px}
+.icon-volume-down{background-position:-384px -24px}
+
+.icon-volume-up, .icon-volume-down {
+    position: absolute;
+    margin-left: 15px;
+    margin-top: 2px;
+}
+
+.icon-pause:before{content:"\f04c"}
+.icon-pause {
+    background-position: -288px -72px;
+    position: absolute;
+    margin-top: 15px;
+    margin-left: 18px;
+}
+
+.playControl .tile i{
+    font-size: 30px;
+}
+
+.randomOff {
+    color: lightgray !important;
+}

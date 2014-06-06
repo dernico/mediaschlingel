@@ -1,0 +1,82 @@
+﻿/* animations */
+
+.page-animation {
+  position: absolute;
+}
+
+.page-animation.ng-enter {
+    -moz-animation: enter_sequence 1s linear;
+    -o-animation: enter_sequence 1s linear;
+    -webkit-animation: enter_sequence 1s linear;
+    animation: enter_sequence 1s linear;
+}
+@-webkit-keyframes enter_sequence {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@-moz-keyframes enter_sequence {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@-o-keyframes enter_sequence {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes enter_sequence {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.page-animation.ng-leave {
+    -moz-animation: leave_sequence 1s linear;
+    -o-animation: leave_sequence 1s linear;
+    -webkit-animation: leave_sequence 1s linear;
+    animation: leave_sequence 1s linear;
+}
+@-webkit-keyframes leave_sequence {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@-moz-keyframes leave_sequence {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@-o-keyframes leave_sequence {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes leave_sequence {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}

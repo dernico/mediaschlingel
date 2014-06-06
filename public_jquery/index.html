@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <title>Woop Woop</title>
+    <link rel="stylesheet" href="css/font-awesome.min.css" />
+    <link rel="stylesheet" href="css/font-awesome-ie7.min.css" />
+    
+    <!--link rel="stylesheet" href="css/jquery.mobile-1.3.2.min.css" />
+    <link rel="stylesheet" href="css/jquery.mobile.theme-1.3.2.min.css" /-->
+    <link rel="stylesheet" href="css/animate.min.css" />
+    <link rel="stylesheet" href="css/app.css" />
+
+    <script type="text/javascript" src="dist/mediaschlingel-mix-client.js"></script>
+    
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            window["player"] = new playervm();
+
+            var pages = [
+                {
+                    route: '#/list',
+                    vm: listvm,
+                    args: [api,player],
+                    view: 'views/list.html'
+                },
+                /*{
+                    route: '#/options',
+                    //vm: uploadvm,
+                    //args: [api],
+                    view: 'views/upload.html'
+                },*/
+                {
+                    route: '#/streams',
+                    vm: streams,
+                    args: [api, player],
+                    view: 'views/streams.html'
+                },
+                {
+                    route: '#/settings',
+                    vm: settingsvm,
+                    //args: [api],
+                    view: 'views/settings.html'
+                }
+
+            ];
+
+            $("#pages").pages({
+                pages: pages
+            });
+            //player.pages = pages;
+
+            //ko.applyBindings(player);
+            //new PageVM(pages, api);
+        });
+
+    </script>
+</head>
+<body>
+    <div class="cover">
+        <img class="cover-img" data-bind="attr: {src: Cover}" />
+    </div>
+
+    <div data-role="header">
+        <div data-role="navbar">
+            <ul class="menu">
+                <li><a href="#/list">Liste</a></li>
+                <li><a href="#/streams">Streams</a></li>
+                <li><a href="#/settings">Options</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="playControl backface-hidden">
+        <div id="prev" class="tile">
+            <i class="icon-backward"></i>
+        </div>
+        <div id="playpause" class="tile">
+            <i class="margin20 marginTop15 icon-pause" data-bind="css: { 'icon-play': showPlaying }"></i>
+        </div>
+        <div id="next" class="tile">
+            <i class="icon-forward"></i>
+        </div>
+        <div id="toggleRandom" class="tile">
+            <i class="icon-random" data-bind="css: { randomOff: randomOff }"></i>
+        </div>
+
+        <div id="volUp" class="tile">
+            <i class="icon-volume-up"></i>
+        </div>
+        <div id="volDown" class="tile">
+            <i class="icon-volume-down"></i>
+        </div>
+        <div id="volDown" class="tile" style="text-align: center;">
+            Vol: <span data-bind="text: Volumn"></span>
+        </div>
+    </div>
+
+    <div class="header-splitter"></div>
+
+    <div class="currentMusicInfo" >
+        <div id="album" class="fontSmall" ></div>
+        <div id="title" class="fontBold" ></div>
+    </div>
+
+    <div id="pages">
+    </div>
+
+</body>
+</html>

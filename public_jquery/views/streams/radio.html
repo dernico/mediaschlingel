@@ -1,0 +1,25 @@
+<hr />
+<input type="text" data-bind="value: listenPls, event: { keyup: addListenPlsOnEnter }" />
+<input type="button" data-bind="click: addListenPls" value="Stream hinzufügen" />
+<hr />
+
+<div>
+    <input type="text" data-bind="value: searchterm, event: { keyup: searchRadioOnEnter }"></input>
+    <input type="button" data-bind="click: searchRadio" value="radio.de Suche"></input>
+
+    <button data-bind="click: saveRadio">Save current</button>
+    <div data-bind="foreach: results">
+        <div class="tile">
+            <div class="tile-content">
+                <img class="tile-background" data-bind="attr: { src: image }" alt="" />
+                <div style="background-color: white;">
+                    <div data-bind="text: name"></div>
+                    <div data-bind="text: genre"></div>
+                </div>
+                <div class="tile-button">
+                    <button data-bind="click: $parent.playRadio">Play</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

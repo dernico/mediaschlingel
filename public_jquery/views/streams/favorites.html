@@ -1,0 +1,14 @@
+<div class="clearboth" data-bind="foreach: streams">
+    <div class="tile">
+        <div class="tile-content">
+            
+            <img class="tile-background" data-bind="attr: { src: image }" alt="" />
+            <div style="background-color: white;">
+                <p data-bind="text: name"></p>
+            </div>
+            <div class="tile-button">
+                <button data-bind="click: $parent.play">Play</button>
+            </div>
+        </div>
+    </div>
+</div>
