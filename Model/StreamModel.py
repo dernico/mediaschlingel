@@ -3,6 +3,14 @@
 class StreamModel(dict):
 
     @property
+    def Id(self):
+        return self['id']
+
+    @Id.setter
+    def Id(self, value):
+        self['id'] = value
+
+    @property
     def Description(self):
         return self['description']
 
@@ -50,6 +58,14 @@ class StreamModel(dict):
     def Website(self, value):
         self['website'] = value
 
+    @property
+    def Type(self):
+        return self['type']
+
+    @Type.setter
+    def Type(self, value):
+        self['type'] = value
+
     def __init__(self):
         self.Description = ""
         self.Image = ""
@@ -57,3 +73,4 @@ class StreamModel(dict):
         self.Name = ""
         self.Stream = ""
         self.Website = ""
+        self.Type = ""

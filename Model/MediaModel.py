@@ -66,6 +66,14 @@ class MediaModel(dict):
     def IsLocal(self, value):
         self['islocal'] = value
 
+    @property
+    def IsNext(self):
+        return self['isnext']
+
+    @IsNext.setter
+    def IsNext(self, value):
+        self['isnext'] = value
+
     def __init__(self):
         self.path = ""
         self.ID = ""
@@ -75,6 +83,7 @@ class MediaModel(dict):
         self.Cover = ""
         self.WebPath = ""
         self.IsLocal = False
+        self.IsNext = False
 
 
     def toDict(self):

@@ -42,4 +42,4 @@ var playlistsvm = function(api) {
     self.count = paging.count;
     self.from = paging.from;
     self.to = paging.to;
-}
+};

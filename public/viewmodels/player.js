@@ -15,15 +15,17 @@ var playervm = (function() {
 
 
         self.setCurrentInfo = function (data) {
-            self.hasCover(data.cover == "" ? false : true);
-            if(data.cover.indexOf("http") != -1){
+            self.hasCover(data.cover === "" ? false : true);
+            if(data.cover && data.cover.indexOf("http") != -1){
                 self.Cover(data.cover);
             }
             else{
                 self.Cover('Cover/' + data.cover);
             }
-            self.Album(data.album);
-            self.Name(data.title);
+            var album = data.album ? data.album : "-";
+            var title = data.title ? data.title : "-";
+            self.Album(album);
+            self.Name(title);
             self.Volumn(data.Volume);
             self.showPlaying(!data.IsPlaying);
             self.randomOff(!data.IsRandom);
@@ -85,6 +87,10 @@ var playervm = (function() {
                 self.showPlaying(true);
             });
             */
+        };
+
+        self.playRadio = function(item){
+            api.post("playRadio", "id=" + item.id, self.setCurrentInfo);
         };
 
         self.next = function () {

@@ -1,11 +1,8 @@
-
-
 function MusicFileModel(data) {
     var self = this;
     var id = "";
     var webPath = "";
     var name = "";
-    //var ext = "";
     var type = "";
     var directoryName = "";
     var showVoting = false;
@@ -38,5 +35,5 @@ function MusicFileModel(data) {
     self.album = album;
     self.artist = artist;
     self.covername = covername;
-    self.hasCover = covername == "" ? false : true;
+    self.hasCover = covername === "" ? false : true;
 }

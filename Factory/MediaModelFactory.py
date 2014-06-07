@@ -15,8 +15,6 @@ _COVER = "APIC:"
 
 class MediaModelFactory():
 
-    #def __init__(self):
-
     def createMediaModelFromJson(self, id, json):
         model = MediaModel()
         model.ID = id
@@ -26,6 +24,7 @@ class MediaModelFactory():
         model.Cover = json["cover"]
         model.Title = json["title"]
         model.WebPath = json["webpath"]
+        model.IsNext = False
         return model
 
     def createMediaModel(self, id, path, file, coverdir, ipAddress, isLocal=False):
@@ -43,6 +42,7 @@ class MediaModelFactory():
         model.Album = ""
         model.Title = ""
         model.IsLocal = isLocal
+        model.IsNext = False
 
         if tags is not None and _ARTIST in tags:
             model.Artist = str(tags[_ARTIST])
@@ -59,14 +59,15 @@ class MediaModelFactory():
         if model.Album is None or model.Album is "":
             model.Album = path
 
-        model.Cover = self.getCoverName(model.Album)
+        covername = self.getCoverName(model.Album)
+        model.Cover = 'http://' + ipAddress + ":8000/Cover/" + covername
         model.ID = id
         model.Path = filepath
-        model.WebPath = 'http://' + ipAddress + ":8000/mediafile/" + str(id)
+        model.WebPath = "http://" + ipAddress + ":8000/mediafile/" + str(id)
 
         if tags is not None and _COVER in tags:
             #covername = base64.b64encode(album) + ".jpg"
-            coverpath = os.path.join(coverdir, model.Cover)
+            coverpath = os.path.join(coverdir, covername)
             if not os.path.exists(coverpath):
                 try:
                     print "Try write Coverpath: " + coverpath + " for Album " + model.Album

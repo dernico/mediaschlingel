@@ -6,10 +6,8 @@ var LocalData;
         store.setItem(key, value);
     }
     LocalData.save = save;
-    ;
     function load() {
         return store.getItem(key);
     }
     LocalData.load = load;
 })(LocalData || (LocalData = {}));
-;

@@ -3,12 +3,18 @@ var listvm = (function() {
     return function(api, player) {
         var self = this;
         self.playinfo = ko.observable();
-        self.searchfilter = ko.observable();
+        self.searchfilter = ko.observable("");
+        self.searchTimeoutID = null;
 
         ko.computed(function () {
             if(self.resetPage) self.resetPage();
             var filter = self.searchfilter();
-            if(self.search) self.search();
+            if(self.searchTimeoutID){
+                clearTimeout(self.searchTimeoutID);
+            }
+            self.searchTimeoutID = setTimeout(function(){
+                if(self.search) self.search();
+            }, 1000);
         });
 
         self.media = ko.observableArray();

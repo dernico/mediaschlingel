@@ -1,6 +1,6 @@
 function pageingVM(vm, url, observableFilter, observableData){
 
-    var ScrollTop = function () { window.scrollTo(0, 0) };
+    var ScrollTop = function () { window.scrollTo(0, 0); };
     var self = this;
     //Paging stuff
     var pageIndex = ko.observable(0);
@@ -25,7 +25,6 @@ function pageingVM(vm, url, observableFilter, observableData){
         if(pageIndex() > 0){
             pageIndex(pageIndex() - 1);
             self.load();
-            addStreamcrollTop();
         }
     };
 
@@ -35,8 +34,8 @@ function pageingVM(vm, url, observableFilter, observableData){
         if (observableFilter()) {
             filter = observableFilter();
         }
-        params = "?filter=" + filter
-                + "&top=" + pageSize + "&skip=" + (pageIndex() * pageSize);
+        params = "?filter=" + filter + 
+                    "&top=" + pageSize + "&skip=" + (pageIndex() * pageSize);
         return params;
     };
 
@@ -67,8 +66,8 @@ function pageingVM(vm, url, observableFilter, observableData){
 
         if (data.list) {
             var from = pageIndex() * pageSize;
-            var to = data.list.length >= pageSize
-                    ? from + pageSize : from + data.list.length;
+            var to = data.list.length >= pageSize ? 
+                        from + pageSize : from + data.list.length;
             vm.from(from);
             vm.to(to);
             data.list.forEach(function(item) {

@@ -5,15 +5,30 @@ var streams = (function () {
         self.listenPls = ko.observable();
         self.searchterm = ko.observable();
         self.results = ko.observableArray([]);
+        self.currentRadio = null;
 
-
-        self.searchOnEnter = function(vm, e) {
+        self.searchRadioOnEnter = function(vm, e) {
             if (e.keyCode == 13) {
-                self.search();
+                self.searchRadio();
             }
         };
 
-        self.search = function() {
+        self.searchRadio = function(){
+            self.results([]);
+            api.get({
+                action: "radio/search",
+                params: "?search=" + self.searchterm(),
+                success: function(data) {
+                    if (data.result) {
+                        data.result.forEach(function(item){
+                            self.results.push(new radioModel(item));
+                        });
+                    }
+                }
+            });
+        };
+        
+        self.search2 = function() {
             self.results([]);
             api.laut.search(self.searchterm(), function(data) {
                 if (data.results) {
@@ -27,8 +42,20 @@ var streams = (function () {
             });
         };
 
+        self.playRadio = function(item){
+            player.playRadio(item);
+            self.currentRadio = item;
+        };
+
         self.play = function (item) {
             player.playStream(item);
+        };
+
+        self.saveRadio = function () {
+            api.post("saveRadio", "item=" + ko.toJSON(self.currentRadio), 
+                function () {
+                    self.init();
+            });
         };
 
         self.save = function (item) {
@@ -51,11 +78,11 @@ var streams = (function () {
         };
         self.saveStream = function (item) {
             api.post("saveStream", "item=" + ko.toJSON(item), function () {
-                //self.streams.remove(item);
             });
         };
-        self.deleteStream = function (item) {
-            api.post("deleteStream", "item=" + ko.toJSON(item), function () {
+
+        self.removeRadio = function (item) {
+            api.post("removeStream", "id=" + item.id, function () {
                 self.streams.remove(item);
             });
         };
@@ -69,42 +96,10 @@ var streams = (function () {
             }
         };
 
-        //Paging stuff
-        self.pageIndex = 0;
-        self.pageSize = 200;
-
-        self.resetPage = function () {
-            self.pageIndex = 0;
-        };
-
-        self.getURL = function () {
-            var url = "";
-            if (self.searchterm()) {
-                url = "?filter=" + self.searchterm() + "&top=" + self.pageSize + "&skip=" + (self.pageIndex * self.pageSize);
-            } else {
-                url = "?top=" + self.pageSize + "&skip=" + (self.pageIndex * self.pageSize);
-            }
-
-            return url;
-        };
-
-        self.pageNext = function () {
-            if (self.Localfiles.length >= 200) {
-                self.pageIndex += self.pageSize;
-                self.gogo();
-            }
-        };
-
-        self.pagePrev = function () {
-            if (self.pageIndex > 0) {
-                self.pageIndex -= self.pageSize;
-                self.gogo();
-            }
-        };
-
-
         self.init = function () {
-            api.get({ action: "streams", params: self.getURL(), success: self.insertStreams });
+            api.get({ action: "streams", 
+                params: "", 
+                success: self.insertStreams });
         };
 
         self.activate = function () {

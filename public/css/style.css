@@ -151,6 +151,29 @@
   line-height: 16px;
 }
 
+.tile-background {
+  position:absolute; 
+  z-index: -1; 
+  height: 93%;
+  width:95%
+}
+
+.tile-button{
+  position:absolute; 
+  bottom: 2px;
+}
+
+.button{
+  border: 4px solid grey;
+  background: lightgray;
+  padding: 4px;
+  float: left;
+  margin-left: 4px;
+  min-width: 50px;
+  text-align: center;
+  font-weight: bolder;
+}
+
 .tile .tile-tile {
     display: block;
     float: left;
@@ -182,9 +205,14 @@
 .player-container {
 }
 
+.backface-hidden {
+  -moz-backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
 .playControl{
     position: fixed;
-    z-index: 10;
+    z-index: 100;
     right: 0px;
     bottom: 0px;
 }

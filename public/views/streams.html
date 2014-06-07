@@ -2,9 +2,10 @@
 <input type="text" data-bind="value: listenPls, event: { keyup: addListenPlsOnEnter }" />
 <input type="button" data-bind="click: addListenPls" value="Stream hinzufügen" />
 <hr />
+
 <div>
-    <input type="text" data-bind="value: searchterm, event: { keyup: searchOnEnter }"></input>
-    <input type="button" data-bind="click: search" value="laut.fm Suche"></input>
+    <input type="text" data-bind="value: searchterm, event: { keyup: searchRadioOnEnter }"></input>
+    <input type="button" data-bind="click: searchRadio" value="radio.de Suche"></input>
 
     <!--ul data-role="listview" data-bind="foreach: results, jqmlistview: streams">
         <li data-icon="check">
@@ -16,15 +17,18 @@
             <button data-bind="click: $parent.save">Save</button>
         </div>
     </ul-->
+    <button data-bind="click: saveRadio">Save current</button>
     <div data-bind="foreach: results">
         <div class="tile">
-            <div class="tile-content" data-bind="click: $parent.play">
-                <img style="height: 100px;" data-bind="attr: { src: image }" alt="" />
-                <div>
-                    <p data-bind="text: format"></p>
+            <div class="tile-content">
+                <img class="tile-background" data-bind="attr: { src: image }" alt="" />
+                <div style="background-color: white;">
+                    <div data-bind="text: name"></div>
+                    <div data-bind="text: genre"></div>
                 </div>
-                <button data-bind="click: $parent.play">Try</button>
-                <button data-bind="click: $parent.save">Save</button>
+                <div class="tile-button">
+                    <button data-bind="click: $parent.playRadio">Play</button>
+                </div>
             </div>
         </div>
     </div>
@@ -33,13 +37,17 @@
 <hr />
 <h2>Gespeicherte Streams</h2>
 <div class="clearboth" data-bind="foreach: streams">
-    <div class="">
-        <div class="">
-            <img style="height: 100px;" data-bind="attr: { src: image }" alt="" />
-            <div>
-                <p data-bind="text: stream"></p>
+    <div class="tile">
+        <div class="tile-content">
+            
+            <img class="tile-background" data-bind="attr: { src: image }" alt="" />
+            <div style="background-color: white;">
+                <p data-bind="text: name"></p>
             </div>
-            <button data-bind="click: $parent.play">Play</button>
+            <div class="tile-button">
+                <div class="button" data-bind="click: $parent.play">Play</div>
+                <div class="button" data-bind="click: $parent.removeRadio">Delete</div>
+            </div>
         </div>
     </div>
 </div>
