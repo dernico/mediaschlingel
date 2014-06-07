@@ -219,9 +219,8 @@ function parseOptions(json){
             var header = "<ul class='pivot-header'>";
             for(var i = 0; i < self.pivotItems.length; i++){
                 var item = self.pivotItems[i];
-                header += "<li>";
-                header += "<a class='pivot-header-item' data-index='" + i + "'>" 
-                            + item.title + "</a>";
+                header += "<li class='pivot-header-item' data-index='" + i + "'>";
+                header += "<a>"+ item.title + "</a>";
                 header += "</li>"; 
             }
             header += "</ul>";
@@ -230,8 +229,20 @@ function parseOptions(json){
         };
 
         var handleTitleClick = function(){
-            var index = $(this).data("index");
+            var title = $(this);
+            var listIndex = title.index();
+            if(listIndex === 0) return;
+
+            var parent = title.parent();
+            var index = title.data("index");
+
             loadPage(index);
+
+            var childs = parent.children();
+            for(var i = 0; i < listIndex; i++){
+                $(childs[i]).appendTo(parent);
+            }
+
         };
 
         self.root.empty();
