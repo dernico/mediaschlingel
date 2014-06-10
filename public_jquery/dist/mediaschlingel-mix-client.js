@@ -342,16 +342,32 @@ function parseOptions(json){
             var listIndex = title.index();
             if(listIndex === 0) return;
 
+            var paddingLeft = title.position().left;
             var parent = title.parent();
             var index = title.data("index");
 
             loadPage(index);
+            //title.addClass("transition-all");
 
             var childs = parent.children();
             for(var i = 0; i < listIndex; i++){
-                $(childs[i]).appendTo(parent);
+                var child = $(childs[i]);
+                child.addClass("transition-margin-left");
+                //child.appendTo(parent);
+                child.css("margin-left", "-" + child.width() + "px");
             }
+            
+            setTimeout(function(){
 
+                for(var i = 0; i < listIndex; i++){
+                    var child = $(childs[i]);
+                    child.removeClass("transition-margin-left");
+                    child.appendTo(parent);
+                    child.css("margin-left", "0px");
+                }
+       
+                //title.css("padding-left", "0px");    
+            },300);
         };
 
         self.root.empty();
@@ -1003,6 +1019,7 @@ var listvm = (function() {
     self.init = function () {
         self.api.get({ action: "streams", 
             params: "", 
+            showLoading: false,
             success: self.insertStreams });
     };
 

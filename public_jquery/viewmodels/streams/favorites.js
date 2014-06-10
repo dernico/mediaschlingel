@@ -25,6 +25,7 @@ var favoritesVM = function (api, player) {
     self.init = function () {
         self.api.get({ action: "streams", 
             params: "", 
+            showLoading: false,
             success: self.insertStreams });
     };
 
