@@ -11,6 +11,7 @@ from walker import Walker
 import threading
 from random import choice
 from Config import getMediaDirs
+import Streams
 
 class APlayer(threading.Thread):
 
@@ -29,20 +30,28 @@ class APlayer(threading.Thread):
         try:
             self.pipeline = gst.Pipeline
             self.player = gst.element_factory_make("playbin2", "player")
+            #pulse = gst.element_factory_make("pulsesink", "pulse")
+            #fakesink = gst.element_factory_make("fakesink", "fakesink")
+
             bus = self.player.get_bus()
             bus.add_signal_watch_full(1)
             bus.connect("message", self.on_message)
+            #output = gst.parse_bin_from_description("alsasink", ghost_unconnected_pads=True)
+            #self.player.set_property("audio-sink", pulse)
+            #self.player.set_property("video-sink", fakesink)
+
             self.mainloop = gobject.MainLoop()
-        except:
+        except Exception, e:
             print "Could not set any off the gstreamer stuff and also no mainloop :/"
+            print "Error: {0}".format(str(e))
 
         threading.Thread.__init__(self)
 
     def _set_state(self, state):
         try:
             self.player.set_state(state)
-        except:
-            print "Could not set state {0}".format(state)
+        except Exception, e:
+            print "Could not set state {0}. Err {1}".format(state, str(e))
 
     def _set_property(self, prop, val):
         try:
@@ -113,6 +122,7 @@ class APlayer(threading.Thread):
         #self._set_property('uri', 'file://' + media.Path)
         self._set_property('uri', media.WebPath)
         self.currentlyPlaying = media
+        self.currentlyPlaying['type'] = "local"
         self.play()
 
         print "play " + media.WebPath
@@ -121,14 +131,30 @@ class APlayer(threading.Thread):
         print "try playing " + stream
         self._set_state_NULL()
         self._set_property('uri', stream)
-        s = self.walker.getStream(stream)
+        s = Streams.getStream(stream)
         self.currentlyPlaying = {}
-        self.currentlyPlaying['path'] = s["stream"]
+        self.currentlyPlaying['webpath'] = s["stream"]
         self.currentlyPlaying['title'] = s["format"]
         self.currentlyPlaying['cover'] = s["image"]
+        self.currentlyPlaying['type'] = "radio"
         self.play()
 
         print "play " + stream
+
+
+    def tryStream(self, s):
+        print "try playing " + s.Stream
+        self._set_state_NULL()
+        self._set_property('uri', s.Stream)
+        self.currentlyPlaying = {}
+        self.currentlyPlaying['webpath'] = s.Stream
+        self.currentlyPlaying['name'] = s.Name
+        self.currentlyPlaying['title'] = s.Format
+        self.currentlyPlaying['cover'] = s.Image
+        self.currentlyPlaying['type'] = "radio"
+        self.play()
+
+        print "checkout Stream: " + s.Stream
 
     def getinfo(self):
         self.currentlyPlaying['IsPlaying'] = self.isPlaying
@@ -143,11 +169,18 @@ class APlayer(threading.Thread):
             self.isRandom = True
 
     def play(self):
+        if self.currentlyPlaying['type'] is not 'local' and self.currentlyPlaying['webpath'] is not None:
+            self._set_state_NULL()
+            self._set_property('uri', self.currentlyPlaying['webpath'])
+        
         self._set_state_Playing()
         self.isPlaying = True
 
     def pausePlay(self):
-        self._set_state_Paused()
+        if self.currentlyPlaying['type'] is "local":
+            self._set_state_Paused()
+        else:
+            self._set_state_NULL()
         self.isPlaying = False
 
     def playNext(self):
@@ -205,7 +238,17 @@ class APlayer(threading.Thread):
             self.volume -= 1
             self.setVolume(self.volume)
 
-
+    def filterMedia(self, term, start, end):
+        media = self.walker.filterMedia(term)
+        count = len(media)
+        media = media[start:end]
+        for m in media:
+            if m.ID in self.nextId:
+                m.IsNext = True;
+        return {
+            'count': count,
+            'list': media
+        }
 #play_uri('file:///home/nico/dev/python/schlingel/skit.mp3')
 #player = APlayer()
 #player.playStream()

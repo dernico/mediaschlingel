@@ -71,9 +71,9 @@ def removeStream(id):
     os.remove(streamfile)
 
 def getStreamFileName(streamModel):
-    streamfile = os.path.join(streamDir, streamModel.Stream)
+    streamfile = streamModel.Stream
     streamfile = streamfile.replace(':','').replace('/','_')
-    streamfile = streamfile + ".json"
+    streamfile = os.path.join(streamDir, streamfile) + ".json"
     return streamfile
 
 def writeModelToFile(streamModel):

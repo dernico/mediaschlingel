@@ -5,14 +5,17 @@ sys.setdefaultencoding("utf-8")
 import urllib
 import os
 from os import curdir, sep
+import json
 
 import tornado.auth
 import tornado.escape
 import tornado.ioloop
 import tornado.web
+import tornado.websocket
 
 from aplayer import APlayer
-from Radio import api
+#from mpdplayer import APlayer
+import Streams
 
 from tornado.options import define, options
 
@@ -20,6 +23,9 @@ from Helper.Helper import grab_cover
 from Config import getMediaDirs, getOutputDir
 
 define("port", default=8000, help="run on the given port", type=int)
+
+publicpath = "public"
+debugMode = False
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
@@ -31,8 +37,8 @@ class MainHandler(BaseHandler):
     index = None
 
     def get(self):
-        #if(self.index is None):
-        f = open(curdir + sep + 'public' + sep + 'index.html')
+        global publicpath
+        f = open(curdir + sep + publicpath + sep + 'index.html')
         self.index = f.read()
         f.close()
         self.write(self.index)
@@ -43,12 +49,47 @@ class MediaHandler(BaseHandler):
         id = int(id)
         media = Player.walker.getMedia()[id]
         if(media):
+            
             self.set_header("Content-Type", 'audio/mpeg')
             with open(media.Path, 'rb') as mediafile:
+                
+                total = os.path.getsize(media.Path)
+                self.set_header("Content-Length", str(total))
                 for line in mediafile:
-                    self.write(line)
+                        self.write(line)
                 self.flush()
+                return
+                '''
+                range = self.request.headers.get('range', None)
+                if range:
+                    parts = range.replace("bytes=", "").split("-"); 
+                    partialstart = parts[0]; 
+                    partialend = parts[1]; 
 
+                    total = os.path.getsize(media.Path)
+                    start = int(partialstart)
+                    end = total - 1
+                    if partialend:
+                        end = int(partialend)
+                    print("start: " + str(start) + " end: " + str(end) + " total: " + str(total))
+                    self.set_header("Content-Range", "bytes " + str(start) + "-" + str(end) + "/" + str(total))
+                    self.set_header("Accept-Ranges", "bytes")
+                    self.set_header("Content-Length", str((end-start)+1))
+                    self.set_header('Transfer-Encoding', 'chunked')
+                    self.set_header("Connection", "close")
+                    self.set_status(206)
+                    mediafile.seek(start)
+                    self.write(mediafile.read(end)+"0")
+                else:
+                    #for line in mediafile:
+                        #self.write(line)
+                    b = mediafile.read(1024)
+                    while len(b) > 0:
+                        self.write(b)
+                        mediafile.read(1024)
+
+            self.flush()
+'''
 
 class CoverHandler(BaseHandler):
 
@@ -66,7 +107,7 @@ class CoverGrabberHandler(BaseHandler):
 
     def get(self):
         for mediadir in getMediaDirs():
-            grab_cover(mediadir, getOutputDirs())
+            grab_cover(mediadir, getOutputDir())
 
 class HandlePlayPause(BaseHandler):
 
@@ -86,11 +127,8 @@ class HandleList(BaseHandler):
         start = int(self.get_argument("skip", 25))
         end = start + int(self.get_argument("top", 0))
         term = urllib.unquote(term)
-        files = Player.walker.filterMedia(term)
-        self.write({
-            'count': len(files),
-            'list': files[start:end]
-        })
+        files = Player.filterMedia(term, start, end)
+        self.write(files)
         self.flush()
 
 class HandleListComplete(BaseHandler):
@@ -223,7 +261,7 @@ class HandleVolumeDown(BaseHandler):
 
 class HandleGetStreams(BaseHandler):
     def get(self):
-        streams = Player.walker.getStreams()
+        streams = Streams.getStreams()
         self.write(streams)
         self.flush()
 
@@ -231,42 +269,115 @@ class HandleAddStream(BaseHandler):
 
     def post(self):
         path = self.get_argument('item', None)
-        Player.walker.addStream(path)
+        Streams.addStream(path)
+
+
+class HandleRemoveStream(BaseHandler):
+
+    def post(self):
+        id = self.get_argument('id', None)
+        if id:
+            Streams.removeStream(int(id))
 
 class HandleDiscover(BaseHandler):
     def get(self):
         Player.walker.discoverSchlingel()
 
+
 class HandleRadio(BaseHandler):
     def get(self, topic):
         result = {}
-        if topic == 'topstatios':
-            result["result"] = api.get_top_stations()
-        elif topic == 'search':
-            term = self.get_argument('search', None)
-            result["result"] = api.get_search(term)
+        
+        term = self.get_argument('search', None)
+        result["result"] = Streams.search(term)
 
         self.write(result)
         self.flush()
 
+
+class HandlePlayRadio(BaseHandler):
+    def post(self,):
+        
+        id = self.get_argument('id', None)
+        if not id is None:
+            station = Streams.getByStationID(id)
+            Player.tryStream(station)
+
+        self.write(Player.getinfo())
+        self.flush()
+
+
+class HandleSaveRadio(BaseHandler):
+    def post(self):
+        #station = self.get_argument('item', None)
+        #if station is not None:
+        #    stationJson = json.loads(station)
+        Streams.saveLastRadioResult()
+        
+        self.write({})
+        self.flush()
+
+class HandleWebSocket(tornado.websocket.WebSocketHandler):
+    def open(self):
+        print "Websocket is open and ready to connect :)"
+        Player.addWatchCurrentSubscriber(self.sendCurrentInfo)
+
+    def sendCurrentInfo(self):
+        data = {
+            "type": "info",
+            "data": Player.getinfo()
+        }
+        self.write_message(data)
+
+    def on_message(self, msg):
+        self.write_message()
+
+    def on_close(self):
+        print "Websocket is closed"
+
+class HandleRestartSchlingel(BaseHandler):
+    def get(self):
+        """Restarts the current program.
+        Note: this function does not return. Any cleanup action (like
+        saving data) must be done before calling this function."""
+        python = sys.executable
+        os.execl(python, python, * sys.argv)
+
 class CustomStaticFileHandler(tornado.web.StaticFileHandler):
+    global debugMode
     def set_extra_headers(self, path):
         # Disable cache
-        self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        if(debugMode):
+            print("cache is disabled")
+            self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        else:
+            print("cache is enabled")
 
 Player = APlayer()
 
 def main():
+    global publicpath
+    global debugMode
+
     print "Starte Server"
     try:
         import gobject
         gobject.threads_init()
-    except Exception:
+    except Exception:   
         print "Could not load gobject"
 
     #Player.run()
     Player.start()
-    public = os.path.join(os.path.dirname(__file__), "public")
+    client = ""
+    if len(sys.argv) > 1:
+        client = "_" + sys.argv[1]
+    publicpath = os.path.join(os.path.dirname(__file__), "public" + client)
+    print("publicpath: {}".format(publicpath))
+
+    debugArg = sys.argv[len(sys.argv) - 1]
+    if(debugArg == "debug"):
+        debugMode = True
+
     app = tornado.web.Application(
         [
             (r"/", MainHandler),
@@ -288,10 +399,15 @@ def main():
             (r"/api/music/volumeDown", HandleVolumeDown),
             (r"/api/music/streams", HandleGetStreams),
             (r"/api/music/addListenPls", HandleAddStream),
+            (r"/api/music/removeStream", HandleRemoveStream),
             (r"/api/music/grabcover", CoverGrabberHandler),
             (r"/api/music/discover", HandleDiscover),
-            (r"/api/music/radio", HandleRadio),
-            (r"/(.*)", CustomStaticFileHandler, dict(path=public))
+            (r"/api/music/radio/([^/]+)", HandleRadio),
+            (r"/api/music/playRadio", HandlePlayRadio),
+            (r"/api/music/saveRadio", HandleSaveRadio),
+            (r"/api/restartSchlingel", HandleRestartSchlingel),
+            (r"/websocket", HandleWebSocket),
+            (r"/(.*)", CustomStaticFileHandler, dict(path=publicpath))
         ]
     )
     app.listen(options.port)

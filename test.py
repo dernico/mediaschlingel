@@ -3,41 +3,51 @@ import smb.smbclient
 #pygst.require('0.10')
 #import gst
 #import gobject
-import os
-from walker import MP3FileInfo
-from mutagen.mp3 import EasyMP3 as mp3
-import mutagen
 
+from mpdplayer import APlayer
+from mpd import MPDClient
+from walker import Walker
 
-filepath = '/home/nico/Music/9th_Wonder_And_Buckshot-Chemistry-2005-FU/02-9th_wonder_and_buckshot-hes_back.mp3'
+player = APlayer()
+walker = Walker()
+walker.walk("C:\\Users\\Nico\\Music")
+#player.init()
 
+_mpd = MPDClient()
+_mpd.connect("localhost", 6600)
+print _mpd.mpd_version
+_mpd.clear()
+mediaFiles = walker.getMedia()
 
-title = ""
-album = ""
-artist = ""
-
-
-e = mutagen.File(filepath, easy=True)
-
-title = e["title"][0]
-
-print title
-
+print "{0} Files found".format(len(mediaFiles))
 '''
-info = MP3FileInfo(filepath)
-
-
-if "artist" in info:
-    artist = info["artist"].decode("cp1252").encode('utf-8')
-if "album" in info:
-    album = info["album"].decode("cp1252").encode('utf-8')
-if "title" in info:
-    title = info["title"].decode("cp1252").encode('utf-8')
-
-print "Title: " + title
-print "Album: " + album
-print "Artist: " + artist
+for media in mediaFiles:
+    #media.Path = media.Path.replace("\\", "\\\\")
+    media.Path = media.Path.replace("\\", "/")
+    #media.Path = "file:///" + media.Path
+    media.Path = "file://localhost/" + media.Path
+    print "Add media {0}".format(media.WebPath)
+    _mpd.add(media.WebPath)
+    #_mpd.playlistadd("files",media.WebPath)
 '''
+_mpd.add(mediaFiles[3].WebPath)
+_mpd.play(0)
+#_mpd.load("files")
+
+#for info in _mpd.playlistinfo():
+#    print info
+
+
+print "current Song: "
+print _mpd.currentsong()
+print "Status:"
+print _mpd.status()
+#_mpd.setvol(50)
+#print "Status:"
+#print _mpd.status()
+
+#mpd.playlistadd("streams", "http://173.192.32.198:80")
+
 
 #smb://asrock/Netzordner/Musik/Stay Thirsty Episode 6.mp3
 

@@ -2,21 +2,18 @@ import urllib2
 import smb.smbclient
 import json
 from Factory.MediaModelFactory import MediaModelFactory
-from Factory.StreamModelFactory import StreamModelFactory
 from Config import getOutputDir
-from os import curdir
 from thread import allocate_lock
 from threading import Thread
 from Helper import Helper
 
 class Walker:
     def __init__(self):
+        self.player = None
         self.allowdFiles = ['.mp3', '.m4a', '.wma']
         self.mediafiles = []
         self.media_albums = None
-        self.streams = []
         self.mediafactory = MediaModelFactory()
-        self.streamfactory = StreamModelFactory()
         self.smb = smb.smbclient.SambaClient(server="111.1111.111.11",
                     share="folder",
                     username="xxx",
@@ -24,7 +21,9 @@ class Walker:
                     domain="WORKGROUP")
         self.ipAdress = Helper.getIpAdress()
         self.lock = allocate_lock()
-        self.streamDir = os.path.join(curdir, "Streams")
+
+    def setMPD(self, player):
+        self.player = player
 
     def getCoverDir(self):
         return getOutputDir()
@@ -57,6 +56,8 @@ class Walker:
             if extension == ext:
                 model = self.mediafactory.createMediaModel(len(self.mediafiles), path, file, self.getCoverDir(), self.ipAdress, isLocal)
                 self.mediafiles.append(model)
+                #if self.player:
+                #    self.player.mpd.playlistadd(self.player.filePlaylistName, model.WebPath)
 
     def getAlbums(self):
         if self.media_albums is None:
@@ -88,7 +89,6 @@ class Walker:
         if term == "":
             return self.mediafiles
 
-        #term = unicode(term, "utf-8")
         terms = term.lower().split(" ")
         result = []
 
@@ -100,17 +100,10 @@ class Walker:
             title = media.Title.lower()
             album = media.Album.lower()
 
-            #title = title.decode("utf-8")
-            #title = unicode(title, "utf-8")
-            #title = title.encode("utf-8")
-            #title = unicode(title)
-
             for term in terms:
                 term = term.strip()
                 term = term.encode("utf-8")
 
-                #print str(type(term)) + " " + term
-                #print str(type(title)) + " " + title
                 if term is "":
                     break
 
@@ -126,53 +119,6 @@ class Walker:
 
         return result
 
-    def getStreams(self):
-        if len(self.streams) == 0:
-            for path, directories, files in os.walk(self.streamDir):
-                for filename in files:
-                    filepath = os.path.join(self.streamDir, filename)
-                    with open(filepath) as filecontent:
-                        #content = filecontent.read()
-                        streamModel = self.streamfactory.createFromJson(json.load(filecontent))
-                        self.streams.append(streamModel)
-        data = {}
-        data["streams"] = self.streams
-        return data
-
-    def getStream(self, stream):
-        if(len(self.streams) > 0):
-            for s in self.streams:
-                if(s["stream"] == stream):
-                    return s
-        return None
-
-    def addStream(self, path):
-        if path is None or path == "": return
-
-        if '.m3u' in path:
-            content = Helper.downloadString(path)
-            print "Content m3u: {0}".format(content)
-            url = Helper.parsem3u(content)
-            path = self.streamfactory.createFromUrl(url)
-        elif '.pls' in path:
-            content = Helper.downloadString(path)
-            print "Content pls: {0}".format(content)
-            url = Helper.parsePls(content)
-            path = self.streamfactory.createFromUrl(url)
-
-        stream = self.streamfactory.createFromUrl(path)
-        streamfile = os.path.join(self.streamDir, stream.Stream)
-        streamfile = streamfile.replace(':','').replace('/','_')
-        streamfile = streamfile + ".json"
-        print "Try write new Streamfile: {0}".format(streamfile)
-        if not os.path.exists(streamfile):
-            try:
-                with open(streamfile, 'a') as file:
-                    file.write(json.dumps(stream))
-                    print "Added file {0}".format(streamfile)
-                    self.streams = []
-            except Exception as ex:
-                print "Error: {0}".format(str(ex))
 
     def discoverSchlingel(self):
         print "Start Discovering. My ip is {0}".format(self.ipAdress)
@@ -199,16 +145,21 @@ class Walker:
 
 
     def discoverFinished(self, data):
-        self.lock.acquire()
         if data != None and data != "":
             print "Find some Stuff"
-            result = json.loads(data)
+            self.lock.acquire()
+            print "No Lock add data"
+            result = data
+            if isinstance(result, basestring):
+                result = json.loads(result)
+            if isinstance(result, str):
+                result = json.loads(result)
             list = result["list"]
             for external in list:
                 mediaModel = self.mediafactory.createMediaModelFromJson(len(self.mediafiles), external)
                 if not self.containsMediaWebPath(mediaModel.WebPath):
                     self.mediafiles.append(mediaModel)
-        self.lock.release();
+            self.lock.release();
 
 
 
