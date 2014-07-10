@@ -14,31 +14,62 @@ function getObjectFromString(item){
     return obj;
 }
 
-function construct(con, args){
-    var convertedArgs = [];
-    if(args){
-        args.forEach(function(item){
-            var itemType = typeof item;
-            if( itemType === "string" || itemType === "String" || itemType === "STRING"){
-                
-                var obj = getObjectFromString(item);
-                
-                if(obj){
-                    convertedArgs.push(obj);
-                }
-            }
-            else if(itemType === "object" || itemType == "function"){
-                convertedArgs.push(item);
-            }
-        });
+//Object.prototype.isArray = function() {
+//    return Object.prototype.toString.call(this) === '[object Array]';
+//}
+
+function isArray(obj) {
+    if (Object.prototype.toString.call(obj) === '[object Array]') {
+        return true;
     }
-    function F(){ return con.apply(this, convertedArgs)};
-    F.prototype = con.prototype;
+    return false;
+}
+
+function construct(objToConstruct){//, args){
+    var convertedArgs = [];
+    //var viewmodelType = typeof objToConstruct;
+    var args = [];
+
+    
+    if (isArray(objToConstruct)) {
+        if (objToConstruct.length > 1) {
+            for (var i = 0; i < objToConstruct.length - 1; i++) {
+                args.push(objToConstruct[i]);
+            }
+        }
+        objToConstruct = objToConstruct[objToConstruct.length - 1];
+    }
+
+    args.forEach(function(item){
+        var itemType = typeof item;
+        var argumentObj = null;
+
+        if (itemType === "string") {
+            argumentObj = getObjectFromString(item);
+        }
+        else if(itemType === "object" || itemType === "function") {
+            argumentObj = item;
+        }
+
+        if (argumentObj) {
+            //var argumentObjType = typeof argumentObj;
+            if (isArray(argumentObj)) {
+                argumentObj = construct(argumentObj);
+            }
+            convertedArgs.push(argumentObj);
+        }
+    });
+
+    function F() { return objToConstruct.apply(this, convertedArgs); };
+    F.prototype = objToConstruct.prototype;
     return new F();
 }
 
 function parseOptions(json){
     if(!json) return {};
+    if(json.indexOf("{") != 1){
+        json = "{" + json + "}";
+    }
     json = json.replace(/\'/g, '"');
     json = json.replace(/(\w+)\s*:/g, '"$1":');
     return JSON.parse(json);
@@ -53,35 +84,57 @@ function parseOptions(json){
         var settings = $.extend({
             // These are the defaults.
             pages: [],
-            timeout: 0,
-            time2wait: 1000,
+            transitionTimeout: 1000,
+            //time2wait: 1000,
             backgroundColor: "white"
         }, options );
 
+        var transitionTimeout = 0;
         settings.pages.forEach(function(page){
 
             Path.map(page.route)
             .enter(function () {})
             .exit(function () {
+
+                self.root.css("animation", "page_leave_sequence " + settings.transitionTimeout + "ms linear");
+                //self.root.removeClass('page-enter');
+                //self.root.addClass('page-leave');
+
+                /*
                 self.root.removeClass('animated fadeOutLeft');
                 self.root.removeClass('animated fadeInRight');
                 self.root.addClass('animated fadeOutLeft');
+                */
             })
             .to(function () {
                 var params = this.params;
+
+                setTimeout(function () {
+                    transitionTimeout = settings.transitionTimeout;
+                    loadCurrentPage(page, params);
+
+                    self.root.css("animation", "page_enter_sequence " + settings.transitionTimeout + "ms linear");
+                    //self.root.removeClass('page-leave');
+                    //self.root.removeClass('page-enter');
+                    //self.root.addClass('page-enter');
+
+                }, transitionTimeout);
+
+                /*
                 setTimeout(function () {
                     settings.timeout = settings.time2wait;
-                    setCurrentVM(page, params);
+                    loadCurrentPage(page, params);
                     self.root.removeClass('animated fadeOutLeft');
                     self.root.removeClass('animated fadeInRight');
                     self.root.addClass('animated fadeInRight');
 
                 }, settings.timeout);
+                */
             });
         });
 
 
-        var setCurrentVM = function(page, params){
+        var loadCurrentPage = function(page, params){
             page.params = params;
             self.root.page(page);
         }
@@ -103,13 +156,14 @@ function parseOptions(json){
         
         var dataOptions = self.root.data("options");
         if(!settings && typeof dataOptions === "string"){
-            dataOptions = parseOptions("{" + dataOptions + "}");
+            dataOptions = parseOptions(dataOptions);
         }
         else{
-            dataOptions = {};
+            dataOptions = settings;
         }
 
-        var options = $.extend({
+        /*
+        self.options = $.extend({
             // These are the defaults.
             view: undefined, // This is the URL to the view
             _view: undefined, // THis is the raw HTML
@@ -120,66 +174,79 @@ function parseOptions(json){
         }, dataOptions );
 
         
-        options = $.extend(options, settings);
+        self.options = $.extend(self.options, settings);
+        */
+
+        self.options = dataOptions;
 
         var loadView = function () {
-            if (options.view && !options._view) {
+            if (!self.options.view) {
+                console.log("Could not find property 'view'. So no view will be loaded");
+                return;
+            }
+
+            if (self.options.view && !self.options._view) {
                 $.ajax({
-                    url: options.view
+                    url: self.options.view
                 })
                 .done(function (pageContent) {
-                    options._view = pageContent;
-                    activateVM();
+                    self.options._view = pageContent;
+                    self.activateVM();
                 })
                 .error(function (err) {
                     //Todo handle Errorcodes here!
-                    if (error) error(er);
+                    if (err) error(err);
                 });
             } else {
-                activateVM();
+                self.activateVM();
             }
         };
 
-        var activateVM = function() {
+        self.activateVM = function() {
             self.root.empty();
-            self.root.append(options._view);
+            self.root.append(self.options._view);
             
-            if (!options._vm && options.vm) {
-                var vmtype = typeof options.vm;
-                if( vmtype === "string" ||vmtype === "String" || vmtype === "STRING"){
-                    var vm = window[options.vm];
+            if (!self.options._vm && self.options.vm) {
+                var vmtype = typeof self.options.vm;
+                if( vmtype === "string"){ //} ||vmtype === "String" || vmtype === "STRING"){
+                    var vm = window[self.options.vm];
                     if(vm !== undefined){
-                        options.vm = vm;
+                        self.options.vm = vm;
                     }
                     else{
-                        options._vm = {};
+                        self.options._vm = {};
                         return;
                     }
                 }
-                options._vm = construct(options.vm,options.args);
+                self.options._vm = construct(self.options.vm);//,self.options.args);
             }
             
-            if (options._vm !== undefined && options._vm.activate){
-                options._vm.activate(options.params);
+            if (self.options._vm !== undefined && self.options._vm.activate){
+                self.options._vm.activate(self.options.params, self.root[0]);
 
                 if(window["ko"] !== undefined){
-                    ko.applyBindings(options._vm, self.root[0]);
+                    ko.applyBindings(self.options._vm, self.root[0]);
                 }
             }
         };
 
         loadView();
+
+        return self;
     }
 
 })( jQuery );
 
 (function( $ ) {
  
-    $.fn.pivot = function( options ) {
+    $.fn.pivot = function( ) {
         var self = this;
         self.root = $(self);
         self.header = null;
         self.container = null;
+        self.loadedPages = {};
+        self.currentPage = null;
+        
 
         self.pivotItems = [];
         self.children = self.root.children();
@@ -190,7 +257,7 @@ function parseOptions(json){
 
             var pivotItem = {
                 title: title ? title : "Item " + i,
-                options: parseOptions("{" + options + "}"),
+                options: parseOptions(options),
                 el: child.context.outerHTML
             };
 
@@ -200,14 +267,28 @@ function parseOptions(json){
         var loadPage = function(index){
             var pivotitem = self.pivotItems[index];
             self.container.empty();
-            self.container.append(pivotitem.el);
-            var pivotElement = $(self.container.children()[0]);
-            pivotElement.page(pivotitem.options);
-            
-            //todo: find way to remove setTimeout
-            setTimeout(function(){
-                pivotElement.addClass('animation pivot-enter');
-            }, 10);
+
+            //create a new pivot page
+            if(!pivotitem.page){
+                
+                self.container.append(pivotitem.el);
+                var pivotElement = $(self.container.children()[0]);
+                pivotitem.page = pivotElement.page(pivotitem.options);
+
+                //todo: find way to remove setTimeout
+                setTimeout(function(){
+                    pivotElement.addClass('animation pivot-enter');
+                    pivotitem.html = pivotElement.html();
+                }, 10);
+
+            //append an existing pivot page
+            }else{
+                //set timeout to prevent a bloping effect
+                setTimeout(function(){
+                    self.container.append(pivotitem.page);
+                    pivotitem.page.activateVM();
+                }, 320);
+            }            
         };
 
         var addContainer = function(){
@@ -238,26 +319,21 @@ function parseOptions(json){
             var index = title.data("index");
 
             loadPage(index);
-            //title.addClass("transition-all");
 
             var childs = parent.children();
             for(var i = 0; i < listIndex; i++){
                 var child = $(childs[i]);
                 child.addClass("transition-margin-left");
-                //child.appendTo(parent);
                 child.css("margin-left", "-" + child.width() + "px");
             }
             
             setTimeout(function(){
-
                 for(var i = 0; i < listIndex; i++){
                     var child = $(childs[i]);
                     child.removeClass("transition-margin-left");
                     child.appendTo(parent);
                     child.css("margin-left", "0px");
                 }
-       
-                //title.css("padding-left", "0px");    
             },300);
         };
 
@@ -265,6 +341,7 @@ function parseOptions(json){
         addHeader();
         addContainer();
         loadPage(0);
+        return self;
     }
 
 })( jQuery );
@@ -291,7 +368,7 @@ function parseOptions(json){
 
             var hubItem = {
                 title: title ? title : "Item " + i,
-                options: parseOptions("{" + options + "}"),
+                options: parseOptions(options),
                 el: child.context.outerHTML
             };
             self.hubItems.push(hubItem);
@@ -327,6 +404,8 @@ function parseOptions(json){
 
         self.root.empty();
         loadPages();
+
+        return self;
     }
 
 })( jQuery );

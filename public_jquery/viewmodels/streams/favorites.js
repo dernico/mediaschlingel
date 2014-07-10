@@ -1,5 +1,6 @@
-var favoritesVM = function (api, player) {
+var favoritesVM = ["api", "player", function (api, player) {
     var self = this;
+    self.activated = false;
     self.streams = ko.observableArray([]);
     self.api = api;
 
@@ -9,6 +10,13 @@ var favoritesVM = function (api, player) {
 
     self.deleteStream = function (item) {
         self.api.post("deleteStream", "item=" + ko.toJSON(item), function () {
+            self.streams.remove(item);
+        });
+    };
+
+    
+    self.removeRadio = function (item) {
+        api.post("removeStream", "id=" + item.id, function () {
             self.streams.remove(item);
         });
     };
@@ -29,8 +37,10 @@ var favoritesVM = function (api, player) {
             success: self.insertStreams });
     };
 
-    self.activate = function () {
-        self.init();
+    self.activate = function (scope) {
+        if(!self.activated){
+            self.init();
+        }
+        //ko.applyBindings(self, scope);
     };
-};
-
+}];

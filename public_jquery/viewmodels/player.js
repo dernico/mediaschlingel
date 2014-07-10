@@ -1,121 +1,106 @@
-var playervm = (function() {
+var player = [function() {
 
-    return function() {
-        var self = this;
-        self.randomOff = true;
-        self.showPlaying = false;
+    var self = this;
 
-        self.cover = $(".cover");
-        self.coverImage = $(".cover-img");
-        self.album = $("#album");
-        self.title = $("#title");
-        self.playpause = $("#playpause");
-        self.playpauseIcon = $(".icon-pause");
-        self.next = $("#next");
-        self.prev = $("#prev");
-        self.toggleRandom = $("#toggleRandom");
-        self.toggleRandomIcon = $(".icon-random");
-        self.volUp = $("#volUp");
-        self.volDown = $("#volDown");
+    self.showPlaying = ko.observable(false);
+    self.randomOff = ko.observable(true);
+    self.PlayingFile = ko.observable(null);
 
-        self.setCurrentInfo = function (data) {
-            
-            self.cover.css("visible",data.cover === "" ? false : true);
-            var cover = "";
-            if(data.cover && data.cover.indexOf("http") != -1){
-                cover = data.cover;
-            }
-            else{
-                cover = 'Cover/' + data.cover;
-            }
-            self.coverImage.attr("src", cover);
-            var album = data.album ? data.album : "-";
-            var title = data.title ? data.title : "-";
-            
-            self.album.text(album);
-            self.title.text(title);
-            
-            //self.Volumn(data.Volume);
-            self.showPlaying = !data.IsPlaying;
-            self.randomOff = !data.IsRandom;
+    self.hasCover = ko.observable();
+    self.Cover = ko.observable();
+    self.Album = ko.observable();
+    self.Name = ko.observable();
+    self.Volumn = ko.observable();
 
-            if(self.showPlaying){
-                self.playpauseIcon.addClass('icon-play');
-            }
-            else{
-                self.playpauseIcon.removeClass('icon-play');    
-            }
 
-            if(self.randomOff){
-                self.toggleRandomIcon.addClass("randomOff");
-            }else{
-                self.toggleRandomIcon.removeClass("randomOff");
-            }
-        };
+    self.setCurrentInfo = function (data) {
+        self.hasCover(data.cover === "" ? false : true);
+        if(data.cover && data.cover.indexOf("http") != -1){
+            self.Cover(data.cover);
+        }
+        else{
+            self.Cover('Cover/' + data.cover);
+        }
+        var album = data.album ? data.album : "-";
+        var title = data.title ? data.title : "-";
+        self.Album(album);
+        self.Name(title);
+        self.Volumn(data.Volume);
+        self.showPlaying(!data.IsPlaying);
+        self.randomOff(!data.IsRandom);
+    };
 
-        self.LoadCurrentInfo = function () {
-            api.get({
-                action: "info",
-                params: "",
-                success: self.setCurrentInfo
-            });
-        };
+    self.LoadCurrentInfo = function () {
+        api.get({
+            action: "info",
+            params: "",
+            success: self.setCurrentInfo
+        }); //gets CurrentMediaFile
+    };
 
-        self.play = function(item) {
-            api.get({
-                action: "play",
-                params: "?id=" + item.id,
-                success: self.setCurrentInfo
-            });
-        };
 
-        self.playStream = function(item) {
-            api.get({
-                action: "playStream",
-                params: "?stream=" + item.stream,
-                success: self.setCurrentInfo
-            });
-        };
 
-        self.playRadio = function(item){
-            api.post("playRadio", "id=" + item.id, self.setCurrentInfo);
-        };
+    self.toggleRandom = function () {
+        if (self.randomOff()) {
+            self.randomOff(false);
+        } else {
+            self.randomOff(true);
+        }
+        api.post("toggleRandom", { }, self.setCurrentInfo);
+    };
+    self.fullscreen = function () {
+        api.post("fullScreen", {}, self.setCurrentInfo);
+    };
+    self.reload = function () {
+        api.post("dummy", {}, self.setCurrentInfo);
+    }; //Operate the player
+    self.playpause = function (item) {
+        if (self.showPlaying()) {
+            api.post("play", {}, self.setCurrentInfo);
+            self.showPlaying(false);
+        } else {
+            api.post("pause", {}, self.setCurrentInfo);
+            self.showPlaying(true);
+        }
+    };
 
-        self.toggleRandom.click(function (event) {
-            if (self.randomOff) {
-                self.randomOff = false;
-            } else {
-                self.randomOff = true;
-            }
-            api.post("toggleRandom", { }, self.setCurrentInfo);
+    self.play = function(item) {
+        api.get({
+            action: "play",
+            params: "?id=" + item.id,
+            success: self.setCurrentInfo
         });
+    };
 
-        self.playpause.click(function (event) {
-            if (self.showPlaying) {
-                api.post("play", {}, self.setCurrentInfo);
-                self.showPlaying = false;
-            } else {
-                api.post("pause", {}, self.setCurrentInfo);
-                self.showPlaying = true;
-            }
+    self.playStream = function(item) {
+        api.get({
+            action: "playStream",
+            params: "?stream=" + item.stream,
+            success: self.setCurrentInfo
         });
+    };
 
-        self.next.click(function () {
-            api.post("next",{ }, self.setCurrentInfo);
-        });
+    self.playRadio = function(item){
+        api.post("playRadio", "id=" + item.id, self.setCurrentInfo);
+    };
 
-        self.prev.click(function () {
-            api.post("prev", {}, self.setCurrentInfo);
-        });
+    self.next = function () {
+        api.post("next",{ }, self.setCurrentInfo);
+    };
+    self.prev = function () {
+        api.post("prev", {}, self.setCurrentInfo);
+    };
+    self.volUp = function () {
+        api.post("volumeUp", {}, self.setCurrentInfo);
+    };
+    self.volDown = function () {
+        api.post("volumeDown", {}, self.setCurrentInfo);
+    };
 
-        self.volUp.click(function () {
-            api.post("volumeUp", {}, self.setCurrentInfo);
-        });
-
-        self.volDown.click(function () {
-            api.post("volumeDown", {}, self.setCurrentInfo);
-        });
-
+    self.activate = function(){
         self.LoadCurrentInfo();
     };
-})();
+
+
+    return self;
+}];

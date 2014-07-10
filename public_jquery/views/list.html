@@ -1,13 +1,59 @@
-<input id="search" type="search" />
+<div class="searchbox">
+    <input id="search" type="search" placeholder="Artist, Title, Album" data-bind="value: searchfilter, valueUpdate: 'afterkeyup'" />
+</div>
 
 <div class="pageing">
-    <span id="pagePrev" class="" data-bind="click: pagePrev">Zurück </span>
+    <span class="" data-bind="click: pagePrev">Zurück </span>
     <span style="padding-left: 5px;" data-bind="text: from"></span>
     <span>- </span>
     <span data-bind="text: to"></span>
     <span>/</span>
     <span style="padding-right: 5px;" data-bind="text: count"></span>
-    <span id="pageNext" class="" data-bind="click: pageNext">Weiter</span>
+    <span class="" data-bind="click: pageNext">Weiter</span>
+</div>
+
+<hr />
+
+
+<div class="clearboth" data-bind="foreach: media">
+    <div class="tile">
+        <div class="tile-content" >
+            <div data-bind="click: $parent.play">
+                <p data-bind="text: artist"></p>
+                <p data-bind="text: album"></p>
+                <p data-bind="text: title"></p>
+            </div>
+
+            <div class="tile-bottom">
+                <div class="vote" data-bind="click: $parent.voteit, visible: showVoting ">
+                    <span>Play it next</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr class="clearboth" />
+<div class="pageing">
+    <span class="" data-bind="click: pagePrev">Zurück </span>
+    <span data-bind="text: from"></span>
+    <span>- </span>
+    <span data-bind="text: to"></span>
+    <span class="" data-bind="click: pageNext">Weiter</span>
+</div>
+
+<!--div class="searchbox">
+    <input id="search" type="search" placeholder="Search Title, Artist, Album " />
+</div>
+
+<div class="pageing">
+    <span class="pagePrev" class="" >Zurück </span>
+    <span class="pageFromText" style="padding-left: 5px;"></span>
+    <span> - </span>
+    <span class="pageToText"></span>
+    <span> / </span>
+    <span class="pageCountText" style="padding-right: 5px;"></span>
+    <span class="pageNext" class="">Weiter</span>
 </div>
 
 <hr />
@@ -18,9 +64,9 @@
 <hr class="clearboth" />
 
 <div class="pageing">
-    <span class="" data-bind="click: pagePrev">Zurück </span>
-    <span data-bind="text: from"></span>
-    <span>- </span>
-    <span data-bind="text: to"></span>
-    <span class="" data-bind="click: pageNext">Weiter</span>
-</div>
+    <span class="pagePrev" >Zurück </span>
+    <span class="pageFromText"></span>
+    <span> - </span>
+    <span class="pageToText" ></span>
+    <span class="pageNext" >Weiter</span>
+</div-->
