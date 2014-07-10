@@ -19,41 +19,33 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            //window["player"] = new playervm();
-
-            var pages = [
-                {
-                    route: '#/list',
-                    vm: listvm,
-                    view: 'views/list.html'
-                },
-                {
-                    route: '#/streams',
-                    vm: streams,
-                    view: 'views/streams.html'
-                },
-                {
-                    route: '#/settings',
-                    vm: settingsvm,
-                    view: 'views/settings.html'
-                }
-
-            ];
-
             $("#pages").pages({
-                pages: pages,
+                pages: [
+                    {
+                        route: '#/list',
+                        vm: listvm,
+                        view: 'views/list.html'
+                    },
+                    {
+                        route: '#/streams',
+                        vm: streams,
+                        view: 'views/streams.html'
+                    },
+                    {
+                        route: '#/settings',
+                        vm: settingsvm,
+                        view: 'views/settings.html'
+                    }
+
+                ],
                 transitionTimeout: 500
             });
-
             $("#playerControl").page();
         });
 
     </script>
 </head>
 <body>
-    <div class="cover">
-        <img class="cover-img" data-bind="attr: {src: Cover}" />
-    </div>
 
     <div data-role="header">
         <div data-role="navbar">
@@ -65,17 +57,9 @@
         </div>
     </div>
 
-    <div id="playerControl" class="playControl backface-hidden" data-options="view: 'views/playControl.html', vm: 'player'"></div>
+    <div id="playerControl" data-options="view: 'views/start.html', vm: 'player'"></div>
 
-    <div class="header-splitter"></div>
-
-    <div class="currentMusicInfo" >
-        <div id="album" class="fontSmall" ></div>
-        <div id="title" class="fontBold" ></div>
-    </div>
-    <hr />
-    <div id="pages" class="pages">
-    </div>
-
+    <div id="pages" class="pages"></div>
+    
 </body>
 </html>

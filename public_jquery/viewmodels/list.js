@@ -6,6 +6,8 @@ var listvm = ["api", "player", function(data, player) {
     self.activated = false;
     self.playinfo = ko.observable();
     self.searchfilter = ko.observable("");
+
+
     self.searchTimeoutID = null;
     self.media = ko.observableArray();
     self.count = ko.observable();
@@ -70,20 +72,26 @@ var listvm = ["api", "player", function(data, player) {
     self.pageNext = pageing.pageNext;
 
 
-    ko.computed(function () {
-        if(!self.activated) return;
 
-        if(self.resetPage) self.resetPage();
+    self.searchfilter.subscribe(function(oldval,newval){
+        if(self.activated){
 
-        pageing.searchfilter(self.searchfilter());
-        
-        if(self.searchTimeoutID){
-            clearTimeout(self.searchTimeoutID);
+            if(self.resetPage) self.resetPage();
+
+            
+            if(self.searchTimeoutID){
+                clearTimeout(self.searchTimeoutID);
+            }
+            self.searchTimeoutID = setTimeout(function(){
+
+                pageing.searchfilter(self.searchfilter());
+                //if(pageing.search) pageing.search();
+            }, 1000);
         }
-        self.searchTimeoutID = setTimeout(function(){
-            if(pageing.search) pageing.search();
-        }, 1000);
     });
+
+    //ko.computed(function () {
+    //});
 
 }];
 

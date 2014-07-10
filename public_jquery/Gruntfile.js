@@ -2,6 +2,7 @@ module.exports = function(grunt) {
   
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
+    
     concat: {
       options: {
         separator: ';'
@@ -25,6 +26,7 @@ module.exports = function(grunt) {
         dest: 'dist/<%= pkg.name %>.js'
       }
     },
+    
     uglify: {
       options: {
         banner: '/*! <%= pkg.name %> <%= grunt.template.today("dd-mm-yyyy") %> */\n'
@@ -35,6 +37,7 @@ module.exports = function(grunt) {
         }
       }
     },
+    
     qunit: {
       files: ['test/specs/**/*.html']
     },

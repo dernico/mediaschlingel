@@ -1,4 +1,4 @@
-var player = [function() {
+var player = ["api", function(api) {
 
     var self = this;
 
@@ -100,7 +100,4 @@ var player = [function() {
     self.activate = function(){
         self.LoadCurrentInfo();
     };
-
-
-    return self;
 }];
