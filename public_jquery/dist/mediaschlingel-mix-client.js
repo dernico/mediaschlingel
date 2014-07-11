@@ -312,7 +312,8 @@ function parseOptions(json){
                 })
                 .error(function (err) {
                     //Todo handle Errorcodes here!
-                    if (err) error(err);
+                    //if (err) error(err);
+                    console.log(err);
                 });
             } else {
                 self.activateVM();
@@ -655,6 +656,31 @@ var radioModel = (function(){
             type: 'POST',
             data: data
         }, showLoadingScreen, success, error);
+    };
+
+    api.tracks = {};
+
+    api.tracks.popular = function(done){
+        ajax({
+            url: '/api/8tracks/popular',
+        }, true, function(data){
+            done(null, data);
+        }, function(err){
+            done(err);
+        });
+    };
+
+    api.tracks.play = function(id, done){
+        ajax({
+            url: '/api/8tracks/play/' + id,
+            type: 'POST',
+            success: function(data){
+                done(null, data);
+            },
+            error: function(err){
+                done(err);
+            }
+        });
     };
 
     var laut = "http://api.laut.fm";
@@ -1148,7 +1174,33 @@ var listvm = ["api", "player", function(data, player) {
 
 }];
 
-;var favoritesVM = ["api", "player", function (api, player) {
+;var tracksVM = ["api", "player", function (api, player) {
+    var self = this;
+    self.api = api;
+    
+    self.tracksResult = ko.observableArray([]);
+
+
+    self.loadPopular = function(){
+        self.api.tracks.popular(function(err, data){
+            if(err){
+                console.log(err);
+                return;
+            }
+            data = data.mix_set.mixes;
+            self.tracksResult(data);
+        });
+    };
+
+    self.play = function(mix){
+        //console.log(mix);
+        self.api.tracks.play(mix.id);
+    };
+
+    self.activate = function () {
+        self.loadPopular();
+    };
+}];;var favoritesVM = ["api", "player", function (api, player) {
     var self = this;
     self.activated = false;
     self.streams = ko.observableArray([]);

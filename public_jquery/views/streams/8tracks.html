@@ -1,0 +1,26 @@
+
+
+<!--input type="text" data-bind="value: searchterm, event: { keyup: searchRadioOnEnter }"></input-->
+<br />
+<div class="button" data-bind="click: loadPopular">Popular</div>
+
+<br />
+<br />
+<hr />
+<!--div class="button" data-bind="click: saveRadio">Save current</div-->
+
+<div data-bind="foreach: tracksResult">
+    <div class="tile">
+        <div class="tile-content">
+            <img class="tile-background" data-bind="attr: { src: cover_urls.original }" alt="" />
+            <div style="background-color: white;">
+                <div data-bind="text: name"></div>
+                <div data-bind="text: tag_list_cache"></div>
+                <!--div data-bind="text: description"></div-->
+            </div>
+            <div class="tile-button">
+                <button data-bind="click: $parent.play">Play</button>
+            </div>
+        </div>
+    </div>
+</div>

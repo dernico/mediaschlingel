@@ -67,6 +67,31 @@ var api;
         }, showLoadingScreen, success, error);
     };
 
+    api.tracks = {};
+
+    api.tracks.popular = function(done){
+        ajax({
+            url: '/api/8tracks/popular',
+        }, true, function(data){
+            done(null, data);
+        }, function(err){
+            done(err);
+        });
+    };
+
+    api.tracks.play = function(id, done){
+        ajax({
+            url: '/api/8tracks/play/' + id,
+            type: 'POST',
+            success: function(data){
+                done(null, data);
+            },
+            error: function(err){
+                done(err);
+            }
+        });
+    };
+
     var laut = "http://api.laut.fm";
     api.laut = api.laut ? api.laut : {};
     api.laut.search = function(term, success, error){

@@ -16,6 +16,7 @@ import tornado.websocket
 from aplayer import APlayer
 #from mpdplayer import APlayer
 import Streams
+from eighttracks import api as eighttracks
 
 from tornado.options import define, options
 
@@ -317,6 +318,18 @@ class HandleSaveRadio(BaseHandler):
         self.write({})
         self.flush()
 
+
+class HandleTracksPopular(BaseHandler):
+    def get(self):
+        popular = eighttracks.popular()
+        
+        self.write(popular)
+        self.flush()
+
+class HandleTracksPlay(BaseHandler):
+    def post(self, id):
+        Player.playTrack(id)
+
 class HandleWebSocket(tornado.websocket.WebSocketHandler):
     def open(self):
         print "Websocket is open and ready to connect :)"
@@ -405,6 +418,8 @@ def main():
             (r"/api/music/radio/([^/]+)", HandleRadio),
             (r"/api/music/playRadio", HandlePlayRadio),
             (r"/api/music/saveRadio", HandleSaveRadio),
+            (r"/api/8tracks/popular", HandleTracksPopular),
+            (r"/api/8tracks/play/([^/]+)", HandleTracksPlay),
             (r"/api/restartSchlingel", HandleRestartSchlingel),
             (r"/websocket", HandleWebSocket),
             (r"/(.*)", CustomStaticFileHandler, dict(path=publicpath))

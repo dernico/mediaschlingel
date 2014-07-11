@@ -12,6 +12,7 @@ import threading
 from random import choice
 from Config import getMediaDirs
 import Streams
+from eighttracks import api as eighttracks
 
 class APlayer(threading.Thread):
 
@@ -26,6 +27,7 @@ class APlayer(threading.Thread):
         self.currentlyPlaying = {}
         self.nextId = []
         self.setVolume(self.volume)
+        self.tracksTimer = None
 
         try:
             self.pipeline = gst.Pipeline
@@ -139,8 +141,6 @@ class APlayer(threading.Thread):
         self.currentlyPlaying['type'] = "radio"
         self.play()
 
-        print "play " + stream
-
 
     def tryStream(self, s):
         print "try playing " + s.Stream
@@ -154,7 +154,36 @@ class APlayer(threading.Thread):
         self.currentlyPlaying['type'] = "radio"
         self.play()
 
-        print "checkout Stream: " + s.Stream
+
+    def playTrack(self, id):
+        print "try playing 8Track id" + id
+
+        track = eighttracks.get_track(id)
+        stream_url = track["track_file_stream_url"]
+        name = track["name"]
+        title = track["release_name"]
+        track_id = track["id"]
+        mix_id = track["mix_id"]
+        cover = ""
+
+        self._set_state_NULL()
+        self._set_property('uri', stream_url)
+        self.currentlyPlaying = {}
+        self.currentlyPlaying['webpath'] = stream_url
+        self.currentlyPlaying['name'] = name
+        self.currentlyPlaying['title'] = title
+        self.currentlyPlaying['cover'] = cover
+        self.currentlyPlaying['track_id'] = track_id
+        self.currentlyPlaying['mix_id'] = mix_id
+        self.currentlyPlaying['type'] = "8track"
+        self.play()
+
+
+    def cancleTracksTimer(self):
+        print("cancle Tracks Timer")
+        if self.tracksTimer: 
+            self.tracksTimer.cancle();
+        self.tracksTimer = None
 
     def getinfo(self):
         self.currentlyPlaying['IsPlaying'] = self.isPlaying
@@ -170,9 +199,18 @@ class APlayer(threading.Thread):
 
     def play(self):
         if self.currentlyPlaying['type'] is not 'local' and self.currentlyPlaying['webpath'] is not None:
+            print "checkout Stream: " + self.currentlyPlaying['webpath']
             self._set_state_NULL()
             self._set_property('uri', self.currentlyPlaying['webpath'])
         
+        if self.currentlyPlaying['type'] is "8tracks":
+            print("cancle and start tracks timer")
+            self.cancleTracksTimer()
+            track_id = self.currentlyPlaying['track_id']
+            mix_id = self.currentlyPlaying['mix_id']
+            self.tracksTimer = Timer(30.0, lambda: eighttracks.report(track_id, mix_id))
+            self.tracksTimer.start();
+
         self._set_state_Playing()
         self.isPlaying = True
 
@@ -185,7 +223,13 @@ class APlayer(threading.Thread):
 
     def playNext(self):
         print "play next ..."
+        self.cancleTracksTimer()
         self._set_state_NULL()
+        if(self.currentlyPlaying['type'] is "8tracks"):
+            mix_id = self.currentlyPlaying['mix_id']
+            eighttracks.next(mix_id)
+            return
+            
         nextid = 0
         if len(self.nextId) > 0:
             nextid = self.nextId[0]
@@ -206,6 +250,7 @@ class APlayer(threading.Thread):
 
     def playPrev(self):
         print "play prev ..."
+        self.cancleTracksTimer()
         self._set_state_NULL()
         nextid = self.currentlyPlaying["id"] - 1
         if nextid < 0:

@@ -202,7 +202,8 @@ function parseOptions(json){
                 })
                 .error(function (err) {
                     //Todo handle Errorcodes here!
-                    if (err) error(err);
+                    //if (err) error(err);
+                    console.log(err);
                 });
             } else {
                 self.activateVM();
