@@ -12,7 +12,8 @@ import threading
 from random import choice
 from Config import getMediaDirs
 import Streams
-from eighttracks import api as eighttracks
+from apis import eighttracks
+from threading import Timer
 
 class APlayer(threading.Thread):
 
@@ -102,12 +103,18 @@ class APlayer(threading.Thread):
     def on_message(self, bus, message):
         t = message.type
         if t == gst.MESSAGE_EOS:
-            print "Song vorbei .."
-            self.playNext()
+
+            if(self.currentlyPlaying['type'] is "8tracks"):
+                mix_id = self.currentlyPlaying['mix_id']
+                track = eighttracks.next(mix_id)
+                if track:
+                    self._playTrack(mix_id, track)
+            else:
+                self.playNext()
 
         elif t == gst.MESSAGE_ERROR:
             err, debug = message.parse_error()
-            print >> sys.stderr, "Error: {0} {1}".format(err, debug)
+            print "Error: {0} {1}".format(err, debug)
             self.playNext()
         return self.isPlaying
 
@@ -155,16 +162,18 @@ class APlayer(threading.Thread):
         self.play()
 
 
-    def playTrack(self, id):
-        print "try playing 8Track id" + id
+    def playMix(self, mix):
+        print "try playing 8Track id" + mix.ID
 
-        track = eighttracks.get_track(id)
+        track = eighttracks.get_track(mix)
+        self._playTrack(mix.ID, track)
+
+    def _playTrack(self, mix_id, track):
         stream_url = track["track_file_stream_url"]
         name = track["name"]
         title = track["release_name"]
         track_id = track["id"]
-        mix_id = track["mix_id"]
-        cover = ""
+        cover = track["cover"]
 
         self._set_state_NULL()
         self._set_property('uri', stream_url)
@@ -175,20 +184,21 @@ class APlayer(threading.Thread):
         self.currentlyPlaying['cover'] = cover
         self.currentlyPlaying['track_id'] = track_id
         self.currentlyPlaying['mix_id'] = mix_id
-        self.currentlyPlaying['type'] = "8track"
+        self.currentlyPlaying['type'] = "8tracks"
         self.play()
 
 
     def cancleTracksTimer(self):
         print("cancle Tracks Timer")
         if self.tracksTimer: 
-            self.tracksTimer.cancle();
+            self.tracksTimer.cancel();
         self.tracksTimer = None
 
     def getinfo(self):
         self.currentlyPlaying['IsPlaying'] = self.isPlaying
         self.currentlyPlaying['IsRandom'] = self.isRandom
         self.currentlyPlaying['Volume'] = self.volume
+        print(self.currentlyPlaying)
         return self.currentlyPlaying
 
     def toggleRandom(self):
@@ -215,21 +225,29 @@ class APlayer(threading.Thread):
         self.isPlaying = True
 
     def pausePlay(self):
-        if self.currentlyPlaying['type'] is "local":
-            self._set_state_Paused()
-        else:
+        if self.currentlyPlaying['type'] is "radio":
             self._set_state_NULL()
+        else:
+            self.cancleTracksTimer()
+            self._set_state_Paused()
         self.isPlaying = False
 
     def playNext(self):
         print "play next ..."
+
+        # If its an 8track playing. Dont let the normal
+        # playnext logic take place
+        if self.currentlyPlaying['type'] is "8tracks":
+            mix_id = self.currentlyPlaying['mix_id']
+            track = eighttracks.skip(mix_id)
+            if track:
+                self._playTrack(mix_id, track)
+                return
+            return
+        
+
         self.cancleTracksTimer()
         self._set_state_NULL()
-        if(self.currentlyPlaying['type'] is "8tracks"):
-            mix_id = self.currentlyPlaying['mix_id']
-            eighttracks.next(mix_id)
-            return
-            
         nextid = 0
         if len(self.nextId) > 0:
             nextid = self.nextId[0]

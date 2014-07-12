@@ -255,6 +255,8 @@ function parseOptions(json){
         self.loadedPages = {};
         self.currentPage = null;
         
+        //self.root.width($(window).width());
+        
 
         self.pivotItems = [];
         self.children = self.root.children();

@@ -1,6 +1,7 @@
 
 
-<!--input type="text" data-bind="value: searchterm, event: { keyup: searchRadioOnEnter }"></input-->
+<input type="text" data-bind="value: searchTerm, event: { keyup: searchOnEnter }"></input>
+<button data-bind="click: search">Search</button>
 <br />
 <div class="button" data-bind="click: loadPopular">Popular</div>
 
@@ -12,12 +13,15 @@
 <div data-bind="foreach: tracksResult">
     <div class="tile">
         <div class="tile-content">
-            <img class="tile-background" data-bind="attr: { src: cover_urls.original }" alt="" />
+            <img class="tile-background" data-bind="attr: { src: cover }" alt="" />
             <div style="background-color: white;">
                 <div data-bind="text: name"></div>
-                <div data-bind="text: tag_list_cache"></div>
+                <div data-bind="text: tags"></div>
                 <!--div data-bind="text: description"></div-->
             </div>
+
+            <div style="background-color: white;" data-bind="text: likes"></div>
+
             <div class="tile-button">
                 <button data-bind="click: $parent.play">Play</button>
             </div>

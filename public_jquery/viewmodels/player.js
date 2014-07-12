@@ -84,6 +84,10 @@ var player = ["api", function(api) {
         api.post("playRadio", "id=" + item.id, self.setCurrentInfo);
     };
 
+    self.playTracks = function(mix){
+        api.tracks.play(mix, self.setCurrentInfo);
+    };
+
     self.next = function () {
         api.post("next",{ }, self.setCurrentInfo);
     };

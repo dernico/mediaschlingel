@@ -72,24 +72,40 @@ var api;
     api.tracks.popular = function(done){
         ajax({
             url: '/api/8tracks/popular',
-        }, true, function(data){
-            done(null, data);
+        }, false, function(data){
+            done(data, null);
         }, function(err){
-            done(err);
+            done(null, err);
         });
     };
 
-    api.tracks.play = function(id, done){
+    api.tracks.play = function(mix, done){
         ajax({
-            url: '/api/8tracks/play/' + id,
-            type: 'POST',
-            success: function(data){
-                done(null, data);
+                url: '/api/8tracks/play',///' + mix.id,
+                type: 'POST',
+                data: {mix: JSON.stringify(mix)}
+            }, 
+            false, 
+            function(data){
+                if(done) done(data);
             },
-            error: function(err){
-                done(err);
-            }
-        });
+            function(err){
+                if(done) done(null, err);
+            });
+    };
+
+    api.tracks.search = function(search, done){
+        ajax({
+                url: '/api/8tracks/search',///' + mix.id,
+                data: {search: search}
+            }, 
+            false, 
+            function(data){
+                if(done) done(data);
+            },
+            function(err){
+                if(done) done(null, err);
+            });
     };
 
     var laut = "http://api.laut.fm";

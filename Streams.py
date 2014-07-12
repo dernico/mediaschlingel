@@ -1,7 +1,7 @@
 import os
 from Factory.StreamModelFactory import StreamModelFactory
 from os import curdir
-from Radio import api
+from apis import radio
 import json
 
 streamfactory = StreamModelFactory()
@@ -112,12 +112,12 @@ Excample of one entry:
 
 '''
 def search(term):
-	result = api.search(term)
+	result = radio.search(term)
 	return result
 
 def getByStationID(station_id):
     global lastRadioResult
-    station = api.getByStationID(station_id)
+    station = radio.getByStationID(station_id)
     lastRadioResult = streamfactory.createFromRadio(len(streams), station)
     return lastRadioResult
 

@@ -16,7 +16,8 @@ import tornado.websocket
 from aplayer import APlayer
 #from mpdplayer import APlayer
 import Streams
-from eighttracks import api as eighttracks
+from apis import eighttracks
+from Factory import TracksModelFactory
 
 from tornado.options import define, options
 
@@ -326,9 +327,25 @@ class HandleTracksPopular(BaseHandler):
         self.write(popular)
         self.flush()
 
+class HandleTracksSearch(BaseHandler):
+    def get(self):
+        search = self.get_argument("search", None)
+        if(search):
+            mixes = eighttracks.search(search)
+            self.write(mixes)
+            self.flush()
+
 class HandleTracksPlay(BaseHandler):
-    def post(self, id):
-        Player.playTrack(id)
+    def post(self):
+        mix = self.get_argument("mix", None)
+        if mix:
+            mix = json.loads(mix)
+            mix = TracksModelFactory.create_mix_from_post(mix)
+            Player.playMix(mix)
+            self.write(Player.getinfo())
+            self.flush()
+        else:
+            print("cant get mix from post")
 
 class HandleWebSocket(tornado.websocket.WebSocketHandler):
     def open(self):
@@ -419,7 +436,8 @@ def main():
             (r"/api/music/playRadio", HandlePlayRadio),
             (r"/api/music/saveRadio", HandleSaveRadio),
             (r"/api/8tracks/popular", HandleTracksPopular),
-            (r"/api/8tracks/play/([^/]+)", HandleTracksPlay),
+            (r"/api/8tracks/play", HandleTracksPlay),
+            (r"/api/8tracks/search", HandleTracksSearch),
             (r"/api/restartSchlingel", HandleRestartSchlingel),
             (r"/websocket", HandleWebSocket),
             (r"/(.*)", CustomStaticFileHandler, dict(path=publicpath))

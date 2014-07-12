@@ -365,6 +365,8 @@ function parseOptions(json){
         self.loadedPages = {};
         self.currentPage = null;
         
+        //self.root.width($(window).width());
+        
 
         self.pivotItems = [];
         self.children = self.root.children();
@@ -663,24 +665,40 @@ var radioModel = (function(){
     api.tracks.popular = function(done){
         ajax({
             url: '/api/8tracks/popular',
-        }, true, function(data){
-            done(null, data);
+        }, false, function(data){
+            done(data, null);
         }, function(err){
-            done(err);
+            done(null, err);
         });
     };
 
-    api.tracks.play = function(id, done){
+    api.tracks.play = function(mix, done){
         ajax({
-            url: '/api/8tracks/play/' + id,
-            type: 'POST',
-            success: function(data){
-                done(null, data);
+                url: '/api/8tracks/play',///' + mix.id,
+                type: 'POST',
+                data: {mix: JSON.stringify(mix)}
+            }, 
+            false, 
+            function(data){
+                if(done) done(data);
             },
-            error: function(err){
-                done(err);
-            }
-        });
+            function(err){
+                if(done) done(null, err);
+            });
+    };
+
+    api.tracks.search = function(search, done){
+        ajax({
+                url: '/api/8tracks/search',///' + mix.id,
+                data: {search: search}
+            }, 
+            false, 
+            function(data){
+                if(done) done(data);
+            },
+            function(err){
+                if(done) done(null, err);
+            });
     };
 
     var laut = "http://api.laut.fm";
@@ -1079,6 +1097,10 @@ var listvm = ["api", "player", function(data, player) {
         api.post("playRadio", "id=" + item.id, self.setCurrentInfo);
     };
 
+    self.playTracks = function(mix){
+        api.tracks.play(mix, self.setCurrentInfo);
+    };
+
     self.next = function () {
         api.post("next",{ }, self.setCurrentInfo);
     };
@@ -1177,24 +1199,37 @@ var listvm = ["api", "player", function(data, player) {
 ;var tracksVM = ["api", "player", function (api, player) {
     var self = this;
     self.api = api;
-    
+    self.searchTerm = ko.observable();
     self.tracksResult = ko.observableArray([]);
 
 
     self.loadPopular = function(){
-        self.api.tracks.popular(function(err, data){
+        self.api.tracks.popular(function(data, err){
             if(err){
                 console.log(err);
                 return;
             }
-            data = data.mix_set.mixes;
+            data = data.mixes;
             self.tracksResult(data);
+        });
+    };
+
+    self.searchOnEnter = function(self, e){
+        if(e.which != 13 ) return;
+        self.search();
+    };
+
+    self.search = function(){
+        self.api.tracks.search(self.searchTerm(), function(results, err){
+            if(!results) return;
+
+            self.tracksResult(results.mixes);
         });
     };
 
     self.play = function(mix){
         //console.log(mix);
-        self.api.tracks.play(mix.id);
+        player.playTracks(mix);
     };
 
     self.activate = function () {
