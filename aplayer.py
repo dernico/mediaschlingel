@@ -15,7 +15,7 @@ import Streams
 from apis import eighttracks
 from threading import Timer
 
-class APlayer(threading.Thread):
+class Base_Player(threading.Thread):
 
     player = None
     mainloop = None
@@ -99,6 +99,8 @@ class APlayer(threading.Thread):
     def quit(self):
         threading.Event().set()
         #self.mainloop.quit()
+
+class APlayer(Base_Player):
 
     def on_message(self, bus, message):
         t = message.type
@@ -198,7 +200,6 @@ class APlayer(threading.Thread):
         self.currentlyPlaying['IsPlaying'] = self.isPlaying
         self.currentlyPlaying['IsRandom'] = self.isRandom
         self.currentlyPlaying['Volume'] = self.volume
-        print(self.currentlyPlaying)
         return self.currentlyPlaying
 
     def toggleRandom(self):
@@ -268,6 +269,10 @@ class APlayer(threading.Thread):
 
     def playPrev(self):
         print "play prev ..."
+
+        if self.currentlyPlaying['type'] is "8tracks":
+            return
+        
         self.cancleTracksTimer()
         self._set_state_NULL()
         nextid = self.currentlyPlaying["id"] - 1
@@ -312,6 +317,7 @@ class APlayer(threading.Thread):
             'count': count,
             'list': media
         }
+
 #play_uri('file:///home/nico/dev/python/schlingel/skit.mp3')
 #player = APlayer()
 #player.playStream()

@@ -3,12 +3,15 @@
 <input type="text" data-bind="value: searchTerm, event: { keyup: searchOnEnter }"></input>
 <button data-bind="click: search">Search</button>
 <br />
-<div class="button" data-bind="click: loadPopular">Popular</div>
 
+<div data-bind="foreach: tagCloud">
+    <div class="button" data-bind="text: title, click: $parent.tagClick"></div>
+</div>
 <br />
 <br />
 <hr />
 <!--div class="button" data-bind="click: saveRadio">Save current</div-->
+<h2 data-bind="text: selectedTag().title"></h2>
 
 <div data-bind="foreach: tracksResult">
     <div class="tile">
@@ -23,7 +26,7 @@
             <div style="background-color: white;" data-bind="text: likes"></div>
 
             <div class="tile-button">
-                <button data-bind="click: $parent.play">Play</button>
+                <div class="button" data-bind="click: $parent.play">Play</div>
             </div>
         </div>
     </div>

@@ -320,12 +320,16 @@ class HandleSaveRadio(BaseHandler):
         self.flush()
 
 
-class HandleTracksPopular(BaseHandler):
+class HandleTracksTag(BaseHandler):
     def get(self):
-        popular = eighttracks.popular()
+        tag = self.get_argument("tag", None)
+        result = None
+        if tag:
+            result = eighttracks.tags(tag)
         
-        self.write(popular)
-        self.flush()
+        if result:
+            self.write(result)
+            self.flush()
 
 class HandleTracksSearch(BaseHandler):
     def get(self):
@@ -435,7 +439,7 @@ def main():
             (r"/api/music/radio/([^/]+)", HandleRadio),
             (r"/api/music/playRadio", HandlePlayRadio),
             (r"/api/music/saveRadio", HandleSaveRadio),
-            (r"/api/8tracks/popular", HandleTracksPopular),
+            (r"/api/8tracks/tags", HandleTracksTag),
             (r"/api/8tracks/play", HandleTracksPlay),
             (r"/api/8tracks/search", HandleTracksSearch),
             (r"/api/restartSchlingel", HandleRestartSchlingel),

@@ -12,6 +12,5 @@ def getOutputDir():
 
 def getTracksApiKey():
     filepath = os.path.join(os.curdir,'..', "8tracks_api_key.txt")
-    print filepath
     with open(filepath) as content:
     	return content.readline()

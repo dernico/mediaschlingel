@@ -1,25 +1,28 @@
-import smb.smbclient
+#import smb.smbclient
 #import pygst
 #pygst.require('0.10')
 #import gst
 #import gobject
 
-from mpdplayer import APlayer
-from mpd import MPDClient
+#from mpdplayer import APlayer
+#from mpd import MPDClient
 from walker import Walker
 
-player = APlayer()
+#player = APlayer()
 walker = Walker()
-walker.walk("C:\\Users\\Nico\\Music")
+
+walker.walkShares()
+
+#walker.walk("C:\\Users\\Nico\\Music")
 #player.init()
 
-_mpd = MPDClient()
-_mpd.connect("localhost", 6600)
-print _mpd.mpd_version
-_mpd.clear()
-mediaFiles = walker.getMedia()
+#_mpd = MPDClient()
+#_mpd.connect("localhost", 6600)
+#print _mpd.mpd_version
+#_mpd.clear()
+#mediaFiles = walker.getMedia()
 
-print "{0} Files found".format(len(mediaFiles))
+#print "{0} Files found".format(len(mediaFiles))
 '''
 for media in mediaFiles:
     #media.Path = media.Path.replace("\\", "\\\\")
@@ -29,7 +32,7 @@ for media in mediaFiles:
     print "Add media {0}".format(media.WebPath)
     _mpd.add(media.WebPath)
     #_mpd.playlistadd("files",media.WebPath)
-'''
+
 _mpd.add(mediaFiles[3].WebPath)
 _mpd.play(0)
 #_mpd.load("files")
@@ -45,7 +48,7 @@ print _mpd.status()
 #_mpd.setvol(50)
 #print "Status:"
 #print _mpd.status()
-
+'''
 #mpd.playlistadd("streams", "http://173.192.32.198:80")
 
 

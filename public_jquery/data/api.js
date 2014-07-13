@@ -69,10 +69,11 @@ var api;
 
     api.tracks = {};
 
-    api.tracks.popular = function(done){
+    api.tracks.tags = function(tag, done){
         ajax({
-            url: '/api/8tracks/popular',
-        }, false, function(data){
+            url: '/api/8tracks/tags',
+            data: {tag: tag}
+        }, true, function(data){
             done(data, null);
         }, function(err){
             done(null, err);
@@ -99,7 +100,7 @@ var api;
                 url: '/api/8tracks/search',///' + mix.id,
                 data: {search: search}
             }, 
-            false, 
+            true, 
             function(data){
                 if(done) done(data);
             },

@@ -662,10 +662,11 @@ var radioModel = (function(){
 
     api.tracks = {};
 
-    api.tracks.popular = function(done){
+    api.tracks.tags = function(tag, done){
         ajax({
-            url: '/api/8tracks/popular',
-        }, false, function(data){
+            url: '/api/8tracks/tags',
+            data: {tag: tag}
+        }, true, function(data){
             done(data, null);
         }, function(err){
             done(null, err);
@@ -692,7 +693,7 @@ var radioModel = (function(){
                 url: '/api/8tracks/search',///' + mix.id,
                 data: {search: search}
             }, 
-            false, 
+            true, 
             function(data){
                 if(done) done(data);
             },
@@ -1202,9 +1203,33 @@ var listvm = ["api", "player", function(data, player) {
     self.searchTerm = ko.observable();
     self.tracksResult = ko.observableArray([]);
 
+    self.tagCloud = [
+        {title: "Popular", tag: "all:popular"},
+        {title: "Hip Hop", tag: "tags:hip_hop"},
+        {title: "Rap", tag: "tags:rap"},
+        {title: "Alternative", tag: "tags:alternative"},
+        {title: "Electro", tag: "tags:electro"},
+        {title: "80s", tag: "tags:80s"}
+    ];
+
+    self.selectedTag = ko.observable();
+
+    self.tagClick = function(tag){
+        self.selectedTag(tag);
+        self.api.tracks.tags(tag.tag, function(data, err){
+            if(err){
+                console.log(err);
+                return;
+            }
+            data = data.mixes;
+            self.tracksResult(data);
+        });
+    };
 
     self.loadPopular = function(){
-        self.api.tracks.popular(function(data, err){
+        var tag = self.tagCloud[0];
+        self.selectedTag(tag)
+        self.api.tracks.tags(tag.tag, function(data, err){
             if(err){
                 console.log(err);
                 return;

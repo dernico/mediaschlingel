@@ -12,8 +12,8 @@ PlayToken = None
 CurrentMix = None
 CurrentTrack = None
 
-def popular():
-    path = "mix_sets/all:popular.json"
+def tags(tag):
+    path = "mix_sets/{0}.json".format(tag)
     params = {"include": "mixes"}
     result = _call(path, params)
     mixes = {"mixes": []}
