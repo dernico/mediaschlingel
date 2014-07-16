@@ -339,8 +339,10 @@ function parseOptions(json){
                 self.options._vm = construct(self.options.vm);//,self.options.args);
             }
             
-            if (self.options._vm !== undefined && self.options._vm.activate){
-                self.options._vm.activate(self.options.params, self.root[0]);
+            if (self.options._vm !== undefined){
+                if(self.options._vm.activate){
+                    self.options._vm.activate(self.options.params, self.root[0]);
+                }
 
                 if(window["ko"] !== undefined){
                     ko.applyBindings(self.options._vm, self.root[0]);
@@ -702,6 +704,20 @@ var radioModel = (function(){
             });
     };
 
+    api.tracks.page = function(pageTo, done){
+        ajax({
+                url: '/api/8tracks/page',
+                data: {page_to: pageTo}
+            },
+            true, 
+            function(data){
+                if(done) done(data);
+            },
+            function(err){
+                if(done) done(null, err);
+            });
+    };
+
     var laut = "http://api.laut.fm";
     api.laut = api.laut ? api.laut : {};
     api.laut.search = function(term, success, error){
@@ -728,7 +744,26 @@ var radioModel = (function(){
     }
     LocalData.load = load;
 })(LocalData || (LocalData = {}));
-;
+;var backgroundVM = [function(){
+
+	var self = this;
+	self.Cover = ko.observable();
+
+	self.setCover = function(cover){
+
+		if(cover){
+			if(cover.indexOf("http") != -1){
+				self.Cover(cover);
+			}
+			else{
+				self.Cover('Cover/' + cover);
+			}
+		}else{
+			self.Cover("/schlingel.jpg");
+		}
+	};
+
+}];;
 var listvm = ["api", "player", function(data, player) {
 
     var self = this;
@@ -1012,7 +1047,7 @@ var listvm = ["api", "player", function(data, player) {
         }
     };
 }
-;var player = ["api", function(api) {
+;var player = ["api", "backgroundVM", function(api, background) {
 
     var self = this;
 
@@ -1020,23 +1055,18 @@ var listvm = ["api", "player", function(data, player) {
     self.randomOff = ko.observable(true);
     self.PlayingFile = ko.observable(null);
 
-    self.hasCover = ko.observable();
-    self.Cover = ko.observable();
     self.Album = ko.observable();
     self.Name = ko.observable();
     self.Volumn = ko.observable();
 
 
     self.setCurrentInfo = function (data) {
-        self.hasCover(data.cover === "" ? false : true);
-        if(data.cover && data.cover.indexOf("http") != -1){
-            self.Cover(data.cover);
-        }
-        else{
-            self.Cover('Cover/' + data.cover);
-        }
+        
+        background.setCover(data.cover);
+
         var album = data.album ? data.album : "-";
         var title = data.title ? data.title : "-";
+        
         self.Album(album);
         self.Name(title);
         self.Volumn(data.Volume);
@@ -1194,7 +1224,6 @@ var listvm = ["api", "player", function(data, player) {
     self.activate = function () {
         $("#mypivot").pivot();
     };
-
 }];
 
 ;var tracksVM = ["api", "player", function (api, player) {
@@ -1206,7 +1235,6 @@ var listvm = ["api", "player", function(data, player) {
     self.tagCloud = [
         {title: "Popular", tag: "all:popular"},
         {title: "Hip Hop", tag: "tags:hip_hop"},
-        {title: "Rap", tag: "tags:rap"},
         {title: "Alternative", tag: "tags:alternative"},
         {title: "Electro", tag: "tags:electro"},
         {title: "80s", tag: "tags:80s"}
@@ -1214,29 +1242,44 @@ var listvm = ["api", "player", function(data, player) {
 
     self.selectedTag = ko.observable();
 
+    self.pageing = ko.observable();
+
+
+    var handleMixes = function(data, err){
+        if(!data || err) return;
+
+
+        var mixes = data.mixes;
+        var pageing = data.pageing;
+
+        self.pageing({
+            currentPage: pageing.currentPage,
+            nextPage: pageing.nextPage,
+            prevPage: pageing.prevPage,
+            mixCount: pageing.totalMixes,
+            pageCount: pageing.totalPages
+        });
+
+        self.tracksResult(mixes);
+    };
+
+    self.pagePrev = function(){
+        self.api.tracks.page(self.pageing().prevPage,handleMixes);
+    };
+
+    self.pageNext = function(){
+        self.api.tracks.page(self.pageing().nextPage, handleMixes);
+    };
+
     self.tagClick = function(tag){
         self.selectedTag(tag);
-        self.api.tracks.tags(tag.tag, function(data, err){
-            if(err){
-                console.log(err);
-                return;
-            }
-            data = data.mixes;
-            self.tracksResult(data);
-        });
+        self.api.tracks.tags(tag.tag, handleMixes);
     };
 
     self.loadPopular = function(){
         var tag = self.tagCloud[0];
         self.selectedTag(tag)
-        self.api.tracks.tags(tag.tag, function(data, err){
-            if(err){
-                console.log(err);
-                return;
-            }
-            data = data.mixes;
-            self.tracksResult(data);
-        });
+        self.tagClick(tag);
     };
 
     self.searchOnEnter = function(self, e){
@@ -1245,11 +1288,7 @@ var listvm = ["api", "player", function(data, player) {
     };
 
     self.search = function(){
-        self.api.tracks.search(self.searchTerm(), function(results, err){
-            if(!results) return;
-
-            self.tracksResult(results.mixes);
-        });
+        self.api.tracks.search(self.searchTerm(), handleMixes);
     };
 
     self.play = function(mix){
@@ -1258,8 +1297,9 @@ var listvm = ["api", "player", function(data, player) {
     };
 
     self.activate = function () {
-        self.loadPopular();
     };
+
+    self.loadPopular();
 }];;var favoritesVM = ["api", "player", function (api, player) {
     var self = this;
     self.activated = false;

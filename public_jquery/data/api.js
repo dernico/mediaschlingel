@@ -109,6 +109,20 @@ var api;
             });
     };
 
+    api.tracks.page = function(pageTo, done){
+        ajax({
+                url: '/api/8tracks/page',
+                data: {page_to: pageTo}
+            },
+            true, 
+            function(data){
+                if(done) done(data);
+            },
+            function(err){
+                if(done) done(null, err);
+            });
+    };
+
     var laut = "http://api.laut.fm";
     api.laut = api.laut ? api.laut : {};
     api.laut.search = function(term, success, error){

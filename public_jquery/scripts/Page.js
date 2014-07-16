@@ -229,8 +229,10 @@ function parseOptions(json){
                 self.options._vm = construct(self.options.vm);//,self.options.args);
             }
             
-            if (self.options._vm !== undefined && self.options._vm.activate){
-                self.options._vm.activate(self.options.params, self.root[0]);
+            if (self.options._vm !== undefined){
+                if(self.options._vm.activate){
+                    self.options._vm.activate(self.options.params, self.root[0]);
+                }
 
                 if(window["ko"] !== undefined){
                     ko.applyBindings(self.options._vm, self.root[0]);

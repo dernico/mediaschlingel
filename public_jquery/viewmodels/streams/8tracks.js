@@ -7,7 +7,6 @@ var tracksVM = ["api", "player", function (api, player) {
     self.tagCloud = [
         {title: "Popular", tag: "all:popular"},
         {title: "Hip Hop", tag: "tags:hip_hop"},
-        {title: "Rap", tag: "tags:rap"},
         {title: "Alternative", tag: "tags:alternative"},
         {title: "Electro", tag: "tags:electro"},
         {title: "80s", tag: "tags:80s"}
@@ -15,29 +14,44 @@ var tracksVM = ["api", "player", function (api, player) {
 
     self.selectedTag = ko.observable();
 
+    self.pageing = ko.observable();
+
+
+    var handleMixes = function(data, err){
+        if(!data || err) return;
+
+
+        var mixes = data.mixes;
+        var pageing = data.pageing;
+
+        self.pageing({
+            currentPage: pageing.currentPage,
+            nextPage: pageing.nextPage,
+            prevPage: pageing.prevPage,
+            mixCount: pageing.totalMixes,
+            pageCount: pageing.totalPages
+        });
+
+        self.tracksResult(mixes);
+    };
+
+    self.pagePrev = function(){
+        self.api.tracks.page(self.pageing().prevPage,handleMixes);
+    };
+
+    self.pageNext = function(){
+        self.api.tracks.page(self.pageing().nextPage, handleMixes);
+    };
+
     self.tagClick = function(tag){
         self.selectedTag(tag);
-        self.api.tracks.tags(tag.tag, function(data, err){
-            if(err){
-                console.log(err);
-                return;
-            }
-            data = data.mixes;
-            self.tracksResult(data);
-        });
+        self.api.tracks.tags(tag.tag, handleMixes);
     };
 
     self.loadPopular = function(){
         var tag = self.tagCloud[0];
         self.selectedTag(tag)
-        self.api.tracks.tags(tag.tag, function(data, err){
-            if(err){
-                console.log(err);
-                return;
-            }
-            data = data.mixes;
-            self.tracksResult(data);
-        });
+        self.tagClick(tag);
     };
 
     self.searchOnEnter = function(self, e){
@@ -46,11 +60,7 @@ var tracksVM = ["api", "player", function (api, player) {
     };
 
     self.search = function(){
-        self.api.tracks.search(self.searchTerm(), function(results, err){
-            if(!results) return;
-
-            self.tracksResult(results.mixes);
-        });
+        self.api.tracks.search(self.searchTerm(), handleMixes);
     };
 
     self.play = function(mix){
@@ -59,6 +69,7 @@ var tracksVM = ["api", "player", function (api, player) {
     };
 
     self.activate = function () {
-        self.loadPopular();
     };
+
+    self.loadPopular();
 }];

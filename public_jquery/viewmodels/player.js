@@ -1,4 +1,4 @@
-var player = ["api", function(api) {
+var player = ["api", "backgroundVM", function(api, background) {
 
     var self = this;
 
@@ -6,23 +6,18 @@ var player = ["api", function(api) {
     self.randomOff = ko.observable(true);
     self.PlayingFile = ko.observable(null);
 
-    self.hasCover = ko.observable();
-    self.Cover = ko.observable();
     self.Album = ko.observable();
     self.Name = ko.observable();
     self.Volumn = ko.observable();
 
 
     self.setCurrentInfo = function (data) {
-        self.hasCover(data.cover === "" ? false : true);
-        if(data.cover && data.cover.indexOf("http") != -1){
-            self.Cover(data.cover);
-        }
-        else{
-            self.Cover('Cover/' + data.cover);
-        }
+        
+        background.setCover(data.cover);
+
         var album = data.album ? data.album : "-";
         var title = data.title ? data.title : "-";
+        
         self.Album(album);
         self.Name(title);
         self.Volumn(data.Volume);

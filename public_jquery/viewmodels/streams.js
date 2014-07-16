@@ -3,6 +3,5 @@ var streams = ["api", "player", function (api, player) {
     self.activate = function () {
         $("#mypivot").pivot();
     };
-
 }];
 

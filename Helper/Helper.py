@@ -23,13 +23,13 @@ def getIpAdress():
         return socket.gethostbyname(socket.gethostname())
 
 def downloadString(url, callback=None):
-    content = ""
+    content = None
     try:
         c = urllib2.urlopen(url, timeout=5)
         content = c.read();
     except Exception as ex:
         #print "Error: {0}".format(str(ex))
-        content = ""
+        content = None
 
     if callback: callback(content)
     else: return content

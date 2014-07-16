@@ -351,6 +351,16 @@ class HandleTracksPlay(BaseHandler):
         else:
             print("cant get mix from post")
 
+class HandleTracksPageing(BaseHandler):
+    def get(self):
+        page_to = self.get_argument("page_to")
+        if page_to:
+            mixes = eighttracks.page_to(page_to)
+            self.write(mixes)
+            self.flush()
+        else:
+            prit("no page_to parameter was found")
+
 class HandleWebSocket(tornado.websocket.WebSocketHandler):
     def open(self):
         print "Websocket is open and ready to connect :)"
@@ -442,6 +452,7 @@ def main():
             (r"/api/8tracks/tags", HandleTracksTag),
             (r"/api/8tracks/play", HandleTracksPlay),
             (r"/api/8tracks/search", HandleTracksSearch),
+            (r"/api/8tracks/page", HandleTracksPageing),
             (r"/api/restartSchlingel", HandleRestartSchlingel),
             (r"/websocket", HandleWebSocket),
             (r"/(.*)", CustomStaticFileHandler, dict(path=publicpath))

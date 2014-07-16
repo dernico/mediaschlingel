@@ -183,6 +183,7 @@ class APlayer(Base_Player):
         self.currentlyPlaying['webpath'] = stream_url
         self.currentlyPlaying['name'] = name
         self.currentlyPlaying['title'] = title
+        self.currentlyPlaying['album'] = name
         self.currentlyPlaying['cover'] = cover
         self.currentlyPlaying['track_id'] = track_id
         self.currentlyPlaying['mix_id'] = mix_id
