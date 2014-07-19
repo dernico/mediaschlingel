@@ -8,8 +8,11 @@ var settingsvm = [function() {
         api.get({ action: "grapShoutcast", params: "" });
     };
 
-    self.refresh = function () {
-        api.get({ action: "refreshData", params: "" });
+    self.restart = function () {
+        setTimeout(function(){
+            window.location = window.location.origin;
+        }, 800);
+        api.restartSchlingel();
     };
 
     self.discover = function () {

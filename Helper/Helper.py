@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import urllib2
 import socket
+import hashlib
 
 try:
     import cover_grabber
@@ -11,6 +12,8 @@ except:
 def grab_cover(mediadir, outputdir, overwrite = False):
     media_walker = MediaDirWalker(mediadir, outputdir, overwrite).do_walk_path()
 
+def hash_string(toHash):
+    return hashlib.sha224(toHash).hexdigest()
 
 def getIpAdress():
     try:

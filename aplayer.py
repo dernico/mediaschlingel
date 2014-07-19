@@ -87,9 +87,6 @@ class Base_Player(threading.Thread):
     def run(self):
         print "Start Mainloop"
         
-        for dir in getMediaDirs():
-            self.walker.walk(dir)
-        self.walker.discoverSchlingel()
         #self.walker.walkShares()
         if self.mainloop:
             self.mainloop.run()

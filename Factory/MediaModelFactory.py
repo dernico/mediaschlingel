@@ -5,7 +5,7 @@ sys.setdefaultencoding("utf-8")
 
 import mutagen
 import os
-import hashlib
+from Helper import Helper
 from Model.MediaModel import MediaModel
 
 _ARTIST = "TPE1"
@@ -78,4 +78,4 @@ class MediaModelFactory():
         return model
 
     def getCoverName(self, album):
-        return hashlib.sha224(album).hexdigest() + ".jpg"
+        return Helper.hash_string(album) + ".jpg"

@@ -384,8 +384,9 @@ class HandleRestartSchlingel(BaseHandler):
         """Restarts the current program.
         Note: this function does not return. Any cleanup action (like
         saving data) must be done before calling this function."""
-        python = sys.executable
-        os.execl(python, python, * sys.argv)
+        #python = sys.executable
+        #os.execl(python, python, * sys.argv)
+        os.execl(sys.executable, *([sys.executable]+sys.argv))
 
 class CustomStaticFileHandler(tornado.web.StaticFileHandler):
     global debugMode

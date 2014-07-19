@@ -67,6 +67,12 @@ var api;
         }, showLoadingScreen, success, error);
     };
 
+    api.restartSchlingel = function(){
+        ajax({
+            url: 'api/restartSchlingel',
+        }, false, null, null);
+    };
+
     api.tracks = {};
 
     api.tracks.tags = function(tag, done){

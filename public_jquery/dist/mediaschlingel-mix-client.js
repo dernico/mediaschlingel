@@ -662,6 +662,12 @@ var radioModel = (function(){
         }, showLoadingScreen, success, error);
     };
 
+    api.restartSchlingel = function(){
+        ajax({
+            url: 'api/restartSchlingel',
+        }, false, null, null);
+    };
+
     api.tracks = {};
 
     api.tracks.tags = function(tag, done){
@@ -1202,8 +1208,11 @@ var listvm = ["api", "player", function(data, player) {
         api.get({ action: "grapShoutcast", params: "" });
     };
 
-    self.refresh = function () {
-        api.get({ action: "refreshData", params: "" });
+    self.restart = function () {
+        setTimeout(function(){
+            window.location = window.location.origin;
+        }, 800);
+        api.restartSchlingel();
     };
 
     self.discover = function () {

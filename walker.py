@@ -1,11 +1,11 @@
 import urllib2
-import smb.smbclient
 import json
 from Factory.MediaModelFactory import MediaModelFactory
-from Config import getOutputDir
+import Config
 from thread import allocate_lock
 from threading import Thread
 from Helper import Helper
+from subprocess import *
 
 class Walker:
     def __init__(self):
@@ -14,19 +14,48 @@ class Walker:
         self.mediafiles = []
         self.media_albums = None
         self.mediafactory = MediaModelFactory()
-        self.smb = smb.smbclient.SambaClient(server="111.1111.111.11",
-                    share="folder",
-                    username="xxx",
-                    password="xxxx",
-                    domain="WORKGROUP")
         self.ipAdress = Helper.getIpAdress()
         self.lock = allocate_lock()
+        self.init()
 
-    def setMPD(self, player):
-        self.player = player
+    def init(self):
+        
+        self.walkMusicfolder()
+        
+        self.walkShares()
+
+        self.discoverSchlingel()
+
+    def mount(self, path, user, password, mntPath):
+        '''
+        try:
+            unmountString = "umount {0}".format(path)
+            check_call(unmountString, shell=True)
+        except Exception, e:
+            print("Error Unmounting " + path + " Error: " + str(e))
+        '''
+
+        try:
+            mountString = "mount -t cifs -o user={1}%{2} {0} {3}".format(path, user, password, mntPath)
+            check_call(mountString, shell=True)
+        except Exception, e:
+            print("Error Mounting " + path + " Error: " + str(e))
+
+    def mount_shares(self):
+        shares = []
+        for share in Config.get_shares():
+            mntName = Helper.hash_string(share["path"])
+            mntPath = os.path.join(os.curdir, "mnt", mntName)
+            if not os.path.exists(mntPath):
+                os.makedirs(mntPath)
+            
+            self.mount(share["path"], share["user"], share["password"], mntPath)
+            share["mntPath"] = mntPath
+            shares.append(share)
+        return shares
 
     def getCoverDir(self):
-        return getOutputDir()
+        return Config.getOutputDir()
 
     def walk(self, dir):
         if os.path.exists(dir):
@@ -37,16 +66,6 @@ class Walker:
                 for filename in files:
                     self.addFile(path, filename, True)
 
-    def walkShares(self, dir="/Musik"):
-        for file in self.smb.listdir(dir):
-            _file = os.path.join(dir, file)
-            if self.smb.isdir(_file):
-                self.walkShares(_file)
-            #elif self.smb.isfile(file):
-            else:
-                #file, ext = os.path.splitext(file)
-                #path, filename = os.path.split(file)
-                self.addFile(dir, file)
 
     def addFile(self, path, file, isLocal=False):
         #print "Path: " + path + "   Datei: " + file
@@ -55,9 +74,30 @@ class Walker:
         for extension in self.allowdFiles:
             if extension == ext:
                 model = self.mediafactory.createMediaModel(len(self.mediafiles), path, file, self.getCoverDir(), self.ipAdress, isLocal)
-                self.mediafiles.append(model)
-                #if self.player:
-                #    self.player.mpd.playlistadd(self.player.filePlaylistName, model.WebPath)
+                self.appendMediaFile(model)
+
+    def appendMediaFile(self, mediafile):
+        self.lock.acquire()
+        #print "No Lock add data"
+        self.mediafiles.append(mediafile)
+        self.lock.release()
+
+
+    def walkMusicfolder(self):
+        for _dir in Config.getMediaDirs():
+            #self.walk(_dir)
+            #_dir = str(_dir)
+            #print(_dir)
+            t = Thread(target = self.walk, args=(_dir,))
+            t.start()
+
+    def walkShares(self):
+        shares = self.mount_shares()
+        for share in shares:
+            t = Thread(target = self.walk, args=(share["mntPath"],))
+            t.start()
+            #self.walk(share["mntPath"])
+
 
     def getAlbums(self):
         if self.media_albums is None:
@@ -81,9 +121,13 @@ class Walker:
         return self.mediafiles
 
     def containsMediaWebPath(self, webpath):
+        self.lock.acquire()
+        found = False
         for media in self.mediafiles:
             if(media.WebPath == webpath):
-                return True
+                found = True
+                break
+        self.lock.release()
 
     def filterMedia(self, term):
         if term == "":
@@ -147,8 +191,6 @@ class Walker:
     def discoverFinished(self, data):
         if data != None and data != "":
             print "Find some Stuff"
-            self.lock.acquire()
-            print "No Lock add data"
             result = data
             if isinstance(result, basestring):
                 result = json.loads(result)
@@ -158,8 +200,7 @@ class Walker:
             for external in list:
                 mediaModel = self.mediafactory.createMediaModelFromJson(len(self.mediafiles), external)
                 if not self.containsMediaWebPath(mediaModel.WebPath):
-                    self.mediafiles.append(mediaModel)
-            self.lock.release();
+                    self.appendMediaFile(mediaModel)
 
 
 

@@ -1,8 +1,17 @@
 # -*- coding: utf-8 -*-
 import os
+import json
+
+configpath = os.path.join(os.curdir, "..", "schlingel.conf")
+Config = {}
+
+def loadConfig():
+    global Config
+    with open(configpath) as configcontent:
+        Config = json.load(configcontent)
 
 def getMediaDirs():
-    return ["/home/nico/Music", "C:\\Users\\Nico\\Music"]
+    return Config["musicfolder"]
 
 def getOutputDir():
     coverdir = os.path.join(os.curdir, "Cover")
@@ -11,6 +20,9 @@ def getOutputDir():
     return coverdir
 
 def getTracksApiKey():
-    filepath = os.path.join(os.curdir,'..', "8tracks_api_key.txt")
-    with open(filepath) as content:
-    	return content.readline()
+    return Config["8tracksApiKey"]
+
+def get_shares():
+    return Config["shares"]
+
+loadConfig()
