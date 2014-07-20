@@ -17,7 +17,7 @@ function MusicFileModel(data) {
         name = data.Name || data.name;
         directoryName = data.DirectoryName || data.path;
         type = data.Type ? data.Type : "";
-        showVoting = data.isVoted === true ? false : true;
+        showVoting = data.isnext === true ? false : true;
         artist = data.artist;
         album = data.album;
         title = data.title;
@@ -29,7 +29,7 @@ function MusicFileModel(data) {
     self.name = name;
     self.directoryName = directoryName;
     self.type = type;
-    self.showVoting = showVoting;
+    self.showVoting = ko.observable(showVoting);
     self.title = title;
     self.album = album;
     self.artist = artist;

@@ -392,11 +392,8 @@ class CustomStaticFileHandler(tornado.web.StaticFileHandler):
     global debugMode
     def set_extra_headers(self, path):
         # Disable cache
-        if(debugMode):
-            print("cache is disabled")
+        if debugMode == False:
             self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
-        else:
-            print("cache is enabled")
 
 Player = APlayer()
 

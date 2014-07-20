@@ -37,17 +37,36 @@ class Walker:
 
         try:
             mountString = "mount -t cifs -o user={1}%{2} {0} {3}".format(path, user, password, mntPath)
-            check_call(mountString, shell=True)
+            #check_call(mountString, shell=True)
+            self.timeout_command(mountString, 3)
         except Exception, e:
             print("Error Mounting " + path + " Error: " + str(e))
+
+    def timeout_command(self, command, timeout):
+        """call shell-command and either return its output or kill it
+        if it doesn't normally exit within timeout seconds and return None"""
+        import subprocess, datetime, os, time, signal
+        start = datetime.datetime.now()
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        while process.poll() is None:
+          time.sleep(0.1)
+          now = datetime.datetime.now()
+          if (now - start).seconds> timeout:
+            os.kill(process.pid, signal.SIGKILL)
+            os.waitpid(-1, os.WNOHANG)
+            return None
+        return process.stdout.read()
 
     def mount_shares(self):
         shares = []
         for share in Config.get_shares():
             mntName = Helper.hash_string(share["path"])
             mntPath = os.path.join(os.curdir, "mnt", mntName)
-            if not os.path.exists(mntPath):
-                os.makedirs(mntPath)
+            if os.path.exists(mntPath) == False:
+                try:
+                    os.makedirs(mntPath)
+                except Exception, e:
+                    print("Could not create Mountpath. Error: " + str(e))
             
             self.mount(share["path"], share["user"], share["password"], mntPath)
             share["mntPath"] = mntPath

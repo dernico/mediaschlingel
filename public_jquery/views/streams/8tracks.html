@@ -1,5 +1,4 @@
 
-
 <input type="text" data-bind="value: searchTerm, event: { keyup: searchOnEnter }"></input>
 <button data-bind="click: search">Search</button>
 <br />
@@ -20,8 +19,12 @@
 </div>
 <hr />
 
-<h2 class="clearboth" data-bind="text: selectedTag().title"></h2>
-<div data-bind="foreach: tracksResult">
+<h2 style="float:left" data-bind="text: selectedTag().title"></h2>
+<div class="sorting">
+    <label>Sorting</label>
+    <select data-bind="options: sorting, value: choosenSorting, optionsText: 'title', optionsValue: 'value'"></select>
+</div>
+<div class="clearboth" data-bind="foreach: tracksResult">
     <div class="tile">
         <div class="tile-content">
             <img class="tile-background" data-bind="attr: { src: cover }" alt="" />

@@ -20,6 +20,7 @@ def tags(tag):
     global LastMixPath
 
     tag = urllib.quote_plus(tag)
+    print(tag)
     path = "mix_sets/{0}.json".format(tag)
     params = {"include": "mixes+pagination"}
     LastMixParams = params
