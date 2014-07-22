@@ -1,4 +1,5 @@
-var favoritesVM = ["api", "player", function (api, player) {
+//var favoritesVM = ["api", "player", function (api, player) {
+pages.viewmodel("favoritesVM", ["api", "player", function (api, player) {
     var self = this;
     self.activated = false;
     self.streams = ko.observableArray([]);
@@ -43,4 +44,4 @@ var favoritesVM = ["api", "player", function (api, player) {
         }
         //ko.applyBindings(self, scope);
     };
-}];
+}]);

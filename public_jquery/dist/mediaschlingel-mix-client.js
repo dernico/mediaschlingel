@@ -115,6 +115,19 @@ var Path = { version: "0.8.4", map: function (a) { if (Path.routes.defined.hasOw
 var pages = {};
 pages.constructed = {};
 
+pages.viewmodels = {};
+pages.services = {};
+pages.servicesSingelton = {};
+
+
+pages.viewmodel = function(name, vm){
+    pages.viewmodels[name] = vm;
+};
+
+pages.service = function(name, service){
+    pages.services[name] = service;
+};
+
 function getObjectFromString(item){
     var splited = item.split(".");
     var obj = null;
@@ -135,12 +148,31 @@ function isArray(obj) {
     return false;
 }
 
-function construct(objToConstruct){//, args){
+function constructService(serviceToConstruct){//, args){
 
-    var objString = '' + objToConstruct;
-    if(pages.constructed[objString]){
-        return pages.constructed[objString];
+    if(pages.servicesSingelton[serviceToConstruct]){
+        return pages.servicesSingelton[serviceToConstruct];
     }
+
+    var service = pages.services[serviceToConstruct];
+    if(!service){
+        console.log("Could not find Service with name: " + serviceToConstruct);
+        return;
+    }
+    pages.servicesSingelton[serviceToConstruct] = construct(service);
+    return pages.servicesSingelton[serviceToConstruct];
+}
+
+function constructVM(vmToConstruct){
+    var vm = pages.viewmodels[vmToConstruct];
+    if(!vm){
+        console.log("No ViewModel found with name: " + vmToConstruct);
+        return;
+    }
+    return construct(vm)
+}
+
+function construct(objToConstruct){
 
     var convertedArgs = [];
     //var viewmodelType = typeof objToConstruct;
@@ -157,6 +189,9 @@ function construct(objToConstruct){//, args){
     }
 
     args.forEach(function(item){
+        var service = constructService(item);
+        convertedArgs.push(service);
+        /*
         var itemType = typeof item;
         var argumentObj = null;
 
@@ -170,16 +205,16 @@ function construct(objToConstruct){//, args){
         if (argumentObj) {
             //var argumentObjType = typeof argumentObj;
             if (isArray(argumentObj)) {
-                argumentObj = construct(argumentObj);
+                argumentObj = constructService(argumentObj);
             }
             convertedArgs.push(argumentObj);
-        }
+        }*/
+
     });
 
     function F() { return objToConstruct.apply(this, convertedArgs); };
     F.prototype = objToConstruct.prototype;
-    pages.constructed[objString] = new F();
-    return pages.constructed[objString];
+    return new F();
 }
 
 function parseOptions(json){
@@ -325,7 +360,7 @@ function parseOptions(json){
             self.root.append(self.options._view);
             
             if (!self.options._vm && self.options.vm) {
-                var vmtype = typeof self.options.vm;
+                /*var vmtype = typeof self.options.vm;
                 if( vmtype === "string"){ //} ||vmtype === "String" || vmtype === "STRING"){
                     var vm = window[self.options.vm];
                     if(vm !== undefined){
@@ -335,8 +370,8 @@ function parseOptions(json){
                         self.options._vm = {};
                         return;
                     }
-                }
-                self.options._vm = construct(self.options.vm);//,self.options.args);
+                }*/
+                self.options._vm = constructVM(self.options.vm);//,self.options.args);
             }
             
             if (self.options._vm !== undefined){
@@ -593,9 +628,10 @@ var radioModel = (function(){
 	};
 })();
 
-;var api;
-(function(api){
-
+;//var api;
+//(function(api){
+pages.service("api", [function(){
+    var api = {};
     var loading = '<div id="loadingContainer" class="" style="position:fixed; top: 0px; left: 0px; height: 100%; width: 100%;z-index:100">';
     loading += '<div style="position:absolute;width:100%; height: 100%; background-color: gray; opacity: 0.8;"></div>';
     loading += '<div class="loadingSpinner">';
@@ -735,8 +771,9 @@ var radioModel = (function(){
         },success,error);
     };
 
-
-})(api || (api = {}));
+    return api;
+}]);
+//})(api || (api = {}));
 ;var LocalData;
 (function (LocalData) {
     var key = "worktimeDate";
@@ -750,7 +787,128 @@ var radioModel = (function(){
     }
     LocalData.load = load;
 })(LocalData || (LocalData = {}));
-;var tracksVM = ["api", "player", function (api, player) {
+;//var backgroundVM = [function(){
+pages.service("background", function(){
+	var self = this;
+	self.Cover = ko.observable();
+
+	self.setCover = function(cover){
+
+		if(cover){
+			if(cover.indexOf("http") != -1){
+				self.Cover(cover);
+			}
+			else{
+				self.Cover('Cover/' + cover);
+			}
+		}else{
+			self.Cover("/schlingel.jpg");
+		}
+	};
+
+});;pages.service("player", ["api", "background", function(api, background) {
+
+    var self = this;
+
+    self.showPlaying = ko.observable(false);
+    self.randomOff = ko.observable(true);
+    self.PlayingFile = ko.observable(null);
+
+    self.Album = ko.observable();
+    self.Name = ko.observable();
+    self.Volumn = ko.observable();
+
+
+    self.setCurrentInfo = function (data) {
+        
+        background.setCover(data.cover);
+
+        var album = data.album ? data.album : "-";
+        var title = data.title ? data.title : "-";
+        
+        self.Album(album);
+        self.Name(title);
+        self.Volumn(data.Volume);
+        self.showPlaying(!data.IsPlaying);
+        self.randomOff(!data.IsRandom);
+    };
+
+    self.LoadCurrentInfo = function () {
+        api.get({
+            action: "info",
+            params: "",
+            success: self.setCurrentInfo
+        }); //gets CurrentMediaFile
+    };
+
+
+
+    self.toggleRandom = function () {
+        if (self.randomOff()) {
+            self.randomOff(false);
+        } else {
+            self.randomOff(true);
+        }
+        api.post("toggleRandom", { }, self.setCurrentInfo);
+    };
+    self.fullscreen = function () {
+        api.post("fullScreen", {}, self.setCurrentInfo);
+    };
+    self.reload = function () {
+        api.post("dummy", {}, self.setCurrentInfo);
+    }; //Operate the player
+    self.playpause = function (item) {
+        if (self.showPlaying()) {
+            api.post("play", {}, self.setCurrentInfo);
+            self.showPlaying(false);
+        } else {
+            api.post("pause", {}, self.setCurrentInfo);
+            self.showPlaying(true);
+        }
+    };
+
+    self.play = function(item) {
+        api.get({
+            action: "play",
+            params: "?id=" + item.id,
+            success: self.setCurrentInfo
+        });
+    };
+
+    self.playStream = function(item) {
+        api.get({
+            action: "playStream",
+            params: "?stream=" + item.stream,
+            success: self.setCurrentInfo
+        });
+    };
+
+    self.playRadio = function(item){
+        api.post("playRadio", "id=" + item.id, self.setCurrentInfo);
+    };
+
+    self.playTracks = function(mix){
+        api.tracks.play(mix, self.setCurrentInfo);
+    };
+
+    self.next = function () {
+        api.post("next",{ }, self.setCurrentInfo);
+    };
+    self.prev = function () {
+        api.post("prev", {}, self.setCurrentInfo);
+    };
+    self.volUp = function () {
+        api.post("volumeUp", {}, self.setCurrentInfo);
+    };
+    self.volDown = function () {
+        api.post("volumeDown", {}, self.setCurrentInfo);
+    };
+
+    self.activate = function(){
+        self.LoadCurrentInfo();
+    };
+}]);;//var tracksVM = ["api", "player", function (api, player) {
+pages.viewmodel("tracksVM", ["api", "player", function (api, player) {
     var self = this;
     self.api = api;
     self.searchTerm = ko.observable();
@@ -850,27 +1008,12 @@ var radioModel = (function(){
     };
 
     self.loadPopular();
-}];;var backgroundVM = [function(){
-
+}]);;//var backgroundVM = [function(){
+pages.viewmodel("backgroundVM", ['background',function(backgroundService){
 	var self = this;
-	self.Cover = ko.observable();
-
-	self.setCover = function(cover){
-
-		if(cover){
-			if(cover.indexOf("http") != -1){
-				self.Cover(cover);
-			}
-			else{
-				self.Cover('Cover/' + cover);
-			}
-		}else{
-			self.Cover("/schlingel.jpg");
-		}
-	};
-
-}];;
-var listvm = ["api", "player", function(data, player) {
+	self.Cover = backgroundService.Cover;
+}]);;
+pages.viewmodel("listvm", ["api", "player", function(data, player) {
 
     var self = this;
     self.api = data;
@@ -964,7 +1107,7 @@ var listvm = ["api", "player", function(data, player) {
     //ko.computed(function () {
     //});
 
-}];
+}]);
 
 /*var mediaListItemView = function(model){
     var tmpl = '<div class="tile">' +
@@ -1153,108 +1296,37 @@ var listvm = ["api", "player", function(data, player) {
         }
     };
 }
-;var player = ["api", "backgroundVM", function(api, background) {
+;pages.viewmodel("playervm", ["player","api", function(player, api, background) {
 
     var self = this;
 
-    self.showPlaying = ko.observable(false);
-    self.randomOff = ko.observable(true);
-    self.PlayingFile = ko.observable(null);
+    self.showPlaying = player.showPlaying;
+    self.randomOff = player.randomOff;
 
-    self.Album = ko.observable();
-    self.Name = ko.observable();
-    self.Volumn = ko.observable();
+    self.Album = player.Album;
+    self.Name = player.Name;
+    self.Volumn = player.Volumn;
 
-
-    self.setCurrentInfo = function (data) {
-        
-        background.setCover(data.cover);
-
-        var album = data.album ? data.album : "-";
-        var title = data.title ? data.title : "-";
-        
-        self.Album(album);
-        self.Name(title);
-        self.Volumn(data.Volume);
-        self.showPlaying(!data.IsPlaying);
-        self.randomOff(!data.IsRandom);
-    };
-
-    self.LoadCurrentInfo = function () {
-        api.get({
-            action: "info",
-            params: "",
-            success: self.setCurrentInfo
-        }); //gets CurrentMediaFile
-    };
+    self.toggleRandom = player.toggleRandom;
 
 
+    //Operate the player
+    self.playpause = player.playpause;
 
-    self.toggleRandom = function () {
-        if (self.randomOff()) {
-            self.randomOff(false);
-        } else {
-            self.randomOff(true);
-        }
-        api.post("toggleRandom", { }, self.setCurrentInfo);
-    };
-    self.fullscreen = function () {
-        api.post("fullScreen", {}, self.setCurrentInfo);
-    };
-    self.reload = function () {
-        api.post("dummy", {}, self.setCurrentInfo);
-    }; //Operate the player
-    self.playpause = function (item) {
-        if (self.showPlaying()) {
-            api.post("play", {}, self.setCurrentInfo);
-            self.showPlaying(false);
-        } else {
-            api.post("pause", {}, self.setCurrentInfo);
-            self.showPlaying(true);
-        }
-    };
+    self.play = player.play;
 
-    self.play = function(item) {
-        api.get({
-            action: "play",
-            params: "?id=" + item.id,
-            success: self.setCurrentInfo
-        });
-    };
+    self.next = player.next;
 
-    self.playStream = function(item) {
-        api.get({
-            action: "playStream",
-            params: "?stream=" + item.stream,
-            success: self.setCurrentInfo
-        });
-    };
+    self.prev = player.prev;
 
-    self.playRadio = function(item){
-        api.post("playRadio", "id=" + item.id, self.setCurrentInfo);
-    };
+    self.volUp = player.volUp;
 
-    self.playTracks = function(mix){
-        api.tracks.play(mix, self.setCurrentInfo);
-    };
-
-    self.next = function () {
-        api.post("next",{ }, self.setCurrentInfo);
-    };
-    self.prev = function () {
-        api.post("prev", {}, self.setCurrentInfo);
-    };
-    self.volUp = function () {
-        api.post("volumeUp", {}, self.setCurrentInfo);
-    };
-    self.volDown = function () {
-        api.post("volumeDown", {}, self.setCurrentInfo);
-    };
+    self.volDown = player.volDown;
 
     self.activate = function(){
-        self.LoadCurrentInfo();
+        player.LoadCurrentInfo();
     };
-}];;var playlistsvm = function(api) {
+}]);;var playlistsvm = function(api) {
     var self = this;
     self.playlists = ko.observableArray();
     self.playlistItems = ko.observableArray();
@@ -1298,8 +1370,8 @@ var listvm = ["api", "player", function(data, player) {
     self.count = paging.count;
     self.from = paging.from;
     self.to = paging.to;
-};;var settingsvm = [function() {
-
+};;//var settingsvm = [function() {
+pages.viewmodel("settingsvm",[function() {
     var self = this;
     self.shoutdown = function() {
         api.get({ action: "shutdown", params: "" });
@@ -1327,15 +1399,17 @@ var listvm = ["api", "player", function(data, player) {
         //$("#mypivot").pivot();
         //$("#myhub").hub();
     };
-}];
-;var streams = ["api", "player", function (api, player) {
+}]);
+;//var streams = ["api", "player", function (api, player) {
+pages.viewmodel("streams", ["api", "player", function (api, player) {
     var self = this;
     self.activate = function () {
         $("#mypivot").pivot();
     };
-}];
+}]);
 
-;var favoritesVM = ["api", "player", function (api, player) {
+;//var favoritesVM = ["api", "player", function (api, player) {
+pages.viewmodel("favoritesVM", ["api", "player", function (api, player) {
     var self = this;
     self.activated = false;
     self.streams = ko.observableArray([]);
@@ -1380,7 +1454,8 @@ var listvm = ["api", "player", function(data, player) {
         }
         //ko.applyBindings(self, scope);
     };
-}];;var radioVM = ["api", "player", function (api, player) {
+}]);;//var radioVM = ["api", "player", function (api, player) {
+pages.viewmodel("radioVM", ["api", "player", function (api, player) {
     var self = this;
     self.listenPls = ko.observable();
     self.searchterm = ko.observable();
@@ -1466,52 +1541,4 @@ var listvm = ["api", "player", function(data, player) {
     self.activate = function () {
         
     };
-}];;var uploadvm = (function() {
-
-
-    return function() {
-        var self = this;
-        self.filename = ko.observable();
-        self.upload = function() {
-            //Wieder unser File Objekt
-            var file = document.getElementById("fileA").files[0];
-            //FormData Objekt erzeugen
-            var formData = new FormData();
-            //XMLHttpRequest Objekt erzeugen
-            var client = new XMLHttpRequest();
-
-            var prog = document.getElementById("progress");
-
-            if (!file)
-                return;
-
-            prog.value = 0;
-            prog.max = 100;
-
-            //Fügt dem formData Objekt unser File Objekt hinzu
-            formData.append("datei", file);
-
-            client.onerror = function(e) {
-                alert("onError");
-            };
-
-            client.onload = function(e) {
-                document.getElementById("prozent").innerHTML = "100%";
-                prog.value = prog.max;
-            };
-
-            client.upload.onprogress = function(e) {
-                var p = Math.round(100 / e.total * e.loaded);
-                document.getElementById("progress").value = p;
-                document.getElementById("prozent").innerHTML = p + "%";
-            };
-
-            client.onabort = function(e) {
-                alert("Upload abgebrochen");
-            };
-
-            client.open("POST", "upload");
-            client.send(formData);
-        };
-    };
-})();
+}]);

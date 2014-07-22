@@ -18,6 +18,7 @@ module.exports = function(grunt) {
               "scripts/Page.js",
               "models/**/*.js",
               "data/**/*.js",
+              "services/**/*.js",
               "viewmodels/**/*.js"
               //exclude
               //'!app/lib/**/*.min.js',

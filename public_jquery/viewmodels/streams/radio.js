@@ -1,4 +1,5 @@
-var radioVM = ["api", "player", function (api, player) {
+//var radioVM = ["api", "player", function (api, player) {
+pages.viewmodel("radioVM", ["api", "player", function (api, player) {
     var self = this;
     self.listenPls = ko.observable();
     self.searchterm = ko.observable();
@@ -84,4 +85,4 @@ var radioVM = ["api", "player", function (api, player) {
     self.activate = function () {
         
     };
-}];
+}]);

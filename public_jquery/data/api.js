@@ -1,6 +1,7 @@
-var api;
-(function(api){
-
+//var api;
+//(function(api){
+pages.service("api", [function(){
+    var api = {};
     var loading = '<div id="loadingContainer" class="" style="position:fixed; top: 0px; left: 0px; height: 100%; width: 100%;z-index:100">';
     loading += '<div style="position:absolute;width:100%; height: 100%; background-color: gray; opacity: 0.8;"></div>';
     loading += '<div class="loadingSpinner">';
@@ -140,5 +141,6 @@ var api;
         },success,error);
     };
 
-
-})(api || (api = {}));
+    return api;
+}]);
+//})(api || (api = {}));

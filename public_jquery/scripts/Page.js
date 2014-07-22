@@ -5,6 +5,19 @@ var Path = { version: "0.8.4", map: function (a) { if (Path.routes.defined.hasOw
 var pages = {};
 pages.constructed = {};
 
+pages.viewmodels = {};
+pages.services = {};
+pages.servicesSingelton = {};
+
+
+pages.viewmodel = function(name, vm){
+    pages.viewmodels[name] = vm;
+};
+
+pages.service = function(name, service){
+    pages.services[name] = service;
+};
+
 function getObjectFromString(item){
     var splited = item.split(".");
     var obj = null;
@@ -25,12 +38,31 @@ function isArray(obj) {
     return false;
 }
 
-function construct(objToConstruct){//, args){
+function constructService(serviceToConstruct){//, args){
 
-    var objString = '' + objToConstruct;
-    if(pages.constructed[objString]){
-        return pages.constructed[objString];
+    if(pages.servicesSingelton[serviceToConstruct]){
+        return pages.servicesSingelton[serviceToConstruct];
     }
+
+    var service = pages.services[serviceToConstruct];
+    if(!service){
+        console.log("Could not find Service with name: " + serviceToConstruct);
+        return;
+    }
+    pages.servicesSingelton[serviceToConstruct] = construct(service);
+    return pages.servicesSingelton[serviceToConstruct];
+}
+
+function constructVM(vmToConstruct){
+    var vm = pages.viewmodels[vmToConstruct];
+    if(!vm){
+        console.log("No ViewModel found with name: " + vmToConstruct);
+        return;
+    }
+    return construct(vm)
+}
+
+function construct(objToConstruct){
 
     var convertedArgs = [];
     //var viewmodelType = typeof objToConstruct;
@@ -47,6 +79,9 @@ function construct(objToConstruct){//, args){
     }
 
     args.forEach(function(item){
+        var service = constructService(item);
+        convertedArgs.push(service);
+        /*
         var itemType = typeof item;
         var argumentObj = null;
 
@@ -60,16 +95,16 @@ function construct(objToConstruct){//, args){
         if (argumentObj) {
             //var argumentObjType = typeof argumentObj;
             if (isArray(argumentObj)) {
-                argumentObj = construct(argumentObj);
+                argumentObj = constructService(argumentObj);
             }
             convertedArgs.push(argumentObj);
-        }
+        }*/
+
     });
 
     function F() { return objToConstruct.apply(this, convertedArgs); };
     F.prototype = objToConstruct.prototype;
-    pages.constructed[objString] = new F();
-    return pages.constructed[objString];
+    return new F();
 }
 
 function parseOptions(json){
@@ -215,7 +250,7 @@ function parseOptions(json){
             self.root.append(self.options._view);
             
             if (!self.options._vm && self.options.vm) {
-                var vmtype = typeof self.options.vm;
+                /*var vmtype = typeof self.options.vm;
                 if( vmtype === "string"){ //} ||vmtype === "String" || vmtype === "STRING"){
                     var vm = window[self.options.vm];
                     if(vm !== undefined){
@@ -225,8 +260,8 @@ function parseOptions(json){
                         self.options._vm = {};
                         return;
                     }
-                }
-                self.options._vm = construct(self.options.vm);//,self.options.args);
+                }*/
+                self.options._vm = constructVM(self.options.vm);//,self.options.args);
             }
             
             if (self.options._vm !== undefined){

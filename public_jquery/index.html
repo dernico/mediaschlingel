@@ -23,18 +23,23 @@
                 pages: [
                     {
                         route: '#/list',
-                        vm: listvm,
+                        vm: 'listvm',
                         view: 'views/list.html'
                     },
                     {
                         route: '#/streams',
-                        vm: streams,
+                        vm: 'streams',
                         view: 'views/streams.html'
                     },
                     {
                         route: '#/settings',
-                        vm: settingsvm,
+                        vm: 'settingsvm',
                         view: 'views/settings.html'
+                    },
+                    {
+                        route: '#/8tracks',
+                        vm: 'tracksVM',
+                        view: 'views/streams/8tracks.html'
                     }
 
                 ],
@@ -53,6 +58,7 @@
             <ul class="menu">
                 <li><a href="#/list">Liste</a></li>
                 <li><a href="#/streams">Streams</a></li>
+                <li><a href="#/8tracks">8tracks</a></li>
                 <li><a href="#/settings">Options</a></li>
             </ul>
         </div>
@@ -63,7 +69,7 @@
     <div class="header-splitter"></div>
 
     <div class="right-panel">
-        <div id="playerControl" data-options="view: 'views/start.html', vm: 'player'"></div>
+        <div id="playerControl" data-options="view: 'views/start.html', vm: 'playervm'"></div>
     </div>
 
     <div class="content-panel">

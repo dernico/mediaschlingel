@@ -1,5 +1,5 @@
 
-var listvm = ["api", "player", function(data, player) {
+pages.viewmodel("listvm", ["api", "player", function(data, player) {
 
     var self = this;
     self.api = data;
@@ -93,7 +93,7 @@ var listvm = ["api", "player", function(data, player) {
     //ko.computed(function () {
     //});
 
-}];
+}]);
 
 /*var mediaListItemView = function(model){
     var tmpl = '<div class="tile">' +

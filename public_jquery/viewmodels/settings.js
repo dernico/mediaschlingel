@@ -1,5 +1,5 @@
-var settingsvm = [function() {
-
+//var settingsvm = [function() {
+pages.viewmodel("settingsvm",[function() {
     var self = this;
     self.shoutdown = function() {
         api.get({ action: "shutdown", params: "" });
@@ -27,4 +27,4 @@ var settingsvm = [function() {
         //$("#mypivot").pivot();
         //$("#myhub").hub();
     };
-}];
+}]);
