@@ -236,7 +236,7 @@ class APlayer(Base_Player):
 
         # If its an 8track playing. Dont let the normal
         # playnext logic take place
-        if self.currentlyPlaying['type'] is "8tracks":
+        if 'type' in self.currentlyPlaying and self.currentlyPlaying['type'] is "8tracks":
             mix_id = self.currentlyPlaying['mix_id']
             track = eighttracks.skip(mix_id)
             if track:

@@ -39,14 +39,14 @@
                     {
                         route: '#/8tracks',
                         vm: 'tracksVM',
-                        view: 'views/streams/8tracks.html'
+                        view: 'views/8tracks.html'
                     }
 
                 ],
                 transitionTimeout: 500
             });
-            $("#playerControl").page();
-            $("#background").page();
+            //$("#playerControl").page();
+            //$("#background").page();
         });
 
     </script>
@@ -56,20 +56,22 @@
     <div data-role="header">
         <div data-role="navbar">
             <ul class="menu">
-                <li><a href="#/list">Liste</a></li>
-                <li><a href="#/streams">Streams</a></li>
+                <li><a href="#/list">List</a></li>
+                <li><a href="#/streams">Radio</a></li>
                 <li><a href="#/8tracks">8tracks</a></li>
-                <li><a href="#/settings">Options</a></li>
+                <li><a href="#/settings">Opt</a></li>
             </ul>
         </div>
     </div>
 
-    <div id="background" class="cover" data-options="vm: 'backgroundVM', view:'views/background.html'"></div>
+    <div id="background" class="cover" data-control="page" data-options="vm: 'backgroundVM'">
+        <img class="cover-img" data-bind="attr: {src: Cover}" />
+    </div>
 
     <div class="header-splitter"></div>
 
     <div class="right-panel">
-        <div id="playerControl" data-options="view: 'views/start.html', vm: 'playervm'"></div>
+        <div id="playerControl" data-control="page" data-options="view: 'views/start.html', vm: 'playervm'"></div>
     </div>
 
     <div class="content-panel">

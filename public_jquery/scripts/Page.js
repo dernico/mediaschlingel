@@ -18,6 +18,23 @@ pages.service = function(name, service){
     pages.services[name] = service;
 };
 
+pages.loadControls = function(element){
+        
+    var items = element.find("[data-control='pivot']");
+    if(items.length > 0){
+        items.pivot();
+    }
+
+    items = element.find("[data-control='page']");
+    if(items.length > 0){
+        //items.page();
+        for(var i = 0; i < items.length; i++){
+            $(items[i]).page();
+        }
+    }
+
+};
+
 function getObjectFromString(item){
     var splited = item.split(".");
     var obj = null;
@@ -38,7 +55,7 @@ function isArray(obj) {
     return false;
 }
 
-function constructService(serviceToConstruct){//, args){
+function constructService(serviceToConstruct){
 
     if(pages.servicesSingelton[serviceToConstruct]){
         return pages.servicesSingelton[serviceToConstruct];
@@ -65,7 +82,6 @@ function constructVM(vmToConstruct){
 function construct(objToConstruct){
 
     var convertedArgs = [];
-    //var viewmodelType = typeof objToConstruct;
     var args = [];
 
     
@@ -81,24 +97,6 @@ function construct(objToConstruct){
     args.forEach(function(item){
         var service = constructService(item);
         convertedArgs.push(service);
-        /*
-        var itemType = typeof item;
-        var argumentObj = null;
-
-        if (itemType === "string") {
-            argumentObj = getObjectFromString(item);
-        }
-        else if(itemType === "object" || itemType === "function") {
-            argumentObj = item;
-        }
-
-        if (argumentObj) {
-            //var argumentObjType = typeof argumentObj;
-            if (isArray(argumentObj)) {
-                argumentObj = constructService(argumentObj);
-            }
-            convertedArgs.push(argumentObj);
-        }*/
 
     });
 
@@ -190,6 +188,15 @@ function parseOptions(json){
  
 }( jQuery ));
 
+pages.uniqueId = function(el){
+    var id = el.attr("id");
+    if(id === undefined){
+        var id = new Date().getTime();
+        el.attr("id", id);
+    };
+    return id;
+};
+
 (function( $ ) {
  
     $.fn.page = function( settings ) {
@@ -204,28 +211,14 @@ function parseOptions(json){
             dataOptions = settings;
         }
 
-        /*
-        self.options = $.extend({
-            // These are the defaults.
-            view: undefined, // This is the URL to the view
-            _view: undefined, // THis is the raw HTML
-            vm: undefined, // This is the constructor from the ViewModel
-            _vm: undefined, // This is the constructed ViewModel
-            params: undefined, // This is an Object of possible params pass to the page
-            args: []
-        }, dataOptions );
-
-        
-        self.options = $.extend(self.options, settings);
-        */
-
         self.options = dataOptions;
 
+        if(self.options === undefined){
+            console.log("options not set for element " + self);
+            return;
+        }
+
         var loadView = function () {
-            if (!self.options.view) {
-                console.log("Could not find property 'view'. So no view will be loaded");
-                return;
-            }
 
             if (self.options.view && !self.options._view) {
                 $.ajax({
@@ -246,21 +239,13 @@ function parseOptions(json){
         };
 
         self.activateVM = function() {
-            self.root.empty();
-            self.root.append(self.options._view);
+            if(self.options._view){
+                self.root.empty();
+                self.root.append(self.options._view);
+            }
             
             if (!self.options._vm && self.options.vm) {
-                /*var vmtype = typeof self.options.vm;
-                if( vmtype === "string"){ //} ||vmtype === "String" || vmtype === "STRING"){
-                    var vm = window[self.options.vm];
-                    if(vm !== undefined){
-                        self.options.vm = vm;
-                    }
-                    else{
-                        self.options._vm = {};
-                        return;
-                    }
-                }*/
+
                 self.options._vm = constructVM(self.options.vm);//,self.options.args);
             }
             
@@ -273,6 +258,7 @@ function parseOptions(json){
                     ko.applyBindings(self.options._vm, self.root[0]);
                 }
             }
+            pages.loadControls(self.root);
         };
 
         loadView();
@@ -456,3 +442,9 @@ function parseOptions(json){
     }
 
 })( jQuery );
+
+
+
+$(document).ready(function(){
+    pages.loadControls($("body"));
+});

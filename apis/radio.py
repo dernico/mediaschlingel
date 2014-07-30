@@ -59,10 +59,11 @@ def getMostWanted( num_entries=25):
         return stations_lists
 
 def _call(path, param=None):
-        print('call radio with path=%s, param=%s', path, param)
+        #print('call radio with path=%s, param=%s', path, param)
         url = '{0}/{1}'.format(RadioUrl, path)
         if param:
             url += '?' + urlencode(param)
+        print("call radio with url: " + url)
         response = Helper.downloadString(url)
         json_data = json.loads(response)
         return json_data

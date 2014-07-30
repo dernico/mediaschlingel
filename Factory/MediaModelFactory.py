@@ -27,7 +27,7 @@ class MediaModelFactory():
         model.IsNext = False
         return model
 
-    def createMediaModel(self, id, path, file, coverdir, ipAddress, isLocal=False):
+    def createMediaModelFromFile(self, id, path, file, ipAddress, isLocal=False):
         
         filepath = os.path.join(path, file)
         model = MediaModel()
@@ -40,9 +40,12 @@ class MediaModelFactory():
         model.IsNext = False
         model.Cover = ""
         model.WebPath = "http://" + ipAddress + ":8000/mediafile/" + str(id)
-        
+        return model
+
+    def addId3Informations(self, model,ipAddress, coverdir):
+        if not os.path.exists(model.Path): return
         try:
-            audiofile = mutagen.File(filepath)
+            audiofile = mutagen.File(model.Path)
             if audiofile:
                 tags = audiofile.tags
 
@@ -55,11 +58,6 @@ class MediaModelFactory():
                 if tags is not None and _TITLE in tags:
                     model.Title = str(tags[_TITLE])
                     #title = title.decode("cp1252").encode('utf-8')
-
-                if model.Title is None or model.Title is "":
-                    model.Title = file
-                if model.Album is None or model.Album is "":
-                    model.Album = path
 
                 covername = self.getCoverName(model.Album)
                 model.Cover = 'http://' + ipAddress + ":8000/Cover/" + covername
@@ -75,8 +73,7 @@ class MediaModelFactory():
                         except Exception, e:
                             print "Cover could not be written to " + coverpath, e
         except Exception, e:
-            print("Error parsing tags from File " + filepath + " Error: " + str(e))
-        return model
+            print("Error parsing tags from File " + model.Path + " Error: " + str(e))
 
     def getCoverName(self, album):
         return Helper.hash_string(album) + ".jpg"

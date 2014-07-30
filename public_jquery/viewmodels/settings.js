@@ -1,5 +1,5 @@
 //var settingsvm = [function() {
-pages.viewmodel("settingsvm",[function() {
+pages.viewmodel("settingsvm",["api", function(api) {
     var self = this;
     self.shoutdown = function() {
         api.get({ action: "shutdown", params: "" });
@@ -11,7 +11,7 @@ pages.viewmodel("settingsvm",[function() {
     self.restart = function () {
         setTimeout(function(){
             window.location = window.location.origin;
-        }, 800);
+        }, 4000);
         api.restartSchlingel();
     };
 

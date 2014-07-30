@@ -128,6 +128,23 @@ pages.service = function(name, service){
     pages.services[name] = service;
 };
 
+pages.loadControls = function(element){
+        
+    var items = element.find("[data-control='pivot']");
+    if(items.length > 0){
+        items.pivot();
+    }
+
+    items = element.find("[data-control='page']");
+    if(items.length > 0){
+        //items.page();
+        for(var i = 0; i < items.length; i++){
+            $(items[i]).page();
+        }
+    }
+
+};
+
 function getObjectFromString(item){
     var splited = item.split(".");
     var obj = null;
@@ -148,7 +165,7 @@ function isArray(obj) {
     return false;
 }
 
-function constructService(serviceToConstruct){//, args){
+function constructService(serviceToConstruct){
 
     if(pages.servicesSingelton[serviceToConstruct]){
         return pages.servicesSingelton[serviceToConstruct];
@@ -175,7 +192,6 @@ function constructVM(vmToConstruct){
 function construct(objToConstruct){
 
     var convertedArgs = [];
-    //var viewmodelType = typeof objToConstruct;
     var args = [];
 
     
@@ -191,24 +207,6 @@ function construct(objToConstruct){
     args.forEach(function(item){
         var service = constructService(item);
         convertedArgs.push(service);
-        /*
-        var itemType = typeof item;
-        var argumentObj = null;
-
-        if (itemType === "string") {
-            argumentObj = getObjectFromString(item);
-        }
-        else if(itemType === "object" || itemType === "function") {
-            argumentObj = item;
-        }
-
-        if (argumentObj) {
-            //var argumentObjType = typeof argumentObj;
-            if (isArray(argumentObj)) {
-                argumentObj = constructService(argumentObj);
-            }
-            convertedArgs.push(argumentObj);
-        }*/
 
     });
 
@@ -300,6 +298,15 @@ function parseOptions(json){
  
 }( jQuery ));
 
+pages.uniqueId = function(el){
+    var id = el.attr("id");
+    if(id === undefined){
+        var id = new Date().getTime();
+        el.attr("id", id);
+    };
+    return id;
+};
+
 (function( $ ) {
  
     $.fn.page = function( settings ) {
@@ -314,28 +321,14 @@ function parseOptions(json){
             dataOptions = settings;
         }
 
-        /*
-        self.options = $.extend({
-            // These are the defaults.
-            view: undefined, // This is the URL to the view
-            _view: undefined, // THis is the raw HTML
-            vm: undefined, // This is the constructor from the ViewModel
-            _vm: undefined, // This is the constructed ViewModel
-            params: undefined, // This is an Object of possible params pass to the page
-            args: []
-        }, dataOptions );
-
-        
-        self.options = $.extend(self.options, settings);
-        */
-
         self.options = dataOptions;
 
+        if(self.options === undefined){
+            console.log("options not set for element " + self);
+            return;
+        }
+
         var loadView = function () {
-            if (!self.options.view) {
-                console.log("Could not find property 'view'. So no view will be loaded");
-                return;
-            }
 
             if (self.options.view && !self.options._view) {
                 $.ajax({
@@ -356,21 +349,13 @@ function parseOptions(json){
         };
 
         self.activateVM = function() {
-            self.root.empty();
-            self.root.append(self.options._view);
+            if(self.options._view){
+                self.root.empty();
+                self.root.append(self.options._view);
+            }
             
             if (!self.options._vm && self.options.vm) {
-                /*var vmtype = typeof self.options.vm;
-                if( vmtype === "string"){ //} ||vmtype === "String" || vmtype === "STRING"){
-                    var vm = window[self.options.vm];
-                    if(vm !== undefined){
-                        self.options.vm = vm;
-                    }
-                    else{
-                        self.options._vm = {};
-                        return;
-                    }
-                }*/
+
                 self.options._vm = constructVM(self.options.vm);//,self.options.args);
             }
             
@@ -383,6 +368,7 @@ function parseOptions(json){
                     ko.applyBindings(self.options._vm, self.root[0]);
                 }
             }
+            pages.loadControls(self.root);
         };
 
         loadView();
@@ -566,7 +552,12 @@ function parseOptions(json){
     }
 
 })( jQuery );
-;function MusicFileModel(data) {
+
+
+
+$(document).ready(function(){
+    pages.loadControls($("body"));
+});;function MusicFileModel(data) {
     var self = this;
     var id = "";
     var webPath = "";
@@ -698,6 +689,15 @@ pages.service("api", [function(){
         }, showLoadingScreen, success, error);
     };
 
+    api.vote = function(item, done, error){
+        api.get({
+            action: "vote",
+            params: "?id=" + item.id,
+            success: done,
+            error: error
+        });
+    };
+
     api.restartSchlingel = function(){
         ajax({
             url: 'api/restartSchlingel',
@@ -710,6 +710,18 @@ pages.service("api", [function(){
         ajax({
             url: '/api/8tracks/tags',
             data: {tag: tag}
+        }, true, function(data){
+            done(data, null);
+        }, function(err){
+            done(null, err);
+        });
+    };
+
+    api.tracks.explore = function(tags, done){
+        ajax({
+            url: '/api/8tracks/explore',
+            type: 'POST',
+            data: {tags: tags}
         }, true, function(data){
             done(data, null);
         }, function(err){
@@ -924,23 +936,32 @@ pages.viewmodel("tracksVM", ["api", "player", function (api, player) {
     ];
 
     self.tagCloud = [
-        {title: "Popular", tag: "all"},
-        {title: "Charts", tag: "tags:charts"},
-        {title: "Hip Hop", tag: "tags:hip_hop"},
-        {title: "Alternative", tag: "tags:alternative"},
-        {title: "House", tag: "tags:house"},
-        {title: "2000s", tag: "tags:2000s"},
-        {title: "90s", tag: "tags:90s"},
-        {title: "80s", tag: "tags:80s"}
+        {title: "Popular", tag: "all", name: "popular"},
+        {title: "Charts", tag: "tags:charts", name: "charts"},
+        {title: "Hip Hop", tag: "tags:hip_hop", name: "hip_hop"},
+        {title: "Underground", tag: "tags:underground", name: "underground"},
+        {title: "Rap", tag: "tags:rap", name: "rap"},
+        {title: "Classic", tag: "tags:classic", name: "classic"},
+        {title: "Funk", tag: "tags:funk", name: "funk"},
+        {title: "Jazz", tag: "tags:jazz", name: "jazz"},
+        {title: "Alternative", tag: "tags:alternative", name: "alternative"},
+        {title: "House", tag: "tags:house", name: "house"},
+        {title: "Electro", tag: "tags:electro", name: "electro"},
+        {title: "Dupstep", tag: "tags:dupstep", name: "dupstep"},
+        {title: "Chill", tag: "tags:chill", name: "chill"},
+        {title: "2000s", tag: "tags:2000s", name: "2000s"},
+        {title: "90s", tag: "tags:90s", name: "90s"},
+        {title: "80s", tag: "tags:80s", name: "80s"}
     ];
 
-    self.selectedTag = ko.observable();
+    self.selectedTags = ko.observableArray();
 
     self.pageing = ko.observable();
 
 
     self.choosenSorting.subscribe(function(newVal){
-        sendTag(self.currentTag);
+        //sendTag(self.currentTag);
+        explore();
     });
 
     var handleMixes = function(data, err){
@@ -967,6 +988,28 @@ pages.viewmodel("tracksVM", ["api", "player", function (api, player) {
         self.api.tracks.tags(tag, handleMixes);
     };
 
+    var explore = function(){
+        var exploreTags = [];
+        self.selectedTags().forEach(function(tag){
+            exploreTags.push(tag.name);
+        });
+        var tag = "";
+        if(exploreTags.length > 0){
+            var explorer = exploreTags.join("+");
+            tag += "tags:"+explorer;
+            tag += ":" + self.choosenSorting();
+        }else{
+            tag += "all:" + self.choosenSorting();
+        }
+        self.api.tracks.tags(tag, handleMixes);
+    };
+
+    function toUrlParam(param) {
+        if (param) {
+            return encodeURIComponent(param.replace(/_/g, '__').replace(/\s/g, '_').replace(/\//g, '\\').replace(/\./g, '^'));
+        }
+    }
+
     self.pagePrev = function(){
         self.api.tracks.page(self.pageing().prevPage,handleMixes);
     };
@@ -976,14 +1019,22 @@ pages.viewmodel("tracksVM", ["api", "player", function (api, player) {
     };
 
     self.tagClick = function(tag){
-        self.selectedTag(tag);
-        sendTag(tag.tag);
+        self.selectedTags.push(tag);
+        explore();
+    };
+
+    self.removeTag = function(tag){
+        self.selectedTags.remove(tag);
+        if(self.selectedTags().length === 0){
+            self.loadPopular();
+        }else{
+            explore();
+        }
     };
 
     self.loadPopular = function(){
         var tag = self.tagCloud[0];
-        self.selectedTag(tag);
-        self.tagClick(tag);
+        sendTag(tag.tag);
     };
 
     self.searchOnEnter = function(self, e){
@@ -992,8 +1043,9 @@ pages.viewmodel("tracksVM", ["api", "player", function (api, player) {
     };
 
     self.search = function(){
-        //var searchTag = "keyword:" + self.searchTerm();
-        var searchTag = "artist:" + self.searchTerm();
+        var searchTerm = toUrlParam(self.searchTerm());
+        //var searchTag = "keyword:" + searchTerm;
+        var searchTag = "artist:" + searchTerm;
         sendTag(searchTag);
         //self.api.tracks.tags(searchTag, handleMixes);
         //self.api.tracks.search(self.searchTerm(), handleMixes);
@@ -1033,32 +1085,9 @@ pages.viewmodel("listvm", ["api", "player", function(data, player) {
     };
 
     self.voteit = function (item) {
-        api.get({
-            action: "vote",
-            params: "?id=" + item.id,
-            success: function(){
-                item.showVoting(false);
-            }
+        self.api.vote(item, function(){
+            item.showVoting(false);
         });
-        /*api.post("voteit", "id=" + ko.toJSON(item),function(data) {
-            var mf = new MusicFileModel(data);
-            item.votes(mf.votes());
-        });*/
-    };
-
-    self.setplayinfo = function(data) {
-        var playinfo = {
-            artist: unescape(data.artist),
-            title: unescape(data.title),
-            duration: data.duration,
-            elapsed: data.elapsed
-        };
-        self.playinfo(playinfo);
-    };
-
-
-    self.canActivate = function() {
-        return true;
     };
 
     self.activate = function() {
@@ -1097,15 +1126,12 @@ pages.viewmodel("listvm", ["api", "player", function(data, player) {
                 clearTimeout(self.searchTimeoutID);
             }
             self.searchTimeoutID = setTimeout(function(){
-
+                pageing.pageIndex = 0;
                 pageing.searchfilter(self.searchfilter());
                 //if(pageing.search) pageing.search();
             }, 1000);
         }
     });
-
-    //ko.computed(function () {
-    //});
 
 }]);
 
@@ -1220,9 +1246,10 @@ var listvm = ["api", "player", function(data, player) {
 
     var ScrollTop = function () { window.scrollTo(0, 0); };
     var self = this;
-    var pageIndex = 0;
     var pageSize = 10;
     var currentDataCount = 0;
+
+    self.pageIndex = 0;
     self.api = api;
     self._searchfilter = "";
     self.searchfilter = function(filter){
@@ -1241,21 +1268,21 @@ var listvm = ["api", "player", function(data, player) {
     var getParams = function () {
         var params = "";
         params = "?filter=" + self.searchfilter() + 
-                    "&top=" + pageSize + "&skip=" + (pageIndex * pageSize);
+                    "&top=" + pageSize + "&skip=" + (self.pageIndex * pageSize);
         return params;
     };
 
     self.pageNext = function () {
         if(currentDataCount >= pageSize){
-            pageIndex = pageIndex + 1;
+            self.pageIndex = self.pageIndex + 1;
             self.load();
             ScrollTop();
         }
     };
 
     self.pagePrev = function () {
-        if(pageIndex > 0){
-            pageIndex = pageIndex - 1;
+        if(self.pageIndex > 0){
+            self.pageIndex = self.pageIndex - 1;
             self.load();
         }
     };
@@ -1285,7 +1312,7 @@ var listvm = ["api", "player", function(data, player) {
         if (data.list) {
             self.count = data.count;
             currentDataCount = data.list.length;
-            var from = pageIndex * pageSize;
+            var from = self.pageIndex * pageSize;
             var to = data.list.length >= pageSize ? 
                         from + pageSize : from + data.list.length;
             self.from = from;
@@ -1308,7 +1335,6 @@ var listvm = ["api", "player", function(data, player) {
     self.Volumn = player.Volumn;
 
     self.toggleRandom = player.toggleRandom;
-
 
     //Operate the player
     self.playpause = player.playpause;
@@ -1371,7 +1397,7 @@ var listvm = ["api", "player", function(data, player) {
     self.from = paging.from;
     self.to = paging.to;
 };;//var settingsvm = [function() {
-pages.viewmodel("settingsvm",[function() {
+pages.viewmodel("settingsvm",["api", function(api) {
     var self = this;
     self.shoutdown = function() {
         api.get({ action: "shutdown", params: "" });
@@ -1383,7 +1409,7 @@ pages.viewmodel("settingsvm",[function() {
     self.restart = function () {
         setTimeout(function(){
             window.location = window.location.origin;
-        }, 800);
+        }, 4000);
         api.restartSchlingel();
     };
 
@@ -1404,7 +1430,7 @@ pages.viewmodel("settingsvm",[function() {
 pages.viewmodel("streams", ["api", "player", function (api, player) {
     var self = this;
     self.activate = function () {
-        $("#mypivot").pivot();
+        //$("#mypivot").pivot();
     };
 }]);
 

@@ -68,6 +68,15 @@ pages.service("api", [function(){
         }, showLoadingScreen, success, error);
     };
 
+    api.vote = function(item, done, error){
+        api.get({
+            action: "vote",
+            params: "?id=" + item.id,
+            success: done,
+            error: error
+        });
+    };
+
     api.restartSchlingel = function(){
         ajax({
             url: 'api/restartSchlingel',
@@ -80,6 +89,18 @@ pages.service("api", [function(){
         ajax({
             url: '/api/8tracks/tags',
             data: {tag: tag}
+        }, true, function(data){
+            done(data, null);
+        }, function(err){
+            done(null, err);
+        });
+    };
+
+    api.tracks.explore = function(tags, done){
+        ajax({
+            url: '/api/8tracks/explore',
+            type: 'POST',
+            data: {tags: tags}
         }, true, function(data){
             done(data, null);
         }, function(err){

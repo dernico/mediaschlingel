@@ -322,10 +322,33 @@ class HandleSaveRadio(BaseHandler):
 
 class HandleTracksTag(BaseHandler):
     def get(self):
+        self.handleRequest()
+
+    def post(self):
+        self.handleRequest()
+
+    def handleRequest(self):
         tag = self.get_argument("tag", None)
         result = None
         if tag:
             result = eighttracks.tags(tag)
+        
+        if result:
+            self.write(result)
+            self.flush()
+
+class HandleTracksExplorer(BaseHandler):
+    def get(self):
+        self.handleRequest()
+        
+    def post(self):
+        self.handleRequest()
+
+    def handleRequest(self):
+        tags = self.get_argument("tags", None)
+        result = None
+        if tags:
+            result = eighttracks.explore(tags)
         
         if result:
             self.write(result)
@@ -392,7 +415,7 @@ class CustomStaticFileHandler(tornado.web.StaticFileHandler):
     global debugMode
     def set_extra_headers(self, path):
         # Disable cache
-        if debugMode == False:
+        if debugMode:
             self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
 
 Player = APlayer()
@@ -450,6 +473,7 @@ def main():
             (r"/api/8tracks/tags", HandleTracksTag),
             (r"/api/8tracks/play", HandleTracksPlay),
             (r"/api/8tracks/search", HandleTracksSearch),
+            (r"/api/8tracks/explore", HandleTracksExplorer),
             (r"/api/8tracks/page", HandleTracksPageing),
             (r"/api/restartSchlingel", HandleRestartSchlingel),
             (r"/websocket", HandleWebSocket),

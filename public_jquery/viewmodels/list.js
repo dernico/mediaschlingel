@@ -19,32 +19,9 @@ pages.viewmodel("listvm", ["api", "player", function(data, player) {
     };
 
     self.voteit = function (item) {
-        api.get({
-            action: "vote",
-            params: "?id=" + item.id,
-            success: function(){
-                item.showVoting(false);
-            }
+        self.api.vote(item, function(){
+            item.showVoting(false);
         });
-        /*api.post("voteit", "id=" + ko.toJSON(item),function(data) {
-            var mf = new MusicFileModel(data);
-            item.votes(mf.votes());
-        });*/
-    };
-
-    self.setplayinfo = function(data) {
-        var playinfo = {
-            artist: unescape(data.artist),
-            title: unescape(data.title),
-            duration: data.duration,
-            elapsed: data.elapsed
-        };
-        self.playinfo(playinfo);
-    };
-
-
-    self.canActivate = function() {
-        return true;
     };
 
     self.activate = function() {
@@ -83,15 +60,12 @@ pages.viewmodel("listvm", ["api", "player", function(data, player) {
                 clearTimeout(self.searchTimeoutID);
             }
             self.searchTimeoutID = setTimeout(function(){
-
+                pageing.pageIndex = 0;
                 pageing.searchfilter(self.searchfilter());
                 //if(pageing.search) pageing.search();
             }, 1000);
         }
     });
-
-    //ko.computed(function () {
-    //});
 
 }]);
 

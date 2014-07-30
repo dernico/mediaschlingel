@@ -2,9 +2,10 @@ function pageingVM(api, url, callback){
 
     var ScrollTop = function () { window.scrollTo(0, 0); };
     var self = this;
-    var pageIndex = 0;
     var pageSize = 10;
     var currentDataCount = 0;
+
+    self.pageIndex = 0;
     self.api = api;
     self._searchfilter = "";
     self.searchfilter = function(filter){
@@ -23,21 +24,21 @@ function pageingVM(api, url, callback){
     var getParams = function () {
         var params = "";
         params = "?filter=" + self.searchfilter() + 
-                    "&top=" + pageSize + "&skip=" + (pageIndex * pageSize);
+                    "&top=" + pageSize + "&skip=" + (self.pageIndex * pageSize);
         return params;
     };
 
     self.pageNext = function () {
         if(currentDataCount >= pageSize){
-            pageIndex = pageIndex + 1;
+            self.pageIndex = self.pageIndex + 1;
             self.load();
             ScrollTop();
         }
     };
 
     self.pagePrev = function () {
-        if(pageIndex > 0){
-            pageIndex = pageIndex - 1;
+        if(self.pageIndex > 0){
+            self.pageIndex = self.pageIndex - 1;
             self.load();
         }
     };
@@ -67,7 +68,7 @@ function pageingVM(api, url, callback){
         if (data.list) {
             self.count = data.count;
             currentDataCount = data.list.length;
-            var from = pageIndex * pageSize;
+            var from = self.pageIndex * pageSize;
             var to = data.list.length >= pageSize ? 
                         from + pageSize : from + data.list.length;
             self.from = from;

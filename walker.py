@@ -20,9 +20,13 @@ class Walker:
 
     def init(self):
         
-        self.walkMusicfolder()
-        
-        self.walkShares()
+
+        t = Thread(target = self.walkMusicfolder)
+        t.start()
+
+
+        t = Thread(target = self.walkShares)
+        t.start()
 
         self.discoverSchlingel()
 
@@ -92,7 +96,7 @@ class Walker:
 
         for extension in self.allowdFiles:
             if extension == ext:
-                model = self.mediafactory.createMediaModel(len(self.mediafiles), path, file, self.getCoverDir(), self.ipAdress, isLocal)
+                model = self.mediafactory.createMediaModelFromFile(len(self.mediafiles), path, file, self.ipAdress, isLocal)
                 self.appendMediaFile(model)
 
     def appendMediaFile(self, mediafile):
@@ -103,19 +107,23 @@ class Walker:
 
 
     def walkMusicfolder(self):
+        print("Read music dirs")
         for _dir in Config.getMediaDirs():
-            #self.walk(_dir)
-            #_dir = str(_dir)
-            #print(_dir)
-            t = Thread(target = self.walk, args=(_dir,))
-            t.start()
+            self.walk(_dir)
+
+        print("Add Id3 Tag Informations")
+        for mediaModel in self.mediafiles:
+            self.mediafactory.addId3Informations(mediaModel, self.ipAdress, self.getCoverDir())
 
     def walkShares(self):
+        print("Read Shares")
         shares = self.mount_shares()
         for share in shares:
-            t = Thread(target = self.walk, args=(share["mntPath"],))
-            t.start()
+            self.walk(share["mntPath"])
             #self.walk(share["mntPath"])
+        print("Add Id3 Tag Informations")
+        for mediaModel in self.mediafiles:
+            self.mediafactory.addId3Informations(mediaModel, self.ipAdress, self.getCoverDir())
 
 
     def getAlbums(self):

@@ -11,7 +11,6 @@ pages.viewmodel("playervm", ["player","api", function(player, api, background) {
 
     self.toggleRandom = player.toggleRandom;
 
-
     //Operate the player
     self.playpause = player.playpause;
 

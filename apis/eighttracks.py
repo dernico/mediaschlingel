@@ -19,7 +19,7 @@ def tags(tag):
     global LastMixParams
     global LastMixPath
 
-    tag = urllib.quote_plus(tag)
+    #tag = urllib.quote_plus(tag)
     print(tag)
     path = "mix_sets/{0}.json".format(tag)
     params = {"include": "mixes+pagination"}
@@ -27,6 +27,7 @@ def tags(tag):
     LastMixPath = path
     result = _call(path, params)
     return create_mixes_result(result)
+
 
 def search(keyword):
     global LastMixParams
@@ -80,35 +81,42 @@ def get_track(mix):
     set_current_track(result)
     return CurrentTrack["track"]
 
-def next(mix_id):
+def next(mix_id, callings=0):
     global CurrentTrack
+
+    if callings > 2:
+        #try next mix
+        mix_id = next_mix(mix_id).ID
+        params = {"mix_id": mix_id}
+        result = _call(path, params)
+        if result:
+            set_current_track(result)
+            return CurrentTrack["track"]
+        else:
+            return None
 
     if CurrentTrack["at_last_track"] == True:
         print("I am at the End of the Current Mix. Get Next mix in line ...")
-        mix_id = next_mix_id(mix_id)
+        nextMix = next_mix(mix_id)
+        return get_track(nextMix)
 
     path = "sets/{0}/next.json".format(PlayToken)
     params = {"mix_id": mix_id}
     result = _call(path, params)
     if result:
         set_current_track(result)
-        return CurrentTrack["track"]
-    else:
-        #try next mix
-        mix_id = next_mix_id(mix_id)
-        params = {"mix_id": mix_id}
-        result = _call(path, params)
-        if result:
-            set_current_track(result)
-            return CurrentTrack["track"]
+        if "track_file_stream_url" in CurrentTrack["track"]:
+            if CurrentTrack["track"]["track_file_stream_url"]:
+                return CurrentTrack["track"]
+    
+    next(mix_id, callings + 1)
 
-
-def next_mix_id(mix_id):
+def next_mix(mix_id):
     path = "sets/{0}/next_mix.json".format(PlayToken)
     params = {"mix_id": mix_id}
     result = _call(path, params)
     CurrentMix = factory.create_mix_from_tracks(result["next_mix"])
-    return CurrentMix.ID
+    return CurrentMix
 
 def skip(mix_id):
     global CurrentTrack
@@ -162,6 +170,11 @@ def _call(path, param=None):
 def set_current_track(result):
     global CurrentTrack
 
+    if not "set" in result:
+        if CurrentMix is None:
+            return
+        next(CurrentMix.ID)
+        return
     CurrentTrack = result["set"]
     CurrentTrack["track"]["cover"] = CurrentMix.Cover
 
