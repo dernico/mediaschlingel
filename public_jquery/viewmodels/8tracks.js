@@ -40,7 +40,12 @@ pages.viewmodel("tracksVM", ["api", "player", function (api, player) {
 
     self.choosenSorting.subscribe(function(newVal){
         //sendTag(self.currentTag);
-        explore();
+        if (self.searchTerm()) {
+            self.search();
+        } else {
+            explore();
+        }
+
     });
 
     var handleMixes = function(data, err){
@@ -67,7 +72,9 @@ pages.viewmodel("tracksVM", ["api", "player", function (api, player) {
         self.api.tracks.tags(tag, handleMixes);
     };
 
-    var explore = function(){
+    var explore = function () {
+
+        self.searchTerm("");
         var exploreTags = [];
         self.selectedTags().forEach(function(tag){
             exploreTags.push(tag.name);
@@ -97,7 +104,7 @@ pages.viewmodel("tracksVM", ["api", "player", function (api, player) {
         self.api.tracks.page(self.pageing().nextPage, handleMixes);
     };
 
-    self.tagClick = function(tag){
+    self.tagClick = function (tag) {
         self.selectedTags.push(tag);
         explore();
     };
@@ -122,12 +129,14 @@ pages.viewmodel("tracksVM", ["api", "player", function (api, player) {
     };
 
     self.search = function(){
-        var searchTerm = toUrlParam(self.searchTerm());
-        //var searchTag = "keyword:" + searchTerm;
-        var searchTag = "artist:" + searchTerm;
-        sendTag(searchTag);
+        //var searchTerm = toUrlParam(self.searchTerm());
+        var searchTerm = self.searchTerm();
+        var searchTag = "keyword:" + searchTerm;
+        searchTag += ":" + self.choosenSorting();
+        //var searchTag = "artist:" + searchTerm;
+        //sendTag(searchTag);
         //self.api.tracks.tags(searchTag, handleMixes);
-        //self.api.tracks.search(self.searchTerm(), handleMixes);
+        self.api.tracks.search(searchTag, handleMixes);
     };
 
     self.play = function(mix){

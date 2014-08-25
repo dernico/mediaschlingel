@@ -9,8 +9,10 @@ pages.viewmodel("settingsvm",["api", function(api) {
     };
 
     self.restart = function () {
+        api.showLoading();
         setTimeout(function(){
-            window.location = window.location.origin;
+            //window.location = window.location.origin;
+            api.removeLoading();
         }, 4000);
         api.restartSchlingel();
     };
@@ -24,7 +26,5 @@ pages.viewmodel("settingsvm",["api", function(api) {
     };
 
     self.activate = function(){
-        //$("#mypivot").pivot();
-        //$("#myhub").hub();
     };
 }]);

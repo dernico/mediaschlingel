@@ -24,6 +24,8 @@ from tornado.options import define, options
 from Helper.Helper import grab_cover
 from Config import getMediaDirs, getOutputDir
 
+from tornado import gen, web, httpclient
+
 define("port", default=8000, help="run on the given port", type=int)
 
 publicpath = "public"
@@ -47,7 +49,13 @@ class MainHandler(BaseHandler):
         self.flush()
 
 class MediaHandler(BaseHandler):
+    
     def get(self, id):
+        self.streamFile(id)
+        #tornado.ioloop.IOLoop.current().add_callback(self.streamFile, id=id)
+
+    
+    def streamFile(self, id):
         id = int(id)
         media = Player.walker.getMedia()[id]
         if(media):
@@ -57,8 +65,9 @@ class MediaHandler(BaseHandler):
                 
                 total = os.path.getsize(media.Path)
                 self.set_header("Content-Length", str(total))
+
                 for line in mediafile:
-                        self.write(line)
+                    self.write(line)
                 self.flush()
                 return
                 '''
@@ -88,7 +97,7 @@ class MediaHandler(BaseHandler):
                     b = mediafile.read(1024)
                     while len(b) > 0:
                         self.write(b)
-                        mediafile.read(1024)
+                        b = mediafile.read(1024)
 
             self.flush()
 '''
@@ -144,7 +153,18 @@ class HandleListComplete(BaseHandler):
 class HandleAlbums(BaseHandler):
 
     def get(self):
-        self.write(Player.walker.getAlbums())
+        self.handle()
+    def post(self):
+        self.handle()
+
+    def handle(self):
+        searchTerm = self.get_argument("search", None)
+        albumCount = self.get_argument("albumCount", 10)
+        albumPage = self.get_argument("albumPage", 0)
+        albumCount = int(albumCount)
+        albumPage = int(albumPage)
+        albums = Player.walker.getAlbums(searchTerm, albumPage, albumCount)
+        self.write({"albums": albums})
         self.flush()
 
 class HandleVote(BaseHandler):

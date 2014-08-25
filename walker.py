@@ -126,16 +126,30 @@ class Walker:
             self.mediafactory.addId3Informations(mediaModel, self.ipAdress, self.getCoverDir())
 
 
-    def getAlbums(self):
-        if self.media_albums is None:
-            self.media_albums = {}
-            for media in self.mediafiles:
-                if(not media["album"] in self.media_albums):
-                    self.media_albums[media["album"]] = []
+    def getAlbums(self, filter, start, end):
+        #if self.media_albums is None:
+        self.media_albums = {}
+        for media in self.mediafiles:
+            if(not media.Album in self.media_albums):
+                self.media_albums[media["album"]] = []
 
-                self.media_albums[media["album"]].append(media)
+            self.media_albums[media["album"]].append(media)
 
-        return self.media_albums
+        result = []
+        if not filter is None and not filter is "": 
+            result = []
+            for album in self.media_albums:
+                if filter.lower() in album.lower():
+                    result.append({album: self.media_albums[album]})
+        else:
+            for album in self.media_albums:
+                result.append({
+                    "album": album,
+                    "cover": self.mediafactory.getCoverPath(self.ipAdress, album),
+                    "tracks": self.media_albums[album]
+                })
+
+        return result#[start:end]
 
     def getLocalMedia(self):
         result = []

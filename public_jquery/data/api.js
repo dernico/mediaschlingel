@@ -17,12 +17,10 @@ pages.service("api", [function(){
 
     var showLoading = function() {
         removeLoading();
-        $("body").append(loading); //.fadeIn(500,function(){});
+        $("body").append(loading);
     };
     var removeLoading = function() {
-        $("#loadingContainer").remove(); /*.fadeOut(500,function(){
-            $("#loadingContainer").remove();
-        });*/
+        $("#loadingContainer").remove(); 
     };
 
     var ajax = function(config, showLoadingScreen,success,error){
@@ -39,6 +37,11 @@ pages.service("api", [function(){
             if(error) error(data);
         });
     };
+
+    api.showLoading = showLoading;
+    api.removeLoading = removeLoading;
+
+    //TODO: Remove generic get and POST and build explicit functions to call
 
     api.get = function(config){
         //var data = [{"path":"http:\/\/icecast.timlradio.co.uk\/a732.ogg","id":1,"dbid":4,"type":"Stream","name":"icecast.timlradio.co.uk"},{"path":"http:\/\/bcb-high.rautemusik.fm","id":2,"dbid":9,"type":"Stream","name":"bcb-high.rautemusik.fm"},{"path":"http:\/\/stream.blackbeatslive.de\/","id":3,"dbid":10,"type":"Stream","name":"stream.blackbeatslive.de"},{"path":"http:\/\/stream.blackbeats.fm\/","id":4,"dbid":11,"type":"Stream","name":"stream.blackbeats.fm"},{"path":"http:\/\/jam-high.rautemusik.fm","id":5,"dbid":14,"type":"Stream","name":"jam-high.rautemusik.fm"},{"path":"http:\/\/hr-mp3-m-youfm.akacast.akamaistream.net\/7\/246\/142136\/v1\/gnl.akacast.akamaistream.net\/hr-mp3-m-youfm","id":6,"dbid":18,"type":"Stream","name":"hr-mp3-m-youfm.akacast.akamaistream.net"},{"path":"http:\/\/gffstream.ic.llnwd.net\/stream\/gffstream_mp3_w76a","id":7,"dbid":21,"type":"Stream","name":"gffstream.ic.llnwd.net"},{"path":"http:\/\/gffstream.ic.llnwd.net\/stream\/gffstream_mp3_w75a","id":8,"dbid":22,"type":"Stream","name":"gffstream.ic.llnwd.net"},{"path":"http:\/\/bw.bigfm.fmstreams.de\/dnb","id":9,"dbid":23,"type":"Stream","name":"bw.bigfm.fmstreams.de"},{"path":"\/mnt\/sdcard\/sample.mp3","id":10,"dbid":-1,"type":"Localfile","name":"sample.mp3"},{"path":"\/mnt\/sdcard\/Music\/13-chiddy_bang-slow_down_(feat._black_thought_and_eldee_the_don).mp3","id":11,"dbid":-1,"type":"Localfile","name":"13-chiddy_bang-slow_down_(feat._black_thought_and_eldee_the_don).mp3"},{"path":"\/mnt\/sdcard\/Music\/18-chiddy_bang-all_things_go.mp3","id":12,"dbid":-1,"type":"Localfile","name":"18-chiddy_bang-all_things_go.mp3"},{"path":"\/mnt\/sdcard\/Music\/14-chiddy_bang-decline.mp3","id":13,"dbid":-1,"type":"Localfile","name":"14-chiddy_bang-decline.mp3"},{"path":"\/mnt\/sdcard\/Music\/05-chiddy_bang-now_u_know_(feat._jordan_brown).mp3","id":14,"dbid":-1,"type":"Localfile","name":"05-chiddy_bang-now_u_know_(feat._jordan_brown).mp3"},{"path":"\/mnt\/sdcard\/Music\/01-chiddy_bang-get_up_in_the_morning.mp3","id":15,"dbid":-1,"type":"Localfile","name":"01-chiddy_bang-get_up_in_the_morning.mp3"},{"path":"\/mnt\/sdcard\/Music\/04-chiddy_bang-fresh_like_us.mp3","id":16,"dbid":-1,"type":"Localfile","name":"04-chiddy_bang-fresh_like_us.mp3"},{"path":"\/mnt\/sdcard\/Music\/03-chiddy_bang-danger_zone.mp3","id":17,"dbid":-1,"type":"Localfile","name":"03-chiddy_bang-danger_zone.mp3"},{"path":"\/mnt\/sdcard\/Music\/02-chiddy_bang-never.mp3","id":18,"dbid":-1,"type":"Localfile","name":"02-chiddy_bang-never.mp3"},{"path":"\/mnt\/sdcard\/Music\/Chiddy Bang - Ray Charles.mp3","id":19,"dbid":-1,"type":"Localfile","name":"Chiddy Bang - Ray Charles.mp3"},{"path":"\/mnt\/sdcard\/Music\/Chiddy Bang - Opposite of Adults.mp3","id":20,"dbid":-1,"type":"Localfile","name":"Chiddy Bang - Opposite of Adults.mp3"},{"path":"\/mnt\/sdcard\/Music\/Chiddy Bang - I Can't Stop feat. Busta Rhyme.mp3","id":21,"dbid":-1,"type":"Localfile","name":"Chiddy Bang - I Can't Stop feat. Busta Rhyme.mp3"},{"path":"\/mnt\/sdcard\/Music\/Chiddy Bang  - Hey London.mp3","id":22,"dbid":-1,"type":"Localfile","name":"Chiddy Bang  - Hey London.mp3"}];
@@ -66,6 +69,21 @@ pages.service("api", [function(){
             type: 'POST',
             data: data
         }, showLoadingScreen, success, error);
+    };
+
+    api.loadAlbums = function(success, error){
+        ajax({
+            url: "/api/music/albums",
+        },true, function(data){
+
+            var albums = [];
+            data.albums.forEach(function(album){
+                albums.push(new AlbumModel(album));
+            });
+
+            if(success) success(albums);
+
+        }, error);
     };
 
     api.vote = function(item, done, error){

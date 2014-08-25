@@ -30,11 +30,14 @@ class MediaModelFactory():
     def createMediaModelFromFile(self, id, path, file, ipAddress, isLocal=False):
         
         filepath = os.path.join(path, file)
+        filepath = os.path.abspath(filepath)
+        dirs = os.path.dirname(filepath).split(os.sep)
+        dirname = dirs[-1]
         model = MediaModel()
         model.ID = id
         model.Path = filepath
         model.Artist = ""
-        model.Album = path
+        model.Album = dirname
         model.Title = file
         model.IsLocal = isLocal
         model.IsNext = False
@@ -59,11 +62,10 @@ class MediaModelFactory():
                     model.Title = str(tags[_TITLE])
                     #title = title.decode("cp1252").encode('utf-8')
 
-                covername = self.getCoverName(model.Album)
-                model.Cover = 'http://' + ipAddress + ":8000/Cover/" + covername
+                model.Cover = self.getCoverPath(ipAddress, model.Album)
 
                 if tags is not None and _COVER in tags:
-                    #covername = base64.b64encode(album) + ".jpg"
+                    covername = self.getCoverName(model.Album) + ".jpg"
                     coverpath = os.path.join(coverdir, covername)
                     if not os.path.exists(coverpath):
                         try:
@@ -76,4 +78,7 @@ class MediaModelFactory():
             print("Error parsing tags from File " + model.Path + " Error: " + str(e))
 
     def getCoverName(self, album):
-        return Helper.hash_string(album) + ".jpg"
+        return Helper.hash_string(album)
+
+    def getCoverPath(self, ipAddress, album):
+        return 'http://' + ipAddress + ":8000/Cover/" + self.getCoverName(album) + ".jpg"

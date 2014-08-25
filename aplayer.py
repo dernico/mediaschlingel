@@ -127,13 +127,15 @@ class APlayer(Base_Player):
         print "Try play id " + str(id)
         media = self.walker.getMedia()[id]
         self._set_state_NULL()
-        #self._set_property('uri', 'file://' + media.Path)
-        self._set_property('uri', media.WebPath)
+        if media.IsLocal:
+            self._set_property('uri', 'file://' + media.Path)
+            print "play " + media.Path
+        else:
+            self._set_property('uri', media.WebPath)
+            print "play " + media.WebPath
         self.currentlyPlaying = media
         self.currentlyPlaying['type'] = "local"
         self.play()
-
-        print "play " + media.WebPath
 
     def playStream(self, stream):
         print "try playing " + stream
@@ -236,7 +238,7 @@ class APlayer(Base_Player):
 
         # If its an 8track playing. Dont let the normal
         # playnext logic take place
-        if 'type' in self.currentlyPlaying and self.currentlyPlaying['type'] is "8tracks":
+        if self.currentlyPlaying['type'] is "8tracks":
             mix_id = self.currentlyPlaying['mix_id']
             track = eighttracks.skip(mix_id)
             if track:

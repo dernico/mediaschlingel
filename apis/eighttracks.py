@@ -34,7 +34,8 @@ def search(keyword):
     global LastMixPath
 
     keyword = urllib.quote_plus(keyword)
-    path = "mix_sets/keyword:{0}:popular.json".format(keyword)
+    #path = "mix_sets/keyword:{0}:popular.json".format(keyword)
+    path = "mix_sets/{0}.json".format(keyword)
     params = {"include": "mixes+pagination"}
     LastMixParams = params
     LastMixPath = path
