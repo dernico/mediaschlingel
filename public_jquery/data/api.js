@@ -71,9 +71,14 @@ pages.service("api", [function(){
         }, showLoadingScreen, success, error);
     };
 
-    api.loadAlbums = function(success, error){
+    api.loadAlbums = function(search, page, albumCount, success, error){
+        
+        albumCount = albumCount ? albumCount : 10;
+        page = page ? page : 1;
+        search = search !== undefined ? search : "";
         ajax({
             url: "/api/music/albums",
+            data: {search: search, albumCount: albumCount, albumPage: page}
         },true, function(data){
 
             var albums = [];

@@ -160,7 +160,7 @@ class HandleAlbums(BaseHandler):
     def handle(self):
         searchTerm = self.get_argument("search", None)
         albumCount = self.get_argument("albumCount", 10)
-        albumPage = self.get_argument("albumPage", 0)
+        albumPage = self.get_argument("albumPage", 1)
         albumCount = int(albumCount)
         albumPage = int(albumPage)
         albums = Player.walker.getAlbums(searchTerm, albumPage, albumCount)

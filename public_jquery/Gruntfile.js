@@ -44,9 +44,9 @@ module.exports = function(grunt) {
     },
     jshint: {
       files: ['Gruntfile.js',
-              'viewmodels/*.js', 
-              'data/*.js', 
-              'models/*.js', 
+              'viewmodels/**/*.js', 
+              'data/**/*.js', 
+              'models/**/*.js', 
               'test/specs/**/*.js'],
       options: {
         // options here to override JSHint defaults

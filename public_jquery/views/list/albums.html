@@ -1,3 +1,7 @@
+<button data-bind="click: pagePrev">prev</button>
+<button data-bind="click: pageNext">next</button>
+
+<input placeholder="Enter Albumname" data-bind="value: albumSearch, event: {keyup: albumSearchChange}" />
 
 <div data-bind="foreach: albums">
     <div>
