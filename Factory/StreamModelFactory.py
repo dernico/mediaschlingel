@@ -1,6 +1,25 @@
 from Model.StreamModel import StreamModel
+from libs.pafy import pafy
 
 class StreamModelFactory:
+
+    def createFromYouTube(self, id):
+        video = pafy.new(id)
+        audio = video.getbestaudio()
+        if not audio:
+            audio = video.getbest()
+            print("video: " + audio.title + " " + audio.mediatype)
+        model = StreamModel()
+        model.Id = id,
+        model.Description = video.description
+        model.Name = video.title
+        model.Format = video.title
+        image = video.thumb
+        if video.bigthumb:
+            image = video.bigthumb
+        model.Image = image
+        model.Stream = audio.url
+        return model
 
     def createFromUrl(self, id, url):
         model = StreamModel()

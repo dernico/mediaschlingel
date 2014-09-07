@@ -42,6 +42,12 @@ pages.viewmodel("radioVM", ["api", "player", function (api, player) {
         });
     };
 
+    self.loadRecommendations = function(){
+        self.api.raio.recommendations(function(data){
+            console.log("recommendations success");
+        });
+    };
+
     self.playRadio = function(item){
         player.playRadio(item);
         self.currentRadio = item;

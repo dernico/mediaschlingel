@@ -21,6 +21,10 @@ class Base_Player(threading.Thread):
     mainloop = None
 
     def __init__(self):
+
+        self.localType = "local"
+        self.streamType = "stream"
+        self.eightTacksType = "8tracks"
         self.volume = 5.0
         self.isPlaying = False
         self.isRandom = False
@@ -134,7 +138,7 @@ class APlayer(Base_Player):
             self._set_property('uri', media.WebPath)
             print "play " + media.WebPath
         self.currentlyPlaying = media
-        self.currentlyPlaying['type'] = "local"
+        self.currentlyPlaying['type'] = self.localType
         self.play()
 
     def playStream(self, stream):
@@ -146,11 +150,11 @@ class APlayer(Base_Player):
         self.currentlyPlaying['webpath'] = s["stream"]
         self.currentlyPlaying['title'] = s["format"]
         self.currentlyPlaying['cover'] = s["image"]
-        self.currentlyPlaying['type'] = "radio"
+        self.currentlyPlaying['type'] = self.streamType
         self.play()
 
 
-    def tryStream(self, s):
+    def playStreamModel(self, s):
         print "try playing " + s.Stream
         self._set_state_NULL()
         self._set_property('uri', s.Stream)
@@ -159,7 +163,7 @@ class APlayer(Base_Player):
         self.currentlyPlaying['name'] = s.Name
         self.currentlyPlaying['title'] = s.Format
         self.currentlyPlaying['cover'] = s.Image
-        self.currentlyPlaying['type'] = "radio"
+        self.currentlyPlaying['type'] = self.streamType
         self.play()
 
 
@@ -209,7 +213,7 @@ class APlayer(Base_Player):
             self.isRandom = True
 
     def play(self):
-        if self.currentlyPlaying['type'] is not 'local' and self.currentlyPlaying['webpath'] is not None:
+        if self.currentlyPlaying['type'] is not self.localType and self.currentlyPlaying['webpath'] is not None:
             print "checkout Stream: " + self.currentlyPlaying['webpath']
             self._set_state_NULL()
             self._set_property('uri', self.currentlyPlaying['webpath'])
@@ -226,7 +230,7 @@ class APlayer(Base_Player):
         self.isPlaying = True
 
     def pausePlay(self):
-        if self.currentlyPlaying['type'] is "radio":
+        if self.currentlyPlaying['type'] is self.streamType:
             self._set_state_NULL()
         else:
             self.cancleTracksTimer()

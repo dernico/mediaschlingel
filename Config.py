@@ -22,6 +22,9 @@ def getOutputDir():
 def getTracksApiKey():
     return Config["8tracksApiKey"]
 
+def getYoutubeApiKey():
+    return Config["YouTubeApiKey"]
+
 def get_shares():
     return Config["shares"]
 

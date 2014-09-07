@@ -43,6 +43,7 @@ pages.service("player", ["api", "background", function(api, background) {
         }
         api.post("toggleRandom", { }, self.setCurrentInfo);
     };
+
     self.fullscreen = function () {
         api.post("fullScreen", {}, self.setCurrentInfo);
     };
@@ -81,6 +82,10 @@ pages.service("player", ["api", "background", function(api, background) {
 
     self.playTracks = function(mix){
         api.tracks.play(mix, self.setCurrentInfo);
+    };
+
+    self.playYouTube = function(track){
+        api.youtube.play(track, self.setCurrentInfo);
     };
 
     self.next = function () {

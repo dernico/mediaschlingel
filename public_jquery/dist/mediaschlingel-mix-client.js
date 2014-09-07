@@ -625,6 +625,7 @@ $(document).ready(function(){
 
 })();
 
+;
 var radioModel = (function(){
 	return function(station){
 		var self = this;
@@ -633,9 +634,7 @@ var radioModel = (function(){
         self.name = station.name;
         self.genre = station.genresAndTopics;
 	};
-})();
-
-;//var api;
+})();;//var api;
 //(function(api){
 pages.service("api", [function(){
     var api = {};
@@ -743,6 +742,47 @@ pages.service("api", [function(){
         }, false, null, null);
     };
 
+    api.radio = {};
+
+    api.radio.recommendations = function(success, error){
+        ajax({
+            url: '/api/music/radio/recommendations'
+        }, true, function(data){
+            var recommendations = [];
+            data.recommendations.forEach(function(reco){
+                var model = new radioModel(reco);
+                recommendations.push(model);
+            });
+            if(success) success(recommendations);
+        }, error);
+    };
+
+    api.radio.top = function(success, error){
+        ajax({
+            url: '/api/music/radio/top'
+        }, true, function(data){
+            var tops = [];
+            data.top.forEach(function(top){
+                var model = new radioModel(top);
+                tops.push(model);
+            });
+            if(success) success(tops);
+        }, error);
+    };
+
+    api.radio.mostWanted = function(success, error){
+        ajax({
+            url: '/api/music/radio/mostWanted'
+        }, true, function(data){
+            var mostWanted = [];
+            data.mostWanted.forEach(function(most){
+                var model = new radioModel(most);
+                mostWanted.push(model);
+            });
+            if(success) success(tops);
+        }, error);
+    };
+
     api.tracks = {};
 
     api.tracks.tags = function(tag, done){
@@ -803,6 +843,35 @@ pages.service("api", [function(){
                 data: {page_to: pageTo}
             },
             true, 
+            function(data){
+                if(done) done(data);
+            },
+            function(err){
+                if(done) done(null, err);
+            });
+    };
+
+    api.youtube = {};
+
+    api.youtube.search = function(q, done){
+        ajax({
+                url: '/api/youtube/search?search=' + q
+            }, 
+            true, 
+            function(data){
+                if(done) done(data.result);
+            },
+            function(err){
+                if(done) done(null, err);
+            });
+    };
+
+    api.youtube.play = function(track, done){
+        ajax({
+                url: '/api/youtube/play?id=' + track.id,
+                type: 'POST'
+            }, 
+            false, 
             function(data){
                 if(done) done(data);
             },
@@ -902,6 +971,7 @@ pages.service("background", function(){
         }
         api.post("toggleRandom", { }, self.setCurrentInfo);
     };
+
     self.fullscreen = function () {
         api.post("fullScreen", {}, self.setCurrentInfo);
     };
@@ -940,6 +1010,10 @@ pages.service("background", function(){
 
     self.playTracks = function(mix){
         api.tracks.play(mix, self.setCurrentInfo);
+    };
+
+    self.playYouTube = function(track){
+        api.youtube.play(track, self.setCurrentInfo);
     };
 
     self.next = function () {
@@ -1582,6 +1656,35 @@ pages.viewmodel("favoritesVM", ["api", "player", function (api, player) {
         //ko.applyBindings(self, scope);
     };
 }]);;//var radioVM = ["api", "player", function (api, player) {
+pages.viewmodel("mostWantedVM", ["api", "player", function (api, player) {
+    var self = this;
+    self.results = ko.observableArray([]);
+    self.currentRadio = null;
+    self.api = api;
+
+    self.loadMostWanted = function(){
+        self.api.radio.mostWanted(function(data){
+            self.results(data);
+        });
+    };
+
+    self.playRadio = function(item){
+        player.playRadio(item);
+        self.currentRadio = item;
+    };
+
+    self.saveRadio = function () {
+        self.api.post("saveRadio", "item=" + ko.toJSON(self.currentRadio), 
+            function () {
+                self.init();
+        });
+    };
+
+    self.activate = function () {
+    };
+
+    self.loadMostWanted();
+}]);;//var radioVM = ["api", "player", function (api, player) {
 pages.viewmodel("radioVM", ["api", "player", function (api, player) {
     var self = this;
     self.listenPls = ko.observable();
@@ -1622,6 +1725,12 @@ pages.viewmodel("radioVM", ["api", "player", function (api, player) {
 
                 });
             }
+        });
+    };
+
+    self.loadRecommendations = function(){
+        self.api.raio.recommendations(function(data){
+            console.log("recommendations success");
         });
     };
 
@@ -1668,4 +1777,83 @@ pages.viewmodel("radioVM", ["api", "player", function (api, player) {
     self.activate = function () {
         
     };
+}]);;//var radioVM = ["api", "player", function (api, player) {
+pages.viewmodel("recommendationsVM", ["api", "player", function (api, player) {
+    var self = this;
+    self.results = ko.observableArray([]);
+    self.currentRadio = null;
+    self.api = api;
+
+    self.loadRecommendations = function(){
+        self.api.radio.recommendations(function(data){
+            self.results(data);
+        });
+    };
+
+    self.playRadio = function(item){
+        player.playRadio(item);
+        self.currentRadio = item;
+    };
+
+    self.saveRadio = function () {
+        self.api.post("saveRadio", "item=" + ko.toJSON(self.currentRadio), 
+            function () {
+                self.init();
+        });
+    };
+
+    self.activate = function () {
+    };
+
+    self.loadRecommendations();
+}]);;//var radioVM = ["api", "player", function (api, player) {
+pages.viewmodel("topVM", ["api", "player", function (api, player) {
+    var self = this;
+    self.results = ko.observableArray([]);
+    self.currentRadio = null;
+    self.api = api;
+
+    self.loadTops = function(){
+        self.api.radio.top(function(data){
+            self.results(data);
+        });
+    };
+
+    self.playRadio = function(item){
+        player.playRadio(item);
+        self.currentRadio = item;
+    };
+
+    self.saveRadio = function () {
+        self.api.post("saveRadio", "item=" + ko.toJSON(self.currentRadio), 
+            function () {
+                self.init();
+        });
+    };
+
+    self.activate = function () {
+    };
+
+    self.loadTops();
+}]);;pages.viewmodel('youtube.searchVM', ['api', 'player', function(api, player){
+	var self = this;
+	self.searchTerm = ko.observable();
+	self.results = ko.observableArray();
+
+	self.searchOnEnter = function(vm, e){
+		if(e.which == 13){
+			self.search();
+		}
+	};
+
+	self.search = function(){
+		api.youtube.search(self.searchTerm(), function(result){
+			self.results(result);
+		});
+	};
+
+	self.play = function(track){
+		player.playYouTube(track);
+	};
+
 }]);

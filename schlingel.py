@@ -17,6 +17,7 @@ from aplayer import APlayer
 #from mpdplayer import APlayer
 import Streams
 from apis import eighttracks
+from apis import youtube
 from Factory import TracksModelFactory
 
 from tornado.options import define, options
@@ -306,8 +307,8 @@ class HandleDiscover(BaseHandler):
         Player.walker.discoverSchlingel()
 
 
-class HandleRadio(BaseHandler):
-    def get(self, topic):
+class HandleRadioSearch(BaseHandler):
+    def get(self):
         result = {}
         
         term = self.get_argument('search', None)
@@ -316,6 +317,30 @@ class HandleRadio(BaseHandler):
         self.write(result)
         self.flush()
 
+class HandleRadioRecommendations(BaseHandler):
+    def get(self):
+        result = {}
+        result["recommendations"] = Streams.recommendations()
+
+        self.write(result)
+        self.flush()
+
+
+class HandleRadioTop(BaseHandler):
+    def get(self):
+        result = {}
+        result["top"] = Streams.top()
+
+        self.write(result)
+        self.flush()
+
+class HandleRadioMostWanted(BaseHandler):
+    def get(self):
+        result = {}
+        result["mostWanted"] = Streams.mostWanted()
+
+        self.write(result)
+        self.flush()
 
 class HandlePlayRadio(BaseHandler):
     def post(self,):
@@ -323,7 +348,7 @@ class HandlePlayRadio(BaseHandler):
         id = self.get_argument('id', None)
         if not id is None:
             station = Streams.getByStationID(id)
-            Player.tryStream(station)
+            Player.playStreamModel(station)
 
         self.write(Player.getinfo())
         self.flush()
@@ -403,6 +428,32 @@ class HandleTracksPageing(BaseHandler):
             self.flush()
         else:
             prit("no page_to parameter was found")
+
+class HandleYouTubeSearch(BaseHandler):
+    def get(self):
+        q = self.get_argument("search", None)
+        if q:
+            result = {}
+            result["result"] = youtube.search(q)
+            self.write(result)
+            self.flush()
+
+
+class HandleYouTubePlay(BaseHandler):
+    def get(self):
+        self.play()
+
+    def post(self):
+        self.play()
+
+    def play(self):
+        id = self.get_argument("id", None)
+        if id:
+            result = {}
+            streamModel = youtube.get_stream_model(id)
+            Player.playStreamModel(streamModel)
+            self.write(Player.getinfo())
+            self.flush()
 
 class HandleWebSocket(tornado.websocket.WebSocketHandler):
     def open(self):
@@ -487,7 +538,10 @@ def main():
             (r"/api/music/removeStream", HandleRemoveStream),
             (r"/api/music/grabcover", CoverGrabberHandler),
             (r"/api/music/discover", HandleDiscover),
-            (r"/api/music/radio/([^/]+)", HandleRadio),
+            (r"/api/music/radio/search", HandleRadioSearch),
+            (r"/api/music/radio/recommendations", HandleRadioRecommendations),
+            (r"/api/music/radio/top", HandleRadioTop),
+            (r"/api/music/radio/mostWanted", HandleRadioMostWanted),
             (r"/api/music/playRadio", HandlePlayRadio),
             (r"/api/music/saveRadio", HandleSaveRadio),
             (r"/api/8tracks/tags", HandleTracksTag),
@@ -495,6 +549,8 @@ def main():
             (r"/api/8tracks/search", HandleTracksSearch),
             (r"/api/8tracks/explore", HandleTracksExplorer),
             (r"/api/8tracks/page", HandleTracksPageing),
+            (r"/api/youtube/search", HandleYouTubeSearch),
+            (r"/api/youtube/play", HandleYouTubePlay),
             (r"/api/restartSchlingel", HandleRestartSchlingel),
             (r"/websocket", HandleWebSocket),
             (r"/(.*)", CustomStaticFileHandler, dict(path=publicpath))
@@ -502,13 +558,24 @@ def main():
     )
     app.listen(options.port)
     print "Und los .."
+    tornado.ioloop.PeriodicCallback(try_exit, 100).start() 
     tornado.ioloop.IOLoop.instance().start()
     print "Schliessen"
 
+def try_exit():
+    return
+
+def signal_handler(signum, frame):
+    print "Got Signal. Try exiting ... " + str(signum)
+    tornado.ioloop.IOLoop.instance().stop()
+    os._exit(1)
+
 if __name__ == "__main__":
     try:
+        import signal
+        signal.signal(signal.SIGINT, signal_handler)
         main()
     except KeyboardInterrupt:
         print "Try exiting ... "
-        os._exit(os.EX_OK)
+        os._exit(1)
         print "exiting not working"

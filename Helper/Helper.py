@@ -34,7 +34,7 @@ def downloadString(url, callback=None):
         #print "Error: {0}".format(str(ex))
         content = None
 
-    if callback: callback(content)
+    if callback: callback(url, content)
     else: return content
 
 def parsem3u(content):

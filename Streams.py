@@ -123,3 +123,12 @@ def getByStationID(station_id):
 
 def saveLastRadioResult():
     writeModelToFile(lastRadioResult)
+
+def recommendations():
+    return radio.getRecommendations()
+
+def top():
+    return radio.getTop()
+
+def mostWanted():
+    return radio.getMostWanted()

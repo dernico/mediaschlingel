@@ -106,6 +106,47 @@ pages.service("api", [function(){
         }, false, null, null);
     };
 
+    api.radio = {};
+
+    api.radio.recommendations = function(success, error){
+        ajax({
+            url: '/api/music/radio/recommendations'
+        }, true, function(data){
+            var recommendations = [];
+            data.recommendations.forEach(function(reco){
+                var model = new radioModel(reco);
+                recommendations.push(model);
+            });
+            if(success) success(recommendations);
+        }, error);
+    };
+
+    api.radio.top = function(success, error){
+        ajax({
+            url: '/api/music/radio/top'
+        }, true, function(data){
+            var tops = [];
+            data.top.forEach(function(top){
+                var model = new radioModel(top);
+                tops.push(model);
+            });
+            if(success) success(tops);
+        }, error);
+    };
+
+    api.radio.mostWanted = function(success, error){
+        ajax({
+            url: '/api/music/radio/mostWanted'
+        }, true, function(data){
+            var mostWanted = [];
+            data.mostWanted.forEach(function(most){
+                var model = new radioModel(most);
+                mostWanted.push(model);
+            });
+            if(success) success(tops);
+        }, error);
+    };
+
     api.tracks = {};
 
     api.tracks.tags = function(tag, done){
@@ -166,6 +207,35 @@ pages.service("api", [function(){
                 data: {page_to: pageTo}
             },
             true, 
+            function(data){
+                if(done) done(data);
+            },
+            function(err){
+                if(done) done(null, err);
+            });
+    };
+
+    api.youtube = {};
+
+    api.youtube.search = function(q, done){
+        ajax({
+                url: '/api/youtube/search?search=' + q
+            }, 
+            true, 
+            function(data){
+                if(done) done(data.result);
+            },
+            function(err){
+                if(done) done(null, err);
+            });
+    };
+
+    api.youtube.play = function(track, done){
+        ajax({
+                url: '/api/youtube/play?id=' + track.id,
+                type: 'POST'
+            }, 
+            false, 
             function(data){
                 if(done) done(data);
             },

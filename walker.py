@@ -235,9 +235,9 @@ class Walker:
                 Helper.downloadString(testUrl, self.discoverFinished)
 
 
-    def discoverFinished(self, data):
+    def discoverFinished(self, url, data):
         if data != None and data != "":
-            print "Find some Stuff"
+            print "Find some Stuff from: " + url
             result = data
             if isinstance(result, basestring):
                 result = json.loads(result)
