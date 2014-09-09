@@ -9,7 +9,7 @@ yt_api_endpoint = 'https://www.googleapis.com/youtube/v3/'
 yt_key = Config.getYoutubeApiKey()
 
 
-def search(q):
+def search(q, pageToken):
     query = {
         'part': 'id,snippet',
         'maxResults': 15,
@@ -17,10 +17,20 @@ def search(q):
         'q': q,
         'key': yt_key
     }
-    result = _call(yt_api_endpoint+'search', param=query)
-    #return result
-    tracks = []
-    for item in result['items']:
+    if pageToken:
+        query["pageToken"] = pageToken
+        
+    yt_result = _call(yt_api_endpoint+'search', param=query)
+    #return yt_result
+    #print yt_result
+    result = {}
+    if 'nextPageToken' in yt_result:
+        result["nextPageToken"] = yt_result["nextPageToken"]
+    if 'prevPageToken' in yt_result:
+        result["prevPageToken"] = yt_result["prevPageToken"]
+
+    result["tracks"] = []
+    for item in yt_result['items']:
         try:
             if item["id"]["kind"] == "youtube#video":
                 track = {}
@@ -36,10 +46,10 @@ def search(q):
                     print("video: " + audio.title + " " + audio.mediatype)
                 track["stream"] = audio.url
                 '''
-            	tracks.append(track)
+            	result["tracks"].append(track)
         except Exception as e:
             print(str(e))
-    return tracks
+    return result
     
 def get_stream_model(id):
     factory = StreamModelFactory()

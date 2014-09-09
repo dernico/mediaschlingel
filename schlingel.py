@@ -432,9 +432,10 @@ class HandleTracksPageing(BaseHandler):
 class HandleYouTubeSearch(BaseHandler):
     def get(self):
         q = self.get_argument("search", None)
+        pageToken = self.get_argument("pageToken", None)
         if q:
             result = {}
-            result["result"] = youtube.search(q)
+            result = youtube.search(q, pageToken)
             self.write(result)
             self.flush()
 

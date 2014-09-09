@@ -4,18 +4,25 @@
 
 <div style="padding-bottom: 10px;" class="button" data-bind="click: search">Suche</div>
 
+<div class="pageing">
+    <span class="" data-bind="click: pagePrev">Zurück </span>
+    <span class="" data-bind="click: pageNext">Weiter</span>
+</div>
 
 <div class="clearboth" data-bind="foreach: results">
-    <div class="tile">
-        <div class="tile-content">
-            <img class="tile-background" data-bind="attr: { src: thumbnail }" alt="" />
-            <div style="background-color: white;">
+    <div style="padding-bottom: 10px;">
+            <img style="width: 150px;" data-bind="attr: { src: thumbnail }" alt="" />
+
+            <div>
                 <div data-bind="text: title"></div>
-                <div data-bind="text: description"></div>
+                <!--div data-bind="text: description"></div-->
             </div>
-            <div class="tile-button">
-                <button data-bind="click: $parent.play">Play</button>
-            </div>
-        </div>
+            
+            <button  data-bind="click: $parent.play">Play</button>
     </div>
+</div>
+
+<div class="pageing">
+    <span class="" data-bind="click: pagePrev">Zurück </span>
+    <span class="" data-bind="click: pageNext">Weiter</span>
 </div>

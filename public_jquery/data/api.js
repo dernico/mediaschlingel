@@ -217,13 +217,15 @@ pages.service("api", [function(){
 
     api.youtube = {};
 
-    api.youtube.search = function(q, done){
+    api.youtube.search = function(data, done){
+
         ajax({
-                url: '/api/youtube/search?search=' + q
+                url: '/api/youtube/search',
+                data: data
             }, 
             true, 
             function(data){
-                if(done) done(data.result);
+                if(done) done(data);
             },
             function(err){
                 if(done) done(null, err);
