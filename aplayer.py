@@ -19,6 +19,7 @@ class Base_Player(threading.Thread):
 
     player = None
     mainloop = None
+    on_media_end = None
 
     def __init__(self):
 
@@ -33,6 +34,7 @@ class Base_Player(threading.Thread):
         self.nextId = []
         self.setVolume(self.volume)
         self.tracksTimer = None
+        self.on_media_end = self.default_media_end
 
         try:
             self.pipeline = gst.Pipeline
@@ -53,6 +55,15 @@ class Base_Player(threading.Thread):
             print "Error: {0}".format(str(e))
 
         threading.Thread.__init__(self)
+
+    def default_media_end(self, player):
+        if(self.currentlyPlaying['type'] is "8tracks"):
+            mix_id = self.currentlyPlaying['mix_id']
+            track = eighttracks.next(mix_id)
+            if track:
+                self._playTrack(mix_id, track)
+        else:
+            self.playNext()
 
     def _set_state(self, state):
         try:
@@ -106,14 +117,8 @@ class APlayer(Base_Player):
     def on_message(self, bus, message):
         t = message.type
         if t == gst.MESSAGE_EOS:
-
-            if(self.currentlyPlaying['type'] is "8tracks"):
-                mix_id = self.currentlyPlaying['mix_id']
-                track = eighttracks.next(mix_id)
-                if track:
-                    self._playTrack(mix_id, track)
-            else:
-                self.playNext()
+            if self.on_media_end:
+                self.on_media_end(self)
 
         elif t == gst.MESSAGE_ERROR:
             err, debug = message.parse_error()
@@ -129,6 +134,7 @@ class APlayer(Base_Player):
 
     def playId(self, id):
         print "Try play id " + str(id)
+        self.on_media_end = self.default_media_end
         media = self.walker.getMedia()[id]
         self._set_state_NULL()
         if media.IsLocal:
@@ -143,6 +149,7 @@ class APlayer(Base_Player):
 
     def playStream(self, stream):
         print "try playing " + stream
+        self.on_media_end = self.default_media_end
         self._set_state_NULL()
         self._set_property('uri', stream)
         s = Streams.getStream(stream)
@@ -156,6 +163,7 @@ class APlayer(Base_Player):
 
     def playStreamModel(self, s):
         print "try playing " + s.Stream
+        self.on_media_end = self.default_media_end
         self._set_state_NULL()
         self._set_property('uri', s.Stream)
         self.currentlyPlaying = {}
@@ -169,6 +177,7 @@ class APlayer(Base_Player):
 
     def playMix(self, mix):
         print "try playing 8Track id" + mix.ID
+        self.on_media_end = self.default_media_end
 
         track = eighttracks.get_track(mix)
         self._playTrack(mix.ID, track)
@@ -226,6 +235,12 @@ class APlayer(Base_Player):
             self.tracksTimer = Timer(30.0, lambda: eighttracks.report(track_id, mix_id))
             self.tracksTimer.start();
 
+        self._set_state_Playing()
+        self.isPlaying = True
+
+    def playPath(self, path):
+        self._set_state_NULL()
+        self._set_property('uri', path)
         self._set_state_Playing()
         self.isPlaying = True
 
@@ -325,3 +340,7 @@ class APlayer(Base_Player):
 #play_uri('file:///home/nico/dev/python/schlingel/skit.mp3')
 #player = APlayer()
 #player.playStream()
+
+
+
+Player = APlayer()

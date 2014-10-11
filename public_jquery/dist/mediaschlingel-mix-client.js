@@ -634,6 +634,15 @@ var radioModel = (function(){
         self.name = station.name;
         self.genre = station.genresAndTopics;
 	};
+})();;
+var youtubeModel = (function(){
+	return function(yt){
+		var self = this;
+		self.id = yt.id;
+        self.thumbnail = yt.thumbnail;
+        self.title = yt.title;
+        self.showPlayNext = ko.observable(yt.showPlayNext);
+	};
 })();;//var api;
 //(function(api){
 pages.service("api", [function(){
@@ -861,6 +870,12 @@ pages.service("api", [function(){
             }, 
             true, 
             function(data){
+
+                var ytModels = [];
+                data.tracks.forEach(function(item){
+                    ytModels.push(new youtubeModel(item));
+                });
+                data.tracks = ytModels;
                 if(done) done(data);
             },
             function(err){
@@ -880,6 +895,14 @@ pages.service("api", [function(){
             function(err){
                 if(done) done(null, err);
             });
+    };
+
+    api.youtube.addPlaylist = function(track, done, error){
+        ajax({
+            url: "/api/youtube/addplaylist",
+            type: "POST",
+            data: {id: track.id}
+        }, false, done, error);
     };
 
     var laut = "http://api.laut.fm";
@@ -1867,6 +1890,12 @@ pages.viewmodel("topVM", ["api", "player", function (api, player) {
 
 	self.play = function(track){
 		player.playYouTube(track);
+	};
+
+	self.playNext = function(track){
+		api.youtube.addPlaylist(track, function(){
+			track.showPlayNext(false);
+		});
 	};
 
 	self.pagePrev = function(){

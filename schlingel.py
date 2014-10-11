@@ -13,7 +13,7 @@ import tornado.ioloop
 import tornado.web
 import tornado.websocket
 
-from aplayer import APlayer
+from aplayer import Player
 #from mpdplayer import APlayer
 import Streams
 from apis import eighttracks
@@ -108,7 +108,7 @@ class CoverHandler(BaseHandler):
     def get(self, cover):
         coverpath = os.path.join(Player.walker.getCoverDir(), cover)
         if not os.path.exists(coverpath):
-            coverpath = os.path.join(curdir, "public", "schlingel.jpg")
+            coverpath = os.path.join(curdir, publicpath, "schlingel.jpg")
         print "Send Cover " + coverpath
         self.set_header("Content-Type", 'image/jpeg')
         with open(coverpath, 'rb') as cover:
@@ -451,10 +451,23 @@ class HandleYouTubePlay(BaseHandler):
         id = self.get_argument("id", None)
         if id:
             result = {}
-            streamModel = youtube.get_stream_model(id)
-            Player.playStreamModel(streamModel)
+            #streamModel = youtube.get_stream_model(id)
+            #Player.playStreamModel(streamModel)
+            youtube.play(id)
             self.write(Player.getinfo())
             self.flush()
+
+class HandleYoutTubeAddToPlaylist(BaseHandler):
+    def get(self):
+        self.add()
+
+    def post(self):
+        self.add()
+
+    def add(self):
+        id = self.get_argument("id", None)
+        if id:
+            youtube.add_to_playlist(id)
 
 class HandleWebSocket(tornado.websocket.WebSocketHandler):
     def open(self):
@@ -489,8 +502,6 @@ class CustomStaticFileHandler(tornado.web.StaticFileHandler):
         # Disable cache
         if debugMode:
             self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
-
-Player = APlayer()
 
 def main():
     global publicpath
@@ -552,6 +563,7 @@ def main():
             (r"/api/8tracks/page", HandleTracksPageing),
             (r"/api/youtube/search", HandleYouTubeSearch),
             (r"/api/youtube/play", HandleYouTubePlay),
+            (r"/api/youtube/addplaylist", HandleYoutTubeAddToPlaylist),
             (r"/api/restartSchlingel", HandleRestartSchlingel),
             (r"/websocket", HandleWebSocket),
             (r"/(.*)", CustomStaticFileHandler, dict(path=publicpath))

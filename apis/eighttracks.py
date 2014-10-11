@@ -87,14 +87,8 @@ def next(mix_id, callings=0):
 
     if callings > 2:
         #try next mix
-        mix_id = next_mix(mix_id).ID
-        params = {"mix_id": mix_id}
-        result = _call(path, params)
-        if result:
-            set_current_track(result)
-            return CurrentTrack["track"]
-        else:
-            return None
+        mix = next_mix(mix_id)
+        return get_track(mix)
 
     if CurrentTrack["at_last_track"] == True:
         print("I am at the End of the Current Mix. Get Next mix in line ...")

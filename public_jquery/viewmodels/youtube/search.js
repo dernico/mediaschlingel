@@ -30,6 +30,12 @@ pages.viewmodel('youtube.searchVM', ['api', 'player', function(api, player){
 		player.playYouTube(track);
 	};
 
+	self.playNext = function(track){
+		api.youtube.addPlaylist(track, function(){
+			track.showPlayNext(false);
+		});
+	};
+
 	self.pagePrev = function(){
 		var data = {
 			search: self.searchTerm()

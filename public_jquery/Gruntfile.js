@@ -16,6 +16,7 @@ module.exports = function(grunt) {
               "scripts/knockout-2.2.1.js",
               "scripts/linq.js",
               "scripts/Page.js",
+              "scripts/trunk.js",
               "models/**/*.js",
               "data/**/*.js",
               "services/**/*.js",

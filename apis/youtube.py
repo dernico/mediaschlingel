@@ -1,13 +1,15 @@
 from urllib import urlencode
 from Helper import Helper
 from Factory.StreamModelFactory import StreamModelFactory
+from aplayer import Player
+
 import json
 import Config
 
 
 yt_api_endpoint = 'https://www.googleapis.com/youtube/v3/'
 yt_key = Config.getYoutubeApiKey()
-
+playlist = []
 
 def search(q, pageToken):
     query = {
@@ -35,17 +37,11 @@ def search(q, pageToken):
             if item["id"]["kind"] == "youtube#video":
                 track = {}
                 track["title"] = item["snippet"]["title"]
-                track["id"] = item["id"]["videoId"]
+                id = item["id"]["videoId"]
+                track["id"] = id
                 track["description"] = item["snippet"]["description"]
                 track["thumbnail"] = item["snippet"]["thumbnails"]["high"]["url"]
-                '''
-                video = pafy.new(track["id"])
-                audio = video.getbestaudio()
-                if not audio:
-                    audio = video.getbest()
-                    print("video: " + audio.title + " " + audio.mediatype)
-                track["stream"] = audio.url
-                '''
+                track["showPlayNext"] = not is_in_playlist(track["id"])
             	result["tracks"].append(track)
         except Exception as e:
             print(str(e))
@@ -54,6 +50,42 @@ def search(q, pageToken):
 def get_stream_model(id):
     factory = StreamModelFactory()
     return factory.createFromYouTube(id)
+
+def play(id):
+    youtubeStream = get_stream_model(id)
+    _play(youtubeStream)
+
+def _play(s):
+    Player.on_media_end = on_media_end
+    Player.currentlyPlaying = {}
+    Player.currentlyPlaying['webpath'] = s.Stream
+    Player.currentlyPlaying['name'] = s.Name
+    Player.currentlyPlaying['title'] = s.Format
+    Player.currentlyPlaying['cover'] = s.Image
+    Player.currentlyPlaying['type'] = "youtube"
+    Player.playPath(s.Stream)
+
+def is_in_playlist(id):
+    global playlist
+    for yt in playlist:
+        ytId = yt.Id
+        if type(yt.Id) is tuple:
+            ytId = ytId[0]
+        if str(ytId) == str(id):
+            return True
+    return False
+
+def add_to_playlist(id):
+    global playlist
+    s = get_stream_model(id)
+    playlist.append(s)
+
+def on_media_end(player):
+    global playlist
+    if len(playlist) > 0:
+        nextTrack = playlist[0]
+        playlist = playlist[1:]
+        _play(nextTrack)
 
 
 def _call(url, param=None):
