@@ -10,8 +10,10 @@ import Config
 yt_api_endpoint = 'https://www.googleapis.com/youtube/v3/'
 yt_key = Config.getYoutubeApiKey()
 playlist = []
+currentTracks = {}
 
 def search(q, pageToken):
+    global currentTracks
     query = {
         'part': 'id,snippet',
         'maxResults': 15,
@@ -25,13 +27,14 @@ def search(q, pageToken):
     yt_result = _call(yt_api_endpoint+'search', param=query)
     #return yt_result
     #print yt_result
-    result = {}
+    currentTracks = {}
+    currentTracks["q"] = q
     if 'nextPageToken' in yt_result:
-        result["nextPageToken"] = yt_result["nextPageToken"]
+        currentTracks["nextPageToken"] = yt_result["nextPageToken"]
     if 'prevPageToken' in yt_result:
-        result["prevPageToken"] = yt_result["prevPageToken"]
+        currentTracks["prevPageToken"] = yt_result["prevPageToken"]
 
-    result["tracks"] = []
+    currentTracks["tracks"] = []
     for item in yt_result['items']:
         try:
             if item["id"]["kind"] == "youtube#video":
@@ -42,10 +45,10 @@ def search(q, pageToken):
                 track["description"] = item["snippet"]["description"]
                 track["thumbnail"] = item["snippet"]["thumbnails"]["high"]["url"]
                 track["showPlayNext"] = not is_in_playlist(track["id"])
-            	result["tracks"].append(track)
+            	currentTracks["tracks"].append(track)
         except Exception as e:
             print(str(e))
-    return result
+    return currentTracks
     
 def get_stream_model(id):
     factory = StreamModelFactory()
@@ -57,6 +60,10 @@ def play(id):
 
 def _play(s):
     Player.on_media_end = on_media_end
+    Player.play_next = on_next
+    Player.play_prev = on_prev
+    Player.on_pause = on_pause
+    
     Player.currentlyPlaying = {}
     Player.currentlyPlaying['webpath'] = s.Stream
     Player.currentlyPlaying['name'] = s.Name
@@ -81,12 +88,21 @@ def add_to_playlist(id):
     playlist.append(s)
 
 def on_media_end(player):
+    on_next()
+
+def on_next():
     global playlist
     if len(playlist) > 0:
         nextTrack = playlist[0]
         playlist = playlist[1:]
         _play(nextTrack)
 
+def on_prev():
+    # just do nothing :)
+    return
+
+def on_pause():
+    Player.pause()
 
 def _call(url, param=None):
         #print('call radio with path=%s, param=%s', path, param)
