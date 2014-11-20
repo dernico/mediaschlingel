@@ -413,7 +413,7 @@ class HandleTracksPlay(BaseHandler):
         if mix:
             mix = json.loads(mix)
             mix = TracksModelFactory.create_mix_from_post(mix)
-            Player.playMix(mix)
+            eighttracks.playMix(mix)
             self.write(Player.getinfo())
             self.flush()
         else:
