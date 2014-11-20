@@ -20,6 +20,9 @@ class Base_Player(threading.Thread):
     player = None
     mainloop = None
     on_media_end = None
+    play_next = None
+    play_prev = None
+    on_pause = None
 
     def __init__(self):
 
@@ -33,8 +36,7 @@ class Base_Player(threading.Thread):
         self.currentlyPlaying = {}
         self.nextId = []
         self.setVolume(self.volume)
-        self.tracksTimer = None
-        self.on_media_end = self.default_media_end
+        self.setDefaultMediaHandling()
 
         try:
             self.pipeline = gst.Pipeline
@@ -57,13 +59,13 @@ class Base_Player(threading.Thread):
         threading.Thread.__init__(self)
 
     def default_media_end(self, player):
-        if(self.currentlyPlaying['type'] is "8tracks"):
-            mix_id = self.currentlyPlaying['mix_id']
-            track = eighttracks.next(mix_id)
-            if track:
-                self._playTrack(mix_id, track)
-        else:
-            self.playNext()
+        # if(self.currentlyPlaying['type'] is "8tracks"):
+        #     mix_id = self.currentlyPlaying['mix_id']
+        #     track = eighttracks.next(mix_id)
+        #     if track:
+        #         self._playTrack(mix_id, track)
+        # else:
+        self.playNext()
 
     def _set_state(self, state):
         try:
@@ -132,9 +134,16 @@ class APlayer(Base_Player):
     def setNext(self, nextid):
         self.nextId.append(int(nextid))
 
+    def setDefaultMediaHandling(self):
+        self.on_media_end = self.default_media_end
+        self.play_next = self._playNext
+        self.play_prev = self._playPrev
+        self.on_pause = self._on_pause
+
+
     def playId(self, id):
         print "Try play id " + str(id)
-        self.on_media_end = self.default_media_end
+        self.setDefaultMediaHandling()
         media = self.walker.getMedia()[id]
         self._set_state_NULL()
         if media.IsLocal:
@@ -149,7 +158,7 @@ class APlayer(Base_Player):
 
     def playStream(self, stream):
         print "try playing " + stream
-        self.on_media_end = self.default_media_end
+        self.setDefaultMediaHandling()
         self._set_state_NULL()
         self._set_property('uri', stream)
         s = Streams.getStream(stream)
@@ -163,7 +172,7 @@ class APlayer(Base_Player):
 
     def playStreamModel(self, s):
         print "try playing " + s.Stream
-        self.on_media_end = self.default_media_end
+        self.setDefaultMediaHandling()
         self._set_state_NULL()
         self._set_property('uri', s.Stream)
         self.currentlyPlaying = {}
@@ -175,39 +184,6 @@ class APlayer(Base_Player):
         self.play()
 
 
-    def playMix(self, mix):
-        print "try playing 8Track id" + mix.ID
-        self.on_media_end = self.default_media_end
-
-        track = eighttracks.get_track(mix)
-        self._playTrack(mix.ID, track)
-
-    def _playTrack(self, mix_id, track):
-        stream_url = track["track_file_stream_url"]
-        name = track["name"]
-        title = track["release_name"]
-        track_id = track["id"]
-        cover = track["cover"]
-
-        self._set_state_NULL()
-        self._set_property('uri', stream_url)
-        self.currentlyPlaying = {}
-        self.currentlyPlaying['webpath'] = stream_url
-        self.currentlyPlaying['name'] = name
-        self.currentlyPlaying['title'] = title
-        self.currentlyPlaying['album'] = name
-        self.currentlyPlaying['cover'] = cover
-        self.currentlyPlaying['track_id'] = track_id
-        self.currentlyPlaying['mix_id'] = mix_id
-        self.currentlyPlaying['type'] = "8tracks"
-        self.play()
-
-
-    def cancleTracksTimer(self):
-        print("cancle Tracks Timer")
-        if self.tracksTimer: 
-            self.tracksTimer.cancel();
-        self.tracksTimer = None
 
     def getinfo(self):
         self.currentlyPlaying['IsPlaying'] = self.isPlaying
@@ -222,18 +198,10 @@ class APlayer(Base_Player):
             self.isRandom = True
 
     def play(self):
-        if self.currentlyPlaying['type'] is not self.localType and self.currentlyPlaying['webpath'] is not None:
+        if self.currentlyPlaying['type'] is self.streamType and self.currentlyPlaying['webpath'] is not None:
             print "checkout Stream: " + self.currentlyPlaying['webpath']
             self._set_state_NULL()
             self._set_property('uri', self.currentlyPlaying['webpath'])
-        
-        if self.currentlyPlaying['type'] is "8tracks":
-            print("cancle and start tracks timer")
-            self.cancleTracksTimer()
-            track_id = self.currentlyPlaying['track_id']
-            mix_id = self.currentlyPlaying['mix_id']
-            self.tracksTimer = Timer(30.0, lambda: eighttracks.report(track_id, mix_id))
-            self.tracksTimer.start();
 
         self._set_state_Playing()
         self.isPlaying = True
@@ -245,28 +213,41 @@ class APlayer(Base_Player):
         self.isPlaying = True
 
     def pausePlay(self):
+        if(self.on_pause):
+            self.on_pause()
+
+    def _on_pause(self):
         if self.currentlyPlaying['type'] is self.streamType:
-            self._set_state_NULL()
+            self.stop()
         else:
-            self.cancleTracksTimer()
-            self._set_state_Paused()
+            self.pause()
+
+    def pause(self):
+        self._set_state_Paused()
+        self.isPlaying = False
+
+    def stop(self):
+        self._set_state_NULL()
         self.isPlaying = False
 
     def playNext(self):
+        if self.play_next:
+            self.play_next()
+
+    def _playNext(self):
         print "play next ..."
 
         # If its an 8track playing. Dont let the normal
         # playnext logic take place
-        if self.currentlyPlaying['type'] is "8tracks":
-            mix_id = self.currentlyPlaying['mix_id']
-            track = eighttracks.skip(mix_id)
-            if track:
-                self._playTrack(mix_id, track)
-                return
-            return
+        # if self.currentlyPlaying['type'] is "8tracks":
+        #     mix_id = self.currentlyPlaying['mix_id']
+        #     track = eighttracks.skip(mix_id)
+        #     if track:
+        #         self._playTrack(mix_id, track)
+        #         return
+        #     return
         
 
-        self.cancleTracksTimer()
         self._set_state_NULL()
         nextid = 0
         if len(self.nextId) > 0:
@@ -287,12 +268,15 @@ class APlayer(Base_Player):
             self.isPlaying = False
 
     def playPrev(self):
+        if self.play_prev:
+            self.play_prev()
+
+    def _playPrev(self):
         print "play prev ..."
 
         if self.currentlyPlaying['type'] is "8tracks":
             return
         
-        self.cancleTracksTimer()
         self._set_state_NULL()
         nextid = self.currentlyPlaying["id"] - 1
         if nextid < 0:
