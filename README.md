@@ -1,6 +1,8 @@
 mediaschlingel
 ==============
 
+sudo apt-get install python-gst0.10 gstreamer0.10-plugins-good gstreamer0.10-plugins-ugly
+
 Install tornado
 
 cd libs/tornado-3.2
