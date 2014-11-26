@@ -4,7 +4,7 @@
 
 <div style="padding-bottom: 10px;" class="button" data-bind="click: search">Suche</div>
 
-<div class="pageing">
+<div data-bind="visible: showPaging" class="pageing">
     <span class="" data-bind="click: pagePrev">Zurück </span>
     <span class="" data-bind="click: pageNext">Weiter</span>
 </div>
@@ -23,7 +23,7 @@
     </div>
 </div>
 
-<div class="pageing">
+<div data-bind="visible: showPaging" class="pageing">
     <span class="" data-bind="click: pagePrev">Zurück </span>
     <span class="" data-bind="click: pageNext">Weiter</span>
 </div>

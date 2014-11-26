@@ -59,28 +59,19 @@
     </script>
 </head>
 <body>
-
-    <!--div data-role="header">
-        <div data-role="navbar">
-            <ul class="menu">
-                <li><a href="#/list">List</a></li>
-                <li><a href="#/streams">Radio</a></li>
-                <li><a href="#/8tracks">8tracks</a></li>
-                <li><a href="#/youtube">YouTube</a></li>
-                <li><a href="#/settings">Opt</a></li>
-            </ul>
-        </div>
-    </div-->
-
+        
+    <div id="background" class="cover" data-control="page" data-options="vm: 'backgroundVM'">
+        <div class="cover-img" data-bind="style: { backgroundImage: Cover }"></div>
+    </div>
 
     <nav class="pushy pushy-left">
-            <ul >
-                <li><a href="#/list">List</a></li>
-                <li><a href="#/streams">Radio</a></li>
-                <li><a href="#/8tracks">8tracks</a></li>
-                <li><a href="#/youtube">YouTube</a></li>
-                <li><a href="#/settings">Optionen</a></li>
-            </ul>
+        <ul >
+            <li><a href="#/list">List</a></li>
+            <li><a href="#/streams">Radio</a></li>
+            <li><a href="#/8tracks">8tracks</a></li>
+            <li><a href="#/youtube">YouTube</a></li>
+            <li><a href="#/settings">Optionen</a></li>
+        </ul>
     </nav>
 
 
@@ -89,11 +80,10 @@
 
     <div id="container">
         <!-- Menu Button -->
-        <div class="menu-btn">&#9776; Menu</div>
-        
-        <div id="background" class="cover" data-control="page" data-options="vm: 'backgroundVM'">
-            <img class="cover-img" data-bind="attr: {src: Cover}" />
-        </div>
+        <!--div class="menu-btn">&#9776;</div-->
+        <a class="menu-btn">
+          <img src="css/images/menu.svg" alt="">
+        </a>
 
         <div class="header-splitter"></div>
 
@@ -101,7 +91,7 @@
             <div id="playerControl" data-control="page" data-options="view: 'views/start.html', vm: 'playervm'"></div>
         </div>
 
-        <div >
+        <div class="content-panel">
             <div id="pages" class="pages"></div>
         </div>
     </div>

@@ -256,7 +256,20 @@ pages.service("api", [function(){
         ajax({
             url: "/api/youtube/addplaylist",
             type: "POST",
+            data: {track: JSON.stringify( track )}
+        }, false, done, error);
+    };
+
+    api.youtube.related = function(track, done, error){
+        ajax({
+            url: "/api/youtube/related",
             data: {id: track.id}
+        }, false, done, error);
+    };
+
+    api.youtube.getPlaylist = function(done, error){
+        ajax({
+            url: "/api/youtube/playlist"
         }, false, done, error);
     };
 

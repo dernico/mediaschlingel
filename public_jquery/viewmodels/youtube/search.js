@@ -4,6 +4,7 @@ pages.viewmodel('youtube.searchVM', ['api', 'player', function(api, player){
 	self.results = ko.observableArray();
 	self.nextPageToken = null;
 	self.prevPageToken = null;
+	self.showPaging = ko.observable(false);
 
 	self.searchOnEnter = function(vm, e){
 		if(e.which == 13){
@@ -24,10 +25,14 @@ pages.viewmodel('youtube.searchVM', ['api', 'player', function(api, player){
 	self.search = function(){
 		var data = {search: self.searchTerm()};
 		api.youtube.search(data, handleResult);
+		self.showPaging(true);
 	};
 
 	self.play = function(track){
-		player.playYouTube(track);
+		player.playYouTube(track, function(){
+			api.youtube.related(track, handleResult);
+			self.showPaging(false);
+		});
 	};
 
 	self.playNext = function(track){

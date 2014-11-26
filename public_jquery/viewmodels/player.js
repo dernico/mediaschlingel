@@ -5,9 +5,7 @@ pages.viewmodel("playervm", ["player","api", function(player, api, background) {
     self.showPlaying = player.showPlaying;
     self.randomOff = player.randomOff;
 
-    self.Album = player.Album;
-    self.Name = player.Name;
-    self.Volumn = player.Volumn;
+    self.currentData = player.currentData;
 
     self.toggleRandom = player.toggleRandom;
 

@@ -634,14 +634,13 @@ var radioModel = (function(){
         self.name = station.name;
         self.genre = station.genresAndTopics;
 	};
-})();;
-var youtubeModel = (function(){
+})();;var youtubeModel = (function(){
 	return function(yt){
 		var self = this;
 		self.id = yt.id;
-        self.thumbnail = yt.thumbnail;
-        self.title = yt.title;
-        self.showPlayNext = ko.observable(yt.showPlayNext);
+		self.thumbnail = yt.thumbnail;
+		self.title = yt.title;
+		self.showPlayNext = ko.observable(yt.showPlayNext);
 	};
 })();;//var api;
 //(function(api){
@@ -901,7 +900,20 @@ pages.service("api", [function(){
         ajax({
             url: "/api/youtube/addplaylist",
             type: "POST",
+            data: {track: JSON.stringify( track )}
+        }, false, done, error);
+    };
+
+    api.youtube.related = function(track, done, error){
+        ajax({
+            url: "/api/youtube/related",
             data: {id: track.id}
+        }, false, done, error);
+    };
+
+    api.youtube.getPlaylist = function(done, error){
+        ajax({
+            url: "/api/youtube/playlist"
         }, false, done, error);
     };
 
@@ -941,14 +953,18 @@ pages.service("background", function(){
 
 		if(cover){
 			if(cover.indexOf("http") != -1){
-				self.Cover(cover);
+				self.Cover(getCoverUrl(cover));
 			}
 			else{
-				self.Cover('Cover/' + cover);
+				self.Cover(getCoverUrl('Cover/' + cover));
 			}
 		}else{
-			self.Cover("/schlingel.jpg");
+			self.Cover(getCoverUrl("/schlingel.jpg"));
 		}
+	};
+
+	var getCoverUrl = function(cover){
+		return "url(" + cover + ")"
 	};
 
 });;pages.service("player", ["api", "background", function(api, background) {
@@ -959,21 +975,27 @@ pages.service("background", function(){
     self.randomOff = ko.observable(true);
     self.PlayingFile = ko.observable(null);
 
-    self.Album = ko.observable();
-    self.Name = ko.observable();
-    self.Volumn = ko.observable();
+
+    self.currentData = {
+        Album: ko.observable(),
+        Name: ko.observable(),
+        Volumn: ko.observable(),
+        Cover: ko.observable()
+    };
 
 
     self.setCurrentInfo = function (data) {
         
-        background.setCover(data.cover);
+        //background.setCover(data.cover);
 
         var album = data.album ? data.album : "-";
         var title = data.title ? data.title : "-";
         
-        self.Album(album);
-        self.Name(title);
-        self.Volumn(data.Volume);
+        self.currentData.Album(album);
+        self.currentData.Name(title);
+        self.currentData.Volumn(data.Volume);
+        self.currentData.Cover(data.cover);
+
         self.showPlaying(!data.IsPlaying);
         self.randomOff(!data.IsRandom);
     };
@@ -1036,9 +1058,12 @@ pages.service("background", function(){
     self.playTracks = function(mix){
         api.tracks.play(mix, self.setCurrentInfo);
     };
-
-    self.playYouTube = function(track){
-        api.youtube.play(track, self.setCurrentInfo);
+    
+    self.playYouTube = function(track, done){
+        api.youtube.play(track, function(data){
+            self.setCurrentInfo(data);
+            if(done) done(data);
+        });
     };
 
     self.next = function () {
@@ -1211,6 +1236,7 @@ pages.viewmodel("tracksVM", ["api", "player", function (api, player) {
 pages.viewmodel("backgroundVM", ['background',function(backgroundService){
 	var self = this;
 	self.Cover = backgroundService.Cover;
+	backgroundService.setCover();
 }]);;
 pages.viewmodel("albumsVM", ["api", "player", function(data, player) {
 
@@ -1530,9 +1556,7 @@ var listvm = ["api", "player", function(data, player) {
     self.showPlaying = player.showPlaying;
     self.randomOff = player.randomOff;
 
-    self.Album = player.Album;
-    self.Name = player.Name;
-    self.Volumn = player.Volumn;
+    self.currentData = player.currentData;
 
     self.toggleRandom = player.toggleRandom;
 
@@ -1860,12 +1884,38 @@ pages.viewmodel("topVM", ["api", "player", function (api, player) {
     };
 
     self.loadTops();
+}]);;pages.viewmodel('youtube.playlistVM', ['api', 'player', function(api, player){
+	var self = this;
+	self.results = ko.observableArray();
+
+	self.searchOnEnter = function(vm, e){
+		if(e.which == 13){
+			self.search();
+		}
+	};
+
+	self.play = function(track){
+		player.playYouTube(track, function(){
+			api.youtube.related(track, self.activate);
+		});
+	};
+
+	var handleResult = function(result){
+		self.results(result.playlist);
+	};
+
+
+	self.activate = function(){
+		api.youtube.getPlaylist(handleResult);
+	};
+
 }]);;pages.viewmodel('youtube.searchVM', ['api', 'player', function(api, player){
 	var self = this;
 	self.searchTerm = ko.observable();
 	self.results = ko.observableArray();
 	self.nextPageToken = null;
 	self.prevPageToken = null;
+	self.showPaging = ko.observable(false);
 
 	self.searchOnEnter = function(vm, e){
 		if(e.which == 13){
@@ -1886,10 +1936,14 @@ pages.viewmodel("topVM", ["api", "player", function (api, player) {
 	self.search = function(){
 		var data = {search: self.searchTerm()};
 		api.youtube.search(data, handleResult);
+		self.showPaging(true);
 	};
 
 	self.play = function(track){
-		player.playYouTube(track);
+		player.playYouTube(track, function(){
+			api.youtube.related(track, handleResult);
+			self.showPaging(false);
+		});
 	};
 
 	self.playNext = function(track){

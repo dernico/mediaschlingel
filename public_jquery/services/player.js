@@ -6,21 +6,27 @@ pages.service("player", ["api", "background", function(api, background) {
     self.randomOff = ko.observable(true);
     self.PlayingFile = ko.observable(null);
 
-    self.Album = ko.observable();
-    self.Name = ko.observable();
-    self.Volumn = ko.observable();
+
+    self.currentData = {
+        Album: ko.observable(),
+        Name: ko.observable(),
+        Volumn: ko.observable(),
+        Cover: ko.observable()
+    };
 
 
     self.setCurrentInfo = function (data) {
         
-        background.setCover(data.cover);
+        //background.setCover(data.cover);
 
         var album = data.album ? data.album : "-";
         var title = data.title ? data.title : "-";
         
-        self.Album(album);
-        self.Name(title);
-        self.Volumn(data.Volume);
+        self.currentData.Album(album);
+        self.currentData.Name(title);
+        self.currentData.Volumn(data.Volume);
+        self.currentData.Cover(data.cover);
+
         self.showPlaying(!data.IsPlaying);
         self.randomOff(!data.IsRandom);
     };
@@ -83,9 +89,12 @@ pages.service("player", ["api", "background", function(api, background) {
     self.playTracks = function(mix){
         api.tracks.play(mix, self.setCurrentInfo);
     };
-
-    self.playYouTube = function(track){
-        api.youtube.play(track, self.setCurrentInfo);
+    
+    self.playYouTube = function(track, done){
+        api.youtube.play(track, function(data){
+            self.setCurrentInfo(data);
+            if(done) done(data);
+        });
     };
 
     self.next = function () {

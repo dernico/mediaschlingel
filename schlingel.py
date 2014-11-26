@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
+
 reload(sys)
 sys.setdefaultencoding("utf-8")
 import urllib
@@ -14,7 +15,7 @@ import tornado.web
 import tornado.websocket
 
 from aplayer import Player
-#from mpdplayer import APlayer
+# from mpdplayer import APlayer
 import Streams
 from apis import eighttracks
 from apis import youtube
@@ -32,38 +33,40 @@ define("port", default=8000, help="run on the given port", type=int)
 publicpath = "public"
 debugMode = False
 
+
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
         #user_json = self.get_secure_cookie("chatdemo_user")
         #if not user_json: return None
         return None
 
+
 class MainHandler(BaseHandler):
     index = None
 
     def get(self):
         global publicpath
-        f = open(curdir + sep + publicpath + sep + 'index.html')
+        f = open(publicpath + sep + 'index.html')
         self.index = f.read()
         f.close()
         self.write(self.index)
         self.flush()
 
+
 class MediaHandler(BaseHandler):
-    
     def get(self, id):
         self.streamFile(id)
         #tornado.ioloop.IOLoop.current().add_callback(self.streamFile, id=id)
 
-    
+
     def streamFile(self, id):
         id = int(id)
         media = Player.walker.getMedia()[id]
-        if(media):
-            
+        if (media):
+
             self.set_header("Content-Type", 'audio/mpeg')
             with open(media.Path, 'rb') as mediafile:
-                
+
                 total = os.path.getsize(media.Path)
                 self.set_header("Content-Length", str(total))
 
@@ -103,8 +106,8 @@ class MediaHandler(BaseHandler):
             self.flush()
 '''
 
-class CoverHandler(BaseHandler):
 
+class CoverHandler(BaseHandler):
     def get(self, cover):
         coverpath = os.path.join(Player.walker.getCoverDir(), cover)
         if not os.path.exists(coverpath):
@@ -115,14 +118,14 @@ class CoverHandler(BaseHandler):
             self.write(cover.read())
             self.flush()
 
-class CoverGrabberHandler(BaseHandler):
 
+class CoverGrabberHandler(BaseHandler):
     def get(self):
         for mediadir in getMediaDirs():
             grab_cover(mediadir, getOutputDir())
 
-class HandlePlayPause(BaseHandler):
 
+class HandlePlayPause(BaseHandler):
     def get(self):
         print 'Is Playing: ' + str(Player.playing())
         if Player.playing():
@@ -132,8 +135,8 @@ class HandlePlayPause(BaseHandler):
             Player.play()
             print 'Play'
 
-class HandleList(BaseHandler):
 
+class HandleList(BaseHandler):
     def get(self):
         term = self.get_argument("filter", None)
         start = int(self.get_argument("skip", 25))
@@ -143,18 +146,20 @@ class HandleList(BaseHandler):
         self.write(files)
         self.flush()
 
+
 class HandleListComplete(BaseHandler):
     def get(self):
         files = Player.walker.getLocalMedia()
         self.write({
             'count': len(files),
-            'list': files    
+            'list': files
         })
 
-class HandleAlbums(BaseHandler):
 
+class HandleAlbums(BaseHandler):
     def get(self):
         self.handle()
+
     def post(self):
         self.handle()
 
@@ -168,6 +173,7 @@ class HandleAlbums(BaseHandler):
         self.write({"albums": albums})
         self.flush()
 
+
 class HandleVote(BaseHandler):
     def get(self):
         print "Handle set Next"
@@ -176,17 +182,20 @@ class HandleVote(BaseHandler):
             print 'Next Media ID is ' + id
             Player.setNext(id);
 
+
 class HandleNext(BaseHandler):
     def post(self):
         files = Player.playNext()
         self.write(Player.getinfo())
         self.flush()
 
+
 class HandlePrev(BaseHandler):
     def post(self):
         files = Player.playPrev()
         self.write(Player.getinfo())
         self.flush()
+
 
 class HandleInfo(BaseHandler):
     def get(self):
@@ -197,9 +206,11 @@ class HandleInfo(BaseHandler):
         self.write(info)
         self.flush()
 
+
 class HandlePlay(BaseHandler):
     def get(self):
         self.play()
+
     def post(self):
         self.play()
 
@@ -216,6 +227,7 @@ class HandlePlay(BaseHandler):
 
         self.write(Player.getinfo())
         self.flush()
+
 
 class HandlePlayStream(BaseHandler):
     def get(self):
@@ -237,6 +249,7 @@ class HandlePlayStream(BaseHandler):
         self.write(Player.getinfo())
         self.flush()
 
+
 class HandlePause(BaseHandler):
     def post(self):
         if Player.playing():
@@ -244,6 +257,7 @@ class HandlePause(BaseHandler):
             self.write(Player.getinfo())
             self.flush()
             print "Pause"
+
 
 class HandleToggleRandom(BaseHandler):
     def get(self):
@@ -258,6 +272,7 @@ class HandleToggleRandom(BaseHandler):
         self.flush()
         print "Toggle Random"
 
+
 class HandleSearch(BaseHandler):
     def get(self):
         term = self.path.split('/')[3]
@@ -268,12 +283,14 @@ class HandleSearch(BaseHandler):
         self.write(result)
         self.flush()
 
+
 class HandleVolumeUp(BaseHandler):
     def post(self):
         Player.volUp()
         info = Player.getinfo()
         self.write(info)
         self.flush()
+
 
 class HandleVolumeDown(BaseHandler):
     def post(self):
@@ -282,25 +299,26 @@ class HandleVolumeDown(BaseHandler):
         self.write(info)
         self.flush()
 
+
 class HandleGetStreams(BaseHandler):
     def get(self):
         streams = Streams.getStreams()
         self.write(streams)
         self.flush()
 
-class HandleAddStream(BaseHandler):
 
+class HandleAddStream(BaseHandler):
     def post(self):
         path = self.get_argument('item', None)
         Streams.addStream(path)
 
 
 class HandleRemoveStream(BaseHandler):
-
     def post(self):
         id = self.get_argument('id', None)
         if id:
             Streams.removeStream(int(id))
+
 
 class HandleDiscover(BaseHandler):
     def get(self):
@@ -310,12 +328,13 @@ class HandleDiscover(BaseHandler):
 class HandleRadioSearch(BaseHandler):
     def get(self):
         result = {}
-        
+
         term = self.get_argument('search', None)
         result["result"] = Streams.search(term)
 
         self.write(result)
         self.flush()
+
 
 class HandleRadioRecommendations(BaseHandler):
     def get(self):
@@ -334,6 +353,7 @@ class HandleRadioTop(BaseHandler):
         self.write(result)
         self.flush()
 
+
 class HandleRadioMostWanted(BaseHandler):
     def get(self):
         result = {}
@@ -342,9 +362,9 @@ class HandleRadioMostWanted(BaseHandler):
         self.write(result)
         self.flush()
 
+
 class HandlePlayRadio(BaseHandler):
-    def post(self,):
-        
+    def post(self, ):
         id = self.get_argument('id', None)
         if not id is None:
             station = Streams.getByStationID(id)
@@ -360,7 +380,7 @@ class HandleSaveRadio(BaseHandler):
         #if station is not None:
         #    stationJson = json.loads(station)
         Streams.saveLastRadioResult()
-        
+
         self.write({})
         self.flush()
 
@@ -377,15 +397,16 @@ class HandleTracksTag(BaseHandler):
         result = None
         if tag:
             result = eighttracks.tags(tag)
-        
+
         if result:
             self.write(result)
             self.flush()
 
+
 class HandleTracksExplorer(BaseHandler):
     def get(self):
         self.handleRequest()
-        
+
     def post(self):
         self.handleRequest()
 
@@ -394,18 +415,20 @@ class HandleTracksExplorer(BaseHandler):
         result = None
         if tags:
             result = eighttracks.explore(tags)
-        
+
         if result:
             self.write(result)
             self.flush()
 
+
 class HandleTracksSearch(BaseHandler):
     def get(self):
         search = self.get_argument("search", None)
-        if(search):
+        if (search):
             mixes = eighttracks.search(search)
             self.write(mixes)
             self.flush()
+
 
 class HandleTracksPlay(BaseHandler):
     def post(self):
@@ -419,6 +442,7 @@ class HandleTracksPlay(BaseHandler):
         else:
             print("cant get mix from post")
 
+
 class HandleTracksPageing(BaseHandler):
     def get(self):
         page_to = self.get_argument("page_to")
@@ -427,7 +451,8 @@ class HandleTracksPageing(BaseHandler):
             self.write(mixes)
             self.flush()
         else:
-            prit("no page_to parameter was found")
+            print("no page_to parameter was found")
+
 
 class HandleYouTubeSearch(BaseHandler):
     def get(self):
@@ -457,6 +482,7 @@ class HandleYouTubePlay(BaseHandler):
             self.write(Player.getinfo())
             self.flush()
 
+
 class HandleYoutTubeAddToPlaylist(BaseHandler):
     def get(self):
         self.add()
@@ -465,9 +491,33 @@ class HandleYoutTubeAddToPlaylist(BaseHandler):
         self.add()
 
     def add(self):
-        id = self.get_argument("id", None)
-        if id:
-            youtube.add_to_playlist(id)
+        trackString = self.get_argument("track", None)
+        if trackString:
+            track = json.loads(trackString)
+            youtube.add_to_playlist(track)
+
+
+class HandleYouTubePlaylist(BaseHandler):
+    def get(self):
+        self.playlist()
+
+    def post(self):
+        self.playlist()
+
+    def playlist(self):
+        result = youtube.get_playlist()
+        self.write(result)
+        self.flush()
+
+
+class HandleYouTubeRelated(BaseHandler):
+    def get(self, *args, **kwargs):
+        video_id = self.get_argument("id", None)
+        if video_id:
+            result = youtube.get_related_songs(video_id)
+            self.write(result)
+        self.flush()
+
 
 class HandleWebSocket(tornado.websocket.WebSocketHandler):
     def open(self):
@@ -487,6 +537,7 @@ class HandleWebSocket(tornado.websocket.WebSocketHandler):
     def on_close(self):
         print "Websocket is closed"
 
+
 class HandleRestartSchlingel(BaseHandler):
     def get(self):
         """Restarts the current program.
@@ -494,14 +545,17 @@ class HandleRestartSchlingel(BaseHandler):
         saving data) must be done before calling this function."""
         #python = sys.executable
         #os.execl(python, python, * sys.argv)
-        os.execl(sys.executable, *([sys.executable]+sys.argv))
+        os.execl(sys.executable, *([sys.executable] + sys.argv))
+
 
 class CustomStaticFileHandler(tornado.web.StaticFileHandler):
     global debugMode
+
     def set_extra_headers(self, path):
         # Disable cache
         if debugMode:
             self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+
 
 def main():
     global publicpath
@@ -510,8 +564,9 @@ def main():
     print "Starte Server"
     try:
         import gobject
+
         gobject.threads_init()
-    except Exception:   
+    except Exception:
         print "Could not load gobject"
 
     #Player.run()
@@ -523,7 +578,7 @@ def main():
     print("publicpath: {}".format(publicpath))
 
     debugArg = sys.argv[len(sys.argv) - 1]
-    if(debugArg == "debug"):
+    if (debugArg == "debug"):
         debugMode = True
 
     app = tornado.web.Application(
@@ -564,6 +619,8 @@ def main():
             (r"/api/youtube/search", HandleYouTubeSearch),
             (r"/api/youtube/play", HandleYouTubePlay),
             (r"/api/youtube/addplaylist", HandleYoutTubeAddToPlaylist),
+            (r"/api/youtube/related", HandleYouTubeRelated),
+            (r"/api/youtube/playlist", HandleYouTubePlaylist),
             (r"/api/restartSchlingel", HandleRestartSchlingel),
             (r"/websocket", HandleWebSocket),
             (r"/(.*)", CustomStaticFileHandler, dict(path=publicpath))
@@ -571,21 +628,25 @@ def main():
     )
     app.listen(options.port)
     print "Und los .."
-    tornado.ioloop.PeriodicCallback(try_exit, 100).start() 
+    tornado.ioloop.PeriodicCallback(try_exit, 100).start()
     tornado.ioloop.IOLoop.instance().start()
     print "Schliessen"
 
+
 def try_exit():
     return
+
 
 def signal_handler(signum, frame):
     print "Got Signal. Try exiting ... " + str(signum)
     tornado.ioloop.IOLoop.instance().stop()
     os._exit(1)
 
+
 if __name__ == "__main__":
     try:
         import signal
+
         signal.signal(signal.SIGINT, signal_handler)
         main()
     except KeyboardInterrupt:

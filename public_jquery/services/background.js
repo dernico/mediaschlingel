@@ -7,14 +7,18 @@ pages.service("background", function(){
 
 		if(cover){
 			if(cover.indexOf("http") != -1){
-				self.Cover(cover);
+				self.Cover(getCoverUrl(cover));
 			}
 			else{
-				self.Cover('Cover/' + cover);
+				self.Cover(getCoverUrl('Cover/' + cover));
 			}
 		}else{
-			self.Cover("/schlingel.jpg");
+			self.Cover(getCoverUrl("/schlingel.jpg"));
 		}
+	};
+
+	var getCoverUrl = function(cover){
+		return "url(" + cover + ")"
 	};
 
 });

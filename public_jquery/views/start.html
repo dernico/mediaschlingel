@@ -1,3 +1,15 @@
+
+<div class="currentMusicInfoPanel" data-bind="with: currentData">
+	<div class="currentMusicInfo" >
+
+        <img data-bind="attr: { src: Cover }" alt="" />
+		Vol: <span data-bind="text: Volumn"></span>
+	    <div class="fontSmall" data-bind="text: Album"></div>
+	    <div class="fontBold" data-bind="text: Name"></div>
+	</div>
+</div>
+
+
 <div class="playControl backface-hidden">
 	<div class="tile" data-bind="click: prev">
 	    <i class="icon-backward"></i>
@@ -17,15 +29,5 @@
 	</div>
 	<div class="tile" data-bind="click: volDown">
 	    <i class="icon-volume-down"></i>
-	</div>
-	<div class="tile" style="height: 30px; text-align: center;" data-bind="click: volDown">
-	    Vol: <span data-bind="text: Volumn"></span>
-	</div>
-</div>
-
-<div class="currentMusicInfoPanel">
-	<div class="currentMusicInfo" >
-	    <div class="fontSmall" data-bind="text: Album"></div>
-	    <div class="fontBold" data-bind="text: Name"></div>
 	</div>
 </div>
