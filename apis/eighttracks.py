@@ -48,15 +48,14 @@ def search(keyword):
 
 
 def create_mixes_result(result):
-    mixes = {"mixes": []}
-    mixes["pageing"] = {
+    mixes = {"mixes": [], "pageing": {
         "currentPage": 0,
         "nextPage": 0,
         "perPage": PerPage,
         "prevPage": 0,
         "totalMixes": 0,
         "totalPages": 0
-    }
+    }}
     if "mix_set" in result:
         mix_set = result["mix_set"]
         if len(mix_set["mixes"]) > 0:
@@ -97,7 +96,7 @@ def next(mix_id, callings=0):
         print("called next 3 times. Try next mix")
         return get_track(mix)
 
-    if CurrentTrack["at_last_track"] == True:
+    if CurrentTrack["at_last_track"]:
         print("I am at the End of the Current Mix. Get Next mix in line ...")
         nextMix = next_mix(mix_id)
         return get_track(nextMix)
@@ -125,7 +124,7 @@ def next_mix(mix_id):
 def skip(mix_id):
     global CurrentTrack
 
-    if CurrentTrack["skip_allowed"] == True:
+    if CurrentTrack["skip_allowed"]:
         path = "sets/{0}/skip.json".format(PlayToken)
         params = {"mix_id": mix_id}
         result = _call(path, params)
@@ -209,7 +208,7 @@ def _play(track):
 
     cancleTracksTimer()
     # track_id = Player.currentlyPlaying['track_id']
-    #mix_id = Player.currentlyPlaying['mix_id']
+    # mix_id = Player.currentlyPlaying['mix_id']
 
     if track["id"] is None:
         next(CurrentMix.ID)
@@ -252,13 +251,13 @@ def set_mediahandling():
     aplayer.Player.on_pause = on_pause
 
 
-def on_media_end():
+def on_media_end(player):
     track = next(CurrentMix.ID)
     _play(track)
 
 
 def on_next():
-    track = skip(CurrentMix.ID)
+    track = next(CurrentMix.ID)
     _play(track)
 
 
