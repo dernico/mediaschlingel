@@ -33,6 +33,6 @@ function MusicFileModel(data) {
     self.title = title;
     self.album = album;
     self.artist = artist;
-    self.covername = covername;
+    self.cover = covername;
     self.hasCover = covername === "" ? false : true;
 }

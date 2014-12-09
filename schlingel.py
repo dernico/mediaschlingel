@@ -572,7 +572,7 @@ def main():
     #Player.run()
     Player.start()
     client = ""
-    if len(sys.argv) > 1:
+    if len(sys.argv) > 1 and sys.argv[1] != "debug":
         client = "_" + sys.argv[1]
     publicpath = os.path.join(os.path.dirname(__file__), "public" + client)
     print("publicpath: {}".format(publicpath))
