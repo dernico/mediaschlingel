@@ -1,0 +1,28 @@
+
+<!--div class="clearboth" data-bind="foreach: results">
+    <div style="padding-bottom: 10px;">
+            <img style="width: 150px;" data-bind="attr: { src: thumbnail }" alt="" />
+
+            <div>
+                <div data-bind="text: title"></div>
+            </div>
+            
+            <button  data-bind="click: $parent.play">Play</button>
+    </div>
+</div-->
+
+<div class="list clearboth" data-bind="foreach: results">
+    <div class="list-item">
+        
+        <div class="image">
+            <img data-bind="attr: { src: thumbnail }" alt="" />    
+        </div>
+        
+        <div class="content">
+            <div data-bind="text: title"></div>
+            <div>
+                <div class="button" data-bind="click: $parent.play">Play</div>
+            </div>
+        </div>
+    </div>
+</div>
