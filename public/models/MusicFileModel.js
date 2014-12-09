@@ -17,7 +17,7 @@ function MusicFileModel(data) {
         name = data.Name || data.name;
         directoryName = data.DirectoryName || data.path;
         type = data.Type ? data.Type : "";
-        showVoting = data.isVoted === true ? false : true;
+        showVoting = data.isnext === true ? false : true;
         artist = data.artist;
         album = data.album;
         title = data.title;
@@ -25,10 +25,9 @@ function MusicFileModel(data) {
     }
 
     self.id = id;
-    self.webPath = ko.observable(webPath);
-    self.name = ko.observable(name);
-    //self.ext = ko.observable(ext);
-    self.DirectoryName = ko.observable(directoryName);
+    self.webPath = webPath;
+    self.name = name;
+    self.directoryName = directoryName;
     self.type = type;
     self.showVoting = ko.observable(showVoting);
     self.title = title;

@@ -1,0 +1,132 @@
+/*
+    TILE
+*/
+
+.tile {
+  display: block;
+  float: left;
+  width: 200px;
+  height: 150px;
+  cursor: pointer;
+  text-decoration: none;
+  color: #1e1e1e;
+  overflow: hidden;
+  position: relative;
+  /*font-family: 'Segoe UI Semilight', 'Open Sans', Verdana, Arial, Helvetica, sans-serif;*/
+  font-weight: 300;
+  font-size: 11pt;
+  letter-spacing: 0.02em;
+  line-height: 20px;
+  margin: 0 5px 10px 0;
+  overflow: hidden;
+  border: 3px solid gray;
+}
+
+.tile * {
+  color: #1e1e1e;
+}
+.tile .tile-content {
+  width: 90%;
+  height: 90%;
+  padding: 0;
+  padding-bottom: 30px;
+  vertical-align: top;
+  padding: 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /*font-family: 'Segoe UI', 'Open Sans', Verdana, Arial, Helvetica, sans-serif;*/
+  font-weight: 400;
+  font-size: 9pt;
+  color: #1e1e1e;
+  line-height: 16px;
+}
+
+.tile-background {
+  position:absolute; 
+  z-index: -1; 
+  height: 93%;
+  width:95%
+}
+
+.tile-button{
+  position:absolute; 
+  bottom: 2px;
+}
+
+.tile .tile-tile {
+    display: block;
+    float: left;
+    min-width: 50px;
+    height: 50px;
+    cursor: pointer;
+    box-shadow: inset 0px 0px 1px #FFFFCC;
+    text-decoration: none;
+    overflow: hidden;
+    position: relative;
+    overflow: hidden;
+}
+
+.tile-tile .play {
+    float: left;
+}
+
+.vote {
+    position: absolute;
+    bottom: 5px;
+    font-weight: bold;
+    border: 1px solid grey;
+    padding: 5px;
+}
+
+
+/*
+    Icons
+*/
+
+.tile > i {
+    color: #1e1e1e;
+}
+
+.icon-play:before{content:"\f04b" !important}
+.icon-play{
+    background-position: -264px -72px !important;
+    position: absolute;
+}
+
+.icon-forward:before{content:"\f04e"}
+.icon-backward:before{content:"\f04a"}
+.icon-random:before{content:"\f074"}
+.icon-forward{background-position:-336px -72px}
+.icon-backward{background-position:-240px -72px}
+.icon-random{width:16px;background-position:-216px -120px}
+
+.icon-forward, .icon-backward, .icon-random{
+    position: absolute;
+    margin: 15px;
+}
+.icon-volume-down:before{content:"\f027"}
+.icon-volume-up:before{content:"\f028"}
+.icon-volume-off{background-position:-360px -24px}
+.icon-volume-down{background-position:-384px -24px}
+
+.icon-volume-up, .icon-volume-down {
+    position: absolute;
+    margin-left: 15px;
+    margin-top: 2px;
+}
+
+.icon-pause:before{content:"\f04c"}
+.icon-pause {
+    background-position: -288px -72px;
+    position: absolute;
+    margin-top: 15px;
+    margin-left: 18px;
+}
+
+.playControl .tile i{
+    font-size: 30px;
+}
+
+.randomOff {
+    color: lightgray !important;
+}

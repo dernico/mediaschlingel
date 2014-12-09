@@ -2,6 +2,7 @@ module.exports = function(grunt) {
   
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
+    
     concat: {
       options: {
         separator: ';'
@@ -10,13 +11,15 @@ module.exports = function(grunt) {
         src: [
               //include
               "scripts/jquery.min.js",
-              "scripts/init.js",
-              "scripts/jquery.mobile-1.3.2.min.js",
+              //"scripts/init.js",
+              //"scripts/jquery.mobile-1.3.2.min.js",
               "scripts/knockout-2.2.1.js",
               "scripts/linq.js",
-              "scripts/ko.Page.js",
+              "scripts/Page.js",
+              "scripts/trunk.js",
               "models/**/*.js",
               "data/**/*.js",
+              "services/**/*.js",
               "viewmodels/**/*.js"
               //exclude
               //'!app/lib/**/*.min.js',
@@ -25,6 +28,7 @@ module.exports = function(grunt) {
         dest: 'dist/<%= pkg.name %>.js'
       }
     },
+    
     uglify: {
       options: {
         banner: '/*! <%= pkg.name %> <%= grunt.template.today("dd-mm-yyyy") %> */\n'
@@ -35,14 +39,15 @@ module.exports = function(grunt) {
         }
       }
     },
+    
     qunit: {
       files: ['test/specs/**/*.html']
     },
     jshint: {
-      files: ['Gruntfile.js', 
-              'viewmodels/*.js', 
-              'data/*.js', 
-              'models/*.js', 
+      files: ['Gruntfile.js',
+              'viewmodels/**/*.js', 
+              'data/**/*.js', 
+              'models/**/*.js', 
               'test/specs/**/*.js'],
       options: {
         // options here to override JSHint defaults
@@ -55,10 +60,20 @@ module.exports = function(grunt) {
         }
       }
     },
-
+    less:{
+      production:{
+        options: {
+          paths: "css",
+          cleancss: true
+        },
+        files:{
+          'css/app.css' : 'css/app.less'
+        }
+      }
+    },
     watch: {
-      files: ['<%= jshint.files %>'],
-      tasks: ['jshint', 'qunit', 'concat', 'uglify']
+      files: ['scripts/Page.js', '<%= jshint.files %>', 'css/**/*.less'],
+      tasks: ['jshint', 'concat', 'less', 'uglify']
     }
   });
 
@@ -67,6 +82,8 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-qunit');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-less');
+
 
   //grunt.registerTask('test', ['jshint', 'qunit']);
   grunt.registerTask('test', ['jshint', 'qunit']);

@@ -1,50 +1,54 @@
-function pageingVM(vm, url, observableFilter, observableData){
+function pageingVM(api, url, callback){
 
     var ScrollTop = function () { window.scrollTo(0, 0); };
     var self = this;
-    //Paging stuff
-    var pageIndex = ko.observable(0);
     var pageSize = 10;
-    self.count = ko.observable();
-    self.from = ko.observable();
-    self.to = ko.observable();
+    var currentDataCount = 0;
 
-    /*vm.resetPage = function () {
-        pageIndex( 0 );
-    };*/
+    self.pageIndex = 0;
+    self.api = api;
+    self._searchfilter = "";
+    self.searchfilter = function(filter){
+        if(!filter){
+            return self._searchfilter;
+        }
+        else{
+            self._searchfilter = filter;
+            self.search();
+        }
+    };
+    self.count = null;
+    self.from = null;
+    self.to = null;
 
-    vm.pageNext = function () {
-        if(observableData().length >= pageSize){
-            pageIndex(pageIndex() + 1);
+    var getParams = function () {
+        var params = "";
+        params = "?filter=" + self.searchfilter() + 
+                    "&top=" + pageSize + "&skip=" + (self.pageIndex * pageSize);
+        return params;
+    };
+
+    self.pageNext = function () {
+        if(currentDataCount >= pageSize){
+            self.pageIndex = self.pageIndex + 1;
             self.load();
             ScrollTop();
         }
     };
 
-    vm.pagePrev = function () {
-        if(pageIndex() > 0){
-            pageIndex(pageIndex() - 1);
+    self.pagePrev = function () {
+        if(self.pageIndex > 0){
+            self.pageIndex = self.pageIndex - 1;
             self.load();
         }
     };
 
-    var getParams = function () {
-        var params = "";
-        var filter = "";
-        if (observableFilter()) {
-            filter = observableFilter();
-        }
-        params = "?filter=" + filter + 
-                    "&top=" + pageSize + "&skip=" + (pageIndex() * pageSize);
-        return params;
-    };
-
-
     self.load = function () {
-        api.get({
+        self.api.get({
             action: url,
             params: getParams(),
             success: loadSuccess,
+            showLoading: false,
             error: function(){
                 alert("Error");
             }
@@ -52,7 +56,7 @@ function pageingVM(vm, url, observableFilter, observableData){
     };
 
     self.search = function() {
-        api.get({
+        self.api.get({
             action: url,
             params: getParams(),
             success: loadSuccess,
@@ -61,19 +65,17 @@ function pageingVM(vm, url, observableFilter, observableData){
     };
 
     var loadSuccess = function (data) {
-        observableData([]);
-        vm.count(data.count);
-
         if (data.list) {
-            var from = pageIndex() * pageSize;
+            self.count = data.count;
+            currentDataCount = data.list.length;
+            var from = self.pageIndex * pageSize;
             var to = data.list.length >= pageSize ? 
                         from + pageSize : from + data.list.length;
-            vm.from(from);
-            vm.to(to);
-            data.list.forEach(function(item) {
-                //self.addStream(item);
-                observableData.push(new MusicFileModel(item));
-            });
+            self.from = from;
+            self.to = to;
+            if(callback){
+                callback(data.list);
+            }
         }
     };
 }

@@ -1,62 +1,23 @@
-<hr />
-<input type="text" data-bind="value: listenPls, event: { keyup: addListenPlsOnEnter }" />
-<input type="button" data-bind="click: addListenPls" value="Stream hinzufügen" />
-<hr />
 
-<div>
-    <input type="text" data-bind="value: searchterm, event: { keyup: searchRadioOnEnter }"></input>
-    <input type="button" data-bind="click: searchRadio" value="radio.de Suche"></input>
+<div class="pivot" id="mypivot" data-control="pivot">
 
-    <!--ul data-role="listview" data-bind="foreach: results, jqmlistview: streams">
-        <li data-icon="check">
-            <a>
-                <img data-bind="attr: { src: image }"></img>
-                <p data-bind="text: format"></p>
-            </a>
-            <button data-bind="click: $parent.play">Try</button>
-            <button data-bind="click: $parent.save">Save</button>
-        </div>
-    </ul-->
-    <button data-bind="click: saveRadio">Save current</button>
-    <div data-bind="foreach: results">
-        <div class="tile">
-            <div class="tile-content">
-                <img class="tile-background" data-bind="attr: { src: image }" alt="" />
-                <div style="background-color: white;">
-                    <div data-bind="text: name"></div>
-                    <div data-bind="text: genre"></div>
-                </div>
-                <div class="tile-button">
-                    <button data-bind="click: $parent.playRadio">Play</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    
+    <div class="pivot-item" 
+        data-title="Favorites"
+        data-options="view : '/views/streams/favorites.html', vm: 'favoritesVM'"></div>
+
+
+    <div class="pivot-item" 
+        data-title="Radio.de"
+        data-options="view: '/views/streams/radio.html', vm: 'radioVM'"></div>
+
+    <div class="pivot-item"
+        data-title="Top"
+        data-options="view: '/views/streams/top.html', vm: 'topVM'"
+    ></div>
+
+    <div class="pivot-item"
+        data-title="Recos"
+        data-options="view: '/views/streams/recommendations.html', vm: 'recommendationsVM'"
+    ></div>
 </div>
-
-<hr />
-<h2>Gespeicherte Streams</h2>
-<div class="clearboth" data-bind="foreach: streams">
-    <div class="tile">
-        <div class="tile-content">
-            
-            <img class="tile-background" data-bind="attr: { src: image }" alt="" />
-            <div style="background-color: white;">
-                <p data-bind="text: name"></p>
-            </div>
-            <div class="tile-button">
-                <div class="button" data-bind="click: $parent.play">Play</div>
-                <div class="button" data-bind="click: $parent.removeRadio">Delete</div>
-            </div>
-        </div>
-    </div>
-</div>
-<!--ul data-role="listview" data-bind="foreach: streams, jqmlistview: streams">
-    <li data-icon="check">
-        <a>
-            <img style="height: 100px" data-bind="attr: { src: image }" alt="" />
-            <p class="wrap-text"  data-bind="text: stream"></p>
-        </a>
-        <a data-bind="click: $parent.play">Play</a>
-    </li>
-</ul-->
