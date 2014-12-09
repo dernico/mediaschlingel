@@ -14,7 +14,7 @@
 <hr />
 
 
-<div class="clearboth" data-bind="foreach: media">
+<!--div class="clearboth" data-bind="foreach: media">
     <div class="tile">
         <div class="tile-content" >
             <div data-bind="click: $parent.play">
@@ -22,13 +22,28 @@
                 <p data-bind="text: album"></p>
                 <p data-bind="text: title"></p>
             </div>
-            <!--div style="position: absolute; bottom: 0px; font-weight: bold; border: 1px solid grey; padding: 5px;" data-bind:"click: $parent.voteit">Play it next</div-->
 
             <div class="tile-bottom">
                 <div class="vote" data-bind="click: $parent.voteit, visible: showVoting ">
                     <span>Play it next</span>
                 </div>
             </div>
+        </div>
+    </div>
+</div-->
+
+
+<div class="list clearboth" data-bind="foreach: media">
+    <div class="list-item" data-bind="click: $parent.play">
+        
+        <div class="image">
+            <img data-bind="attr: { src: cover }" alt="" />    
+        </div>
+        
+        <div class="content">
+            <p data-bind="text: artist"></p>
+            <p data-bind="text: album"></p>
+            <p data-bind="text: title"></p>
         </div>
     </div>
 </div>

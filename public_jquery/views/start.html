@@ -3,9 +3,8 @@
 	<div class="currentMusicInfo" >
 
         <img data-bind="attr: { src: Cover }" alt="" />
-		Vol: <span data-bind="text: Volumn"></span>
-	    <div class="fontSmall" data-bind="text: Album"></div>
-	    <div class="fontBold" data-bind="text: Name"></div>
+	    <div data-bind="text: Album"></div>
+	    <div data-bind="text: Name"></div>
 	</div>
 </div>
 
@@ -29,5 +28,8 @@
 	</div>
 	<div class="tile" data-bind="click: volDown">
 	    <i class="icon-volume-down"></i>
+	</div>
+	<div data-bind="with: currentData">
+		Vol: <span data-bind="text: Volumn"></span>
 	</div>
 </div>

@@ -6,14 +6,12 @@ try:
 except Exception:
     print "Could not load pygst"
 
-import sys
 from walker import Walker
 import threading
 from random import choice
-from Config import getMediaDirs
 import Streams
-from apis import eighttracks
-from threading import Timer
+import subprocess
+
 
 class Base_Player(threading.Thread):
 
@@ -237,17 +235,6 @@ class APlayer(Base_Player):
     def _playNext(self):
         print "play next ..."
 
-        # If its an 8track playing. Dont let the normal
-        # playnext logic take place
-        # if self.currentlyPlaying['type'] is "8tracks":
-        #     mix_id = self.currentlyPlaying['mix_id']
-        #     track = eighttracks.skip(mix_id)
-        #     if track:
-        #         self._playTrack(mix_id, track)
-        #         return
-        #     return
-        
-
         self._set_state_NULL()
         nextid = 0
         if len(self.nextId) > 0:
@@ -309,13 +296,29 @@ class APlayer(Base_Player):
             self.volume -= 1
             self.setVolume(self.volume)
 
+    def get_master_volume(self):
+        proc = subprocess.Popen('/usr/bin/amixer sget Master', shell=True, stdout=subprocess.PIPE)
+        amixer_stdout = proc.communicate()[0].split('\n')[4]
+        proc.wait()
+
+        find_start = amixer_stdout.find('[') + 1
+        find_end = amixer_stdout.find('%]', find_start)
+
+        return float(amixer_stdout[find_start:find_end])
+
+    def set_master_volume(self, volume):
+        val = float(int(volume))
+
+        proc = subprocess.Popen('/usr/bin/amixer sset Master ' + str(val) + '%', shell=True, stdout=subprocess.PIPE)
+        proc.wait()
+
     def filterMedia(self, term, start, end):
         media = self.walker.filterMedia(term)
         count = len(media)
         media = media[start:end]
         for m in media:
             if m.ID in self.nextId:
-                m.IsNext = True;
+                m.IsNext = True
         return {
             'count': count,
             'list': media

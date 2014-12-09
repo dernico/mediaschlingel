@@ -25,14 +25,14 @@
             $("#pages").pages({
                 pages: [
                     {
-                        route: '#/list',
-                        //vm: 'listvm',
-                        view: 'views/list.html'
-                    },
-                    {
                         route: '#/streams',
                         vm: 'streams',
                         view: 'views/streams.html'
+                    },
+                    {
+                        route: '#/list',
+                        //vm: 'listvm',
+                        view: 'views/list.html'
                     },
                     {
                         route: '#/settings',
@@ -60,9 +60,9 @@
 </head>
 <body>
         
-    <div id="background" class="cover" data-control="page" data-options="vm: 'backgroundVM'">
+    <!--div id="background" class="cover" data-control="page" data-options="vm: 'backgroundVM'">
         <div class="cover-img" data-bind="style: { backgroundImage: Cover }"></div>
-    </div>
+    </div-->
 
     <nav class="pushy pushy-left">
         <ul >
