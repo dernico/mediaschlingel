@@ -14,3 +14,8 @@ Install mutagen
 cd libs/mutagen-1.22
 sudo python setup.py install
 
+Install Deezer
+
+cd libs/deezer-python
+sudo python setup.py install
+
