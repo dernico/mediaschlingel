@@ -633,6 +633,7 @@ var radioModel = (function(){
         self.image = station.pictureBaseURL + station.picture1Name;
         self.name = station.name;
         self.genre = station.genresAndTopics;
+        self.rank = station.rank;
 	};
 })();;var youtubeModel = (function(){
 	return function(yt){
