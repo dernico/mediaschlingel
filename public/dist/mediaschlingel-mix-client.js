@@ -791,6 +791,28 @@ pages.service("api", [function(){
         }, error);
     };
 
+    api.radio.categories = function(type, success, error){
+        ajax({
+            url: '/api/music/radio/categories',
+            data: { categorieType: type}
+        }, false, success, error);
+    };
+
+    api.radio.bycategorie = function(type, categorie, success, error){
+        ajax({
+            url: '/api/music/radio/bycategorie',
+            data: { categorieType: type, categorie: categorie}
+        }, false, function(data){
+            var stations = [];
+            data.stations.forEach(function(station){
+                var model = new radioModel(station);
+                stations.push(model);
+            });
+            if(success) success(stations);
+
+        }, error);
+    };
+
     api.tracks = {};
 
     api.tracks.tags = function(tag, done){
@@ -1658,7 +1680,51 @@ pages.viewmodel("streams", ["api", "player", function (api, player) {
     };
 }]);
 
-;//var favoritesVM = ["api", "player", function (api, player) {
+;pages.viewmodel("categoriesVM", ["api", "player", function (api, player) {
+    var self = this;
+    self.categories = ko.observableArray([]);
+    self.stations = ko.observableArray([]);
+    self.currentRadio = null;
+    self.api = api;
+
+    self.categoriesVisible = ko.observable(true);
+
+    self.toggleCategories = function(){
+        var newState = !self.categoriesVisible();
+        self.categoriesVisible(newState);
+    };
+
+    self.loadCategories = function(){
+        self.api.radio.categories('genre',function(data){
+            self.categories(data.categories);
+        });
+    };
+
+    self.loadByCategorie = function(categorie){
+        self.categoriesVisible(false);
+        
+        self.api.radio.bycategorie('genre', categorie, function(data){
+            self.stations(data);
+        });
+    };
+
+    self.playRadio = function(item){
+        player.playRadio(item);
+        self.currentRadio = item;
+    };
+
+    self.saveRadio = function () {
+        self.api.post("saveRadio", "item=" + ko.toJSON(self.currentRadio), 
+            function () {
+                self.init();
+        });
+    };
+
+    self.activate = function () {
+    };
+
+    self.loadCategories();
+}]);;//var favoritesVM = ["api", "player", function (api, player) {
 pages.viewmodel("favoritesVM", ["api", "player", function (api, player) {
     var self = this;
     self.activated = false;
