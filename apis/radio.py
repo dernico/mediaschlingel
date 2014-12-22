@@ -21,6 +21,10 @@ searchCache["test"] = [
 }
 ]
 
+CATEGORY_TYPES = (
+    'genre', 'topic', 'country', 'city', 'language',
+)
+
 def getRecommendations():
     path = 'broadcast/editorialreccomendationsembedded'
     return _call(path)
@@ -58,28 +62,31 @@ def getMostWanted( num_entries=25):
         stations_lists = _call(path, param)
         return stations_lists
 
-def get_categories(self, category_type):
-    logger.debug('get_categories started with category_type=%s',
+def get_categories(category_type):
+    global CATEGORY_TYPES
+
+    print('get_categories started with category_type=%s',
                  category_type)
-    if not category_type in RadioDeApi.CATEGORY_TYPES:
-        raise ValueError('Bad category_type')
+    if not category_type in CATEGORY_TYPES:
+        print('Bad category_type')
+        return
     path = 'menu/valuesofcategory'
     param = {'category': '_%s' % category_type}
-    categories = self.__api_call(path, param)
+    categories = _call(path, param)
     return categories
 
-def get_stations_by_category(self, category_type, category_value):
-    logger.debug('get_stations_by_category started with '
-                 'category_type=%s, category_value=%s',
-                 category_type, category_value)
-    if not category_type in self.get_category_types():
-        raise ValueError('Bad category_type')
+def get_stations_by_category(category_type, category_value):
+    #logger.debug('get_stations_by_category started with '
+    #             'category_type=%s, category_value=%s',
+    #             category_type, category_value)
+    #if not category_type in self.get_category_types():
+    #    raise ValueError('Bad category_type')
     path = 'menu/broadcastsofcategory'
     param = {
         'category': '_%s' % category_type,
         'value': category_value.encode('utf-8'),
     }
-    return self.__api_call(path, param)
+    return _call(path, param)
 
 def _call(path, param=None):
         #print('call radio with path=%s, param=%s', path, param)
