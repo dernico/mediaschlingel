@@ -147,6 +147,28 @@ pages.service("api", [function(){
         }, error);
     };
 
+    api.radio.categories = function(type, success, error){
+        ajax({
+            url: '/api/music/radio/categories',
+            data: { categorieType: type}
+        }, false, success, error);
+    };
+
+    api.radio.bycategorie = function(type, categorie, success, error){
+        ajax({
+            url: '/api/music/radio/bycategorie',
+            data: { categorieType: type, categorie: categorie}
+        }, false, function(data){
+            var stations = [];
+            data.stations.forEach(function(station){
+                var model = new radioModel(station);
+                stations.push(model);
+            });
+            if(success) success(stations);
+
+        }, error);
+    };
+
     api.tracks = {};
 
     api.tracks.tags = function(tag, done){
