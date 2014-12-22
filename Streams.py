@@ -9,6 +9,7 @@ streams = []
 streamDir = os.path.join(curdir, "Streams")
 lastRadioResult = None
 
+
 def loadStreams():
     global streams
     if len(streams) == 0:
@@ -16,9 +17,10 @@ def loadStreams():
             for filename in files:
                 filepath = os.path.join(streamDir, filename)
                 with open(filepath) as filecontent:
-                    #content = filecontent.read()
+                    # content = filecontent.read()
                     streamModel = streamfactory.createFromJson(len(streams), json.load(filecontent))
                     streams.append(streamModel)
+
 
 def getStreams():
     global streams
@@ -28,15 +30,17 @@ def getStreams():
     data["streams"] = streams
     return data
 
+
 def getStream(stream):
     global streams
     if len(streams) == 0:
         loadStreams()
-    if(len(streams) > 0):
+    if (len(streams) > 0):
         for s in streams:
-            if(s["stream"] == stream):
+            if (s["stream"] == stream):
                 return s
     return None
+
 
 def addStream(path):
     global streams
@@ -55,13 +59,15 @@ def addStream(path):
         url = Helper.parsePls(content)
         path = url
 
-    stream = streamfactory.createFromUrl(len(streams),path)
+    stream = streamfactory.createFromUrl(len(streams), path)
     writeModelToFile(stream)
+
 
 def getStreamById(id):
     for stream in streams:
         if stream.Id == id:
             return stream
+
 
 def removeStream(id):
     global streams
@@ -70,11 +76,13 @@ def removeStream(id):
     print("Try to delete streamfile: {}", streamfile)
     os.remove(streamfile)
 
+
 def getStreamFileName(streamModel):
     streamfile = streamModel.Stream
-    streamfile = streamfile.replace(':','').replace('/','_')
+    streamfile = streamfile.replace(':', '').replace('/', '_')
     streamfile = os.path.join(streamDir, streamfile) + ".json"
     return streamfile
+
 
 def writeModelToFile(streamModel):
     global streams
@@ -88,6 +96,7 @@ def writeModelToFile(streamModel):
                 streams = []
         except Exception as ex:
             print "Error: {0}".format(str(ex))
+
 
 '''
 Excample of one entry:
@@ -111,9 +120,12 @@ Excample of one entry:
 }
 
 '''
+
+
 def search(term):
-	result = radio.search(term)
-	return result
+    result = radio.search(term)
+    return result
+
 
 def getByStationID(station_id):
     global lastRadioResult
@@ -121,14 +133,26 @@ def getByStationID(station_id):
     lastRadioResult = streamfactory.createFromRadio(len(streams), station)
     return lastRadioResult
 
+
 def saveLastRadioResult():
     writeModelToFile(lastRadioResult)
+
 
 def recommendations():
     return radio.getRecommendations()
 
+
 def top():
     return radio.getTop()
 
+
 def mostWanted():
     return radio.getMostWanted()
+
+
+def get_categories(type):
+    return radio.get_categories(type)
+
+
+def get_stations_by_category(type, categorie):
+    return radio.get_stations_by_category(type, categorie)
