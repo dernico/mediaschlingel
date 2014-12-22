@@ -17,6 +17,7 @@ module.exports = function(grunt) {
               "scripts/linq.js",
               "scripts/Page.js",
               "scripts/trunk.js",
+              "scripts/pushy/js/pushy.min.js",
               "models/**/*.js",
               "data/**/*.js",
               "services/**/*.js",
