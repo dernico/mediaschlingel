@@ -52,7 +52,7 @@ def search(term):
         'rows' : 200
     }
     searchCache[term] = _call(path, param)
-    return searchCache[term]
+    return sorted(searchCache[term], key=lambda station: station["rank"])
 
 def getMostWanted( num_entries=25):
         if not isinstance(num_entries, int):
