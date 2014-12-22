@@ -86,7 +86,8 @@ def get_stations_by_category(category_type, category_value):
         'category': '_%s' % category_type,
         'value': category_value.encode('utf-8'),
     }
-    return _call(path, param)
+    stations = _call(path, param)
+    return sorted(stations, key=lambda station: station["rank"])
 
 def _call(path, param=None):
         #print('call radio with path=%s, param=%s', path, param)
