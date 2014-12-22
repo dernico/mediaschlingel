@@ -362,6 +362,24 @@ class HandleRadioMostWanted(BaseHandler):
         self.write(result)
         self.flush()
 
+class HandleRadioCategories(BaseHandler):
+    def get(self):
+        type = self.get_argument('categorieType', None)
+        if type:
+            result = {
+                "categories": Streams.get_categories(type)
+            }
+            self.write(result)
+
+class HandleRadioStationsByCategories(BaseHandler):
+    def get(self):
+        type = self.get_argument('categorieType', None)
+        categorie = self.get_argument('categorie', None)
+        if categorie and type:
+            result = {
+                "stations": Streams.get_stations_by_category(type, categorie)
+            }
+            self.write(result)
 
 class HandlePlayRadio(BaseHandler):
     def post(self, ):
@@ -607,8 +625,10 @@ def main():
             (r"/api/music/discover", HandleDiscover),
             (r"/api/music/radio/search", HandleRadioSearch),
             (r"/api/music/radio/recommendations", HandleRadioRecommendations),
+            (r"/api/music/radio/categories", HandleRadioCategories),
             (r"/api/music/radio/top", HandleRadioTop),
             (r"/api/music/radio/mostWanted", HandleRadioMostWanted),
+            (r"/api/music/radio/bycategorie", HandleRadioStationsByCategories),
             (r"/api/music/playRadio", HandlePlayRadio),
             (r"/api/music/saveRadio", HandleSaveRadio),
             (r"/api/8tracks/tags", HandleTracksTag),
