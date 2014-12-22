@@ -1,0 +1,25 @@
+<div class="button" data-bind="click: toggleCategories">Toggle Categories on/off</div>
+
+<div data-bind="foreach: categories, visible: categoriesVisible">
+    <div class="button" data-bind="text: $data, click: $parent.loadByCategorie"></div>
+</div>
+
+<div class="button" data-bind="click: saveRadio">Save current</div>
+
+<div class="list clearboth" data-bind="foreach: stations">
+    <div class="list-item">
+        
+        <div class="image">
+            <img data-bind="attr: { src: image }" alt="" />    
+        </div>
+        
+        <div class="content">
+            <!--span data-bind="text: rank"></span-->
+            <div data-bind="text: name"></div>
+            <div data-bind="text: genre"></div>
+            <div>
+                <div class="button" data-bind="click: $parent.playRadio">Play</div>
+            </div>
+        </div>
+    </div>
+</div>
