@@ -117,6 +117,7 @@ class APlayer(Base_Player):
     def on_message(self, bus, message):
         t = message.type
         if t == gst.MESSAGE_EOS:
+            #print("Player got message MESSAGE_EOS")
             if self.on_media_end:
                 self.on_media_end(self)
 
@@ -288,12 +289,21 @@ class APlayer(Base_Player):
 
     def volUp(self):
         if self.volume < 10:
-            self.volume += 1
+            if self.volume < 1:
+                self.volume += 0.1
+            else:
+                self.volume += 1
+
+            self.volume = float("{0:.2f}".format(self.volume))
             self.setVolume(self.volume)
 
     def volDown(self):
-        if self.volume > 0:
-            self.volume -= 1
+        if self.volume > 0.0:
+            if self.volume <= 1:
+                self.volume -= 0.1
+            else:
+                self.volume -= 1
+            self.volume = float("{0:.2f}".format(self.volume))
             self.setVolume(self.volume)
 
     def get_master_volume(self):
