@@ -16,7 +16,7 @@ import tornado.websocket
 
 from aplayer import Player
 # from mpdplayer import APlayer
-import Streams
+from apis import Streams
 from apis import eighttracks
 from apis import youtube
 from apis import tunein
@@ -385,73 +385,6 @@ class HandleTuneinSave(BaseHandler):
         self.flush()
 
 
-class HandleRadioSearch(BaseHandler):
-    def get(self):
-        result = {}
-
-        term = self.get_argument('search', None)
-        result["result"] = Streams.search(term)
-
-        self.write(result)
-        self.flush()
-
-
-class HandleRadioRecommendations(BaseHandler):
-    def get(self):
-        result = {}
-        result["recommendations"] = Streams.recommendations()
-
-        self.write(result)
-        self.flush()
-
-
-class HandleRadioTop(BaseHandler):
-    def get(self):
-        result = {}
-        result["top"] = Streams.top()
-
-        self.write(result)
-        self.flush()
-
-
-class HandleRadioMostWanted(BaseHandler):
-    def get(self):
-        result = {}
-        result["mostWanted"] = Streams.mostWanted()
-
-        self.write(result)
-        self.flush()
-
-class HandleRadioCategories(BaseHandler):
-    def get(self):
-        type = self.get_argument('categorieType', None)
-        if type:
-            result = {
-                "categories": Streams.get_categories(type)
-            }
-            self.write(result)
-
-class HandleRadioStationsByCategories(BaseHandler):
-    def get(self):
-        type = self.get_argument('categorieType', None)
-        categorie = self.get_argument('categorie', None)
-        if categorie and type:
-            result = {
-                "stations": Streams.get_stations_by_category(type, categorie)
-            }
-            self.write(result)
-
-class HandlePlayRadio(BaseHandler):
-    def post(self, ):
-        id = self.get_argument('id', None)
-        if not id is None:
-            station = Streams.getByStationID(id)
-            Player.playStreamModel(station)
-
-        self.write(Player.getinfo())
-        self.flush()
-
-
 class HandleTracksTag(BaseHandler):
     def get(self):
         self.handleRequest()
@@ -674,24 +607,11 @@ def main():
             (r"/api/music/removeStream", HandleRemoveStream),
             (r"/api/music/grabcover", CoverGrabberHandler),
             (r"/api/music/discover", HandleDiscover),
-            
-            (r"/api/music/radio/search", HandleRadioSearch),
-            (r"/api/music/radio/recommendations", HandleRadioRecommendations),
-            (r"/api/music/radio/categories", HandleRadioCategories),
-            (r"/api/music/radio/top", HandleRadioTop),
-            (r"/api/music/radio/mostWanted", HandleRadioMostWanted),
-            (r"/api/music/radio/bycategorie", HandleRadioStationsByCategories),
-            
-            (r"/api/music/playRadio", HandlePlayRadio),
+           
 
             (r"/api/tunein/search", HandleTuneinSearch),
             (r"/api/tunein/play", HandleTuneinPlay),
             (r"/api/tunein/save", HandleTuneinSave),
-            (r"/api/tunein/recommendations", HandleRadioRecommendations),
-            (r"/api/tunein/categories", HandleRadioCategories),
-            (r"/api/tunein/top", HandleRadioTop),
-            (r"/api/tunein/mostWanted", HandleRadioMostWanted),
-            (r"/api/tunein/bycategorie", HandleRadioStationsByCategories),
 
             (r"/api/8tracks/tags", HandleTracksTag),
             (r"/api/8tracks/play", HandleTracksPlay),
@@ -737,3 +657,85 @@ if __name__ == "__main__":
         print "Try exiting ... "
         os._exit(1)
         print "exiting not working"
+
+
+
+'''
+old code - maybe useful later if radio.de has open api
+
+ ...
+(r"/api/music/radio/search", HandleRadioSearch),
+(r"/api/music/radio/recommendations", HandleRadioRecommendations),
+(r"/api/music/radio/categories", HandleRadioCategories),
+(r"/api/music/radio/top", HandleRadioTop),
+(r"/api/music/radio/mostWanted", HandleRadioMostWanted),
+(r"/api/music/radio/bycategorie", HandleRadioStationsByCategories),
+(r"/api/music/playRadio", HandlePlayRadio),
+...
+
+class HandleRadioSearch(BaseHandler):
+    def get(self):
+        result = {}
+
+        term = self.get_argument('search', None)
+        result["result"] = Streams.search(term)
+
+        self.write(result)
+        self.flush()
+
+
+class HandleRadioRecommendations(BaseHandler):
+    def get(self):
+        result = {}
+        result["recommendations"] = Streams.recommendations()
+
+        self.write(result)
+        self.flush()
+
+
+class HandleRadioTop(BaseHandler):
+    def get(self):
+        result = {}
+        result["top"] = Streams.top()
+
+        self.write(result)
+        self.flush()
+
+
+class HandleRadioMostWanted(BaseHandler):
+    def get(self):
+        result = {}
+        result["mostWanted"] = Streams.mostWanted()
+
+        self.write(result)
+        self.flush()
+
+class HandleRadioCategories(BaseHandler):
+    def get(self):
+        type = self.get_argument('categorieType', None)
+        if type:
+            result = {
+                "categories": Streams.get_categories(type)
+            }
+            self.write(result)
+
+class HandleRadioStationsByCategories(BaseHandler):
+    def get(self):
+        type = self.get_argument('categorieType', None)
+        categorie = self.get_argument('categorie', None)
+        if categorie and type:
+            result = {
+                "stations": Streams.get_stations_by_category(type, categorie)
+            }
+            self.write(result)
+
+class HandlePlayRadio(BaseHandler):
+    def post(self, ):
+        id = self.get_argument('id', None)
+        if not id is None:
+            station = Streams.getByStationID(id)
+            Player.playStreamModel(station)
+
+        self.write(Player.getinfo())
+        self.flush()
+'''

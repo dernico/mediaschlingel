@@ -6,7 +6,7 @@ from walker import Walker
 import threading
 from random import choice
 from Config import getMediaDirs
-import Streams
+from apis import Streams
 
 class APlayer(threading.Thread):
 

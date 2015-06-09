@@ -1,7 +1,8 @@
 *.pyc
 *.log
 public_angular/*
-libs
 node_modules/
 .idea/
 Streams/
+libs/
+Cover/

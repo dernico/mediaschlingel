@@ -5,7 +5,7 @@ from flask import jsonify
 
 
 #import program stuff
-import Streams
+from apis import Streams
 
 host = "0.0.0.0"
 port = 8000

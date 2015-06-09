@@ -12,7 +12,7 @@ from urllib import urlencode
 from Helper import Helper
 from Factory.StreamModelFactory import StreamModelFactory
 from aplayer import Player
-import Streams
+from apis import Streams
 
 import json
 #import Config

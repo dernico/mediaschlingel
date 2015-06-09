@@ -9,7 +9,7 @@ except Exception:
 from walker import Walker
 import threading
 from random import choice
-import Streams
+from apis import Streams
 import subprocess
 
 
