@@ -21,7 +21,7 @@ from apis import eighttracks
 from apis import youtube
 from apis import tunein
 from Factory import TracksModelFactory
-from Factory.StreamModelFactory import StreamModelFactory
+from Factory import StreamModelFactory
 
 from tornado.options import define, options
 

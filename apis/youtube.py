@@ -1,6 +1,6 @@
 from urllib import urlencode
 from Helper import Helper
-from Factory.StreamModelFactory import StreamModelFactory
+from Factory import StreamModelFactory
 from aplayer import Player
 
 import json
@@ -80,8 +80,7 @@ def get_playlist():
     return {"playlist": songs}
 
 def get_stream_model(id):
-    factory = StreamModelFactory()
-    return factory.createFromYouTube(id)
+    return StreamModelFactory.createFromYouTube(id)
 
 
 def play(id):

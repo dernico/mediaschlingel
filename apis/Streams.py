@@ -1,10 +1,9 @@
 import os
-from Factory.StreamModelFactory import StreamModelFactory
+from Factory import StreamModelFactory
 from os import curdir
 from apis import radio
 import json
 
-streamfactory = StreamModelFactory()
 streams = []
 streamDir = os.path.join(curdir, "Streams")
 lastRadioResult = None
@@ -18,7 +17,7 @@ def loadStreams():
                 filepath = os.path.join(streamDir, filename)
                 with open(filepath) as filecontent:
                     # content = filecontent.read()
-                    streamModel = streamfactory.createFromJson(len(streams), json.load(filecontent))
+                    streamModel = StreamModelFactory.createFromJson(len(streams), json.load(filecontent))
                     streams.append(streamModel)
 
 

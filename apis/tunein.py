@@ -10,7 +10,7 @@ import re
 import urlparse
 from urllib import urlencode
 from Helper import Helper
-from Factory.StreamModelFactory import StreamModelFactory
+from Factory import StreamModelFactory
 from aplayer import Player
 from apis import Streams
 
@@ -18,18 +18,16 @@ import json
 #import Config
 
 
-factory = StreamModelFactory()
-
 def search(searchterm):
     result = singelton.search(searchterm);
     streams = []
     for item in result:
-        stream = factory.createFromTunein(item)
+        stream = StreamModelFactory.createFromTunein(item)
         streams.append(stream)
     return streams
 
 def play(item):
-    model = factory.createFromStreamJson(item)
+    model = StreamModelFactory.createFromStreamJson(item)
     parseUrl = True
     tuneurls = singelton.tune(model.Id, parseUrl)
     if len(tuneurls) > 0:
@@ -61,8 +59,7 @@ def on_prev():
 
 def save(item):
     json_item = json.loads(item)
-    factory = StreamModelFactory()
-    model = factory.createFromStreamJson(json_item)
+    model = StreamModelFactory.createFromStreamJson(json_item)
     tuneurls = singelton.tune(model.Id, True)
     if len(tuneurls) > 0:
         model.Stream = tuneurls[0];
