@@ -68,6 +68,16 @@ def getStreamById(id):
         if stream.Id == id:
             return stream
 
+def removeStreamFromList(id):
+    stream_to_delete = None
+    for stream in streams:
+        if stream.Id == id:
+            stream_to_delete = stream
+            break
+    if stream_to_delete:
+        print("Entferne Stream mit ID %s aus der Liste", str(id))
+        streams.remove(stream_to_delete)
+
 
 def removeStream(id):
     global streams
@@ -75,6 +85,7 @@ def removeStream(id):
     streamfile = getStreamFileName(stream)
     print("Try to delete streamfile: {}", streamfile)
     os.remove(streamfile)
+    removeStreamFromList(id)
 
 
 def getStreamFileName(streamModel):

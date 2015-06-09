@@ -8,10 +8,14 @@
 #from mpd import MPDClient
 from walker import Walker
 
-#player = APlayer()
-walker = Walker()
+import libs.spotify
 
-walker.walkShares()
+
+
+#player = APlayer()
+#walker = Walker()
+
+#walker.walkShares()
 
 #walker.walk("C:\\Users\\Nico\\Music")
 #player.init()

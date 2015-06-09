@@ -10,7 +10,7 @@ from subprocess import *
 class Walker:
     def __init__(self):
         self.player = None
-        self.allowdFiles = ['.mp3', '.m4a', '.wma']
+        self.allowdFiles = ['.mp3', '.m4a', '.wma', '.ogg']
         self.mediafiles = []
         self.media_albums = None
         self.mediafactory = MediaModelFactory()

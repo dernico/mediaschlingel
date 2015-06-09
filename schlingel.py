@@ -19,7 +19,9 @@ from aplayer import Player
 import Streams
 from apis import eighttracks
 from apis import youtube
+from apis import tunein
 from Factory import TracksModelFactory
+from Factory.StreamModelFactory import StreamModelFactory
 
 from tornado.options import define, options
 
@@ -36,21 +38,42 @@ debugMode = False
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
-        #user_json = self.get_secure_cookie("chatdemo_user")
-        #if not user_json: return None
-        return None
+        return ""
+        #return self.get_secure_cookie("user")
 
 
 class MainHandler(BaseHandler):
     index = None
 
     def get(self):
+        #if not self.current_user:
+        #    self.redirect("/login")
+        #    return
+        print("Hello " + self.current_user)
         global publicpath
         f = open(publicpath + sep + 'index.html')
         self.index = f.read()
         f.close()
         self.write(self.index)
         self.flush()
+
+class LoginHandler(BaseHandler):
+    def get(self):
+        self.write('<html><body><form action="/login" method="post">'
+                   'Name: <input type="text" name="name">'
+                   '<input type="submit" value="Sign in">'
+                   '</form></body></html>')
+
+    def post(self):
+        self.set_secure_cookie("user", self.get_argument("name"))
+        self.redirect("/")
+
+
+class LogoutHandler(BaseHandler):
+    def get(self):
+        self.clear_cookie("user","/")
+        self.redirect("/")
+
 
 
 class MediaHandler(BaseHandler):
@@ -62,6 +85,7 @@ class MediaHandler(BaseHandler):
     def streamFile(self, id):
         id = int(id)
         media = Player.walker.getMedia()[id]
+        
         if (media):
 
             self.set_header("Content-Type", 'audio/mpeg')
@@ -323,6 +347,42 @@ class HandleRemoveStream(BaseHandler):
 class HandleDiscover(BaseHandler):
     def get(self):
         Player.walker.discoverSchlingel()
+        
+
+class HandleTuneinPlay(BaseHandler):
+    def post(self, ):
+        item = self.get_argument('item', None)
+        if not item is None:
+            item = json.loads(item)
+            tunein.play(item)
+
+        self.write(Player.getinfo())
+        self.flush()
+
+class HandleTuneinSearch(BaseHandler):
+    def get(self):
+        result = {}
+
+        term = self.get_argument('search', None)
+        result["result"] = tunein.search(term)
+
+        self.write(result)
+        self.flush()
+
+
+class HandleTuneinSave(BaseHandler):
+    def post(self):
+        #station = self.get_argument('item', None)
+        #if station is not None:
+        #    stationJson = json.loads(station)
+        #Streams.saveLastRadioResult()
+
+        item = self.get_argument('item', None)
+        if item:
+            tunein.save(item)
+
+        self.write({})
+        self.flush()
 
 
 class HandleRadioSearch(BaseHandler):
@@ -389,17 +449,6 @@ class HandlePlayRadio(BaseHandler):
             Player.playStreamModel(station)
 
         self.write(Player.getinfo())
-        self.flush()
-
-
-class HandleSaveRadio(BaseHandler):
-    def post(self):
-        #station = self.get_argument('item', None)
-        #if station is not None:
-        #    stationJson = json.loads(station)
-        Streams.saveLastRadioResult()
-
-        self.write({})
         self.flush()
 
 
@@ -571,8 +620,8 @@ class CustomStaticFileHandler(tornado.web.StaticFileHandler):
 
     def set_extra_headers(self, path):
         # Disable cache
-        if debugMode:
-            self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        #if debugMode:
+        self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
 
 
 def main():
@@ -602,6 +651,8 @@ def main():
     app = tornado.web.Application(
         [
             (r"/", MainHandler),
+            (r"/login", LoginHandler),
+            (r"/logout", LogoutHandler),
             (r"/Cover/([^/]+)", CoverHandler),
             (r"/mediafile/([^/]+)", MediaHandler),
             (r"/api/music/playpause", HandlePlayPause),
@@ -623,24 +674,37 @@ def main():
             (r"/api/music/removeStream", HandleRemoveStream),
             (r"/api/music/grabcover", CoverGrabberHandler),
             (r"/api/music/discover", HandleDiscover),
+            
             (r"/api/music/radio/search", HandleRadioSearch),
             (r"/api/music/radio/recommendations", HandleRadioRecommendations),
             (r"/api/music/radio/categories", HandleRadioCategories),
             (r"/api/music/radio/top", HandleRadioTop),
             (r"/api/music/radio/mostWanted", HandleRadioMostWanted),
             (r"/api/music/radio/bycategorie", HandleRadioStationsByCategories),
+            
             (r"/api/music/playRadio", HandlePlayRadio),
-            (r"/api/music/saveRadio", HandleSaveRadio),
+
+            (r"/api/tunein/search", HandleTuneinSearch),
+            (r"/api/tunein/play", HandleTuneinPlay),
+            (r"/api/tunein/save", HandleTuneinSave),
+            (r"/api/tunein/recommendations", HandleRadioRecommendations),
+            (r"/api/tunein/categories", HandleRadioCategories),
+            (r"/api/tunein/top", HandleRadioTop),
+            (r"/api/tunein/mostWanted", HandleRadioMostWanted),
+            (r"/api/tunein/bycategorie", HandleRadioStationsByCategories),
+
             (r"/api/8tracks/tags", HandleTracksTag),
             (r"/api/8tracks/play", HandleTracksPlay),
             (r"/api/8tracks/search", HandleTracksSearch),
             (r"/api/8tracks/explore", HandleTracksExplorer),
             (r"/api/8tracks/page", HandleTracksPageing),
+
             (r"/api/youtube/search", HandleYouTubeSearch),
             (r"/api/youtube/play", HandleYouTubePlay),
             (r"/api/youtube/addplaylist", HandleYoutTubeAddToPlaylist),
             (r"/api/youtube/related", HandleYouTubeRelated),
             (r"/api/youtube/playlist", HandleYouTubePlaylist),
+            
             (r"/api/restartSchlingel", HandleRestartSchlingel),
             (r"/websocket", HandleWebSocket),
             (r"/(.*)", CustomStaticFileHandler, dict(path=publicpath))

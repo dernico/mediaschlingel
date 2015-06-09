@@ -15,16 +15,8 @@ pages.viewmodel("radioVM", ["api", "player", function (api, player) {
 
     self.searchRadio = function(){
         self.results([]);
-        self.api.get({
-            action: "radio/search",
-            params: "?search=" + self.searchterm(),
-            success: function(data) {
-                if (data.result) {
-                    data.result.forEach(function(item){
-                        self.results.push(new radioModel(item));
-                    });
-                }
-            }
+        self.api.radio.search(self.searchterm(), function(results){
+            self.results(results);
         });
     };
     
@@ -43,7 +35,7 @@ pages.viewmodel("radioVM", ["api", "player", function (api, player) {
     };
 
     self.loadRecommendations = function(){
-        self.api.raio.recommendations(function(data){
+        self.api.radio.recommendations(function(data){
             console.log("recommendations success");
         });
     };

@@ -2,8 +2,7 @@
 <html>
 <head>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <meta content='width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no' name='viewport' />
 
     <title>Woop Woop</title>
     <link rel="stylesheet" href="css/font-awesome.min.css" />
@@ -20,8 +19,17 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
+            //$('meta[name=viewport]').attr('content','width='+$(window).width()+',initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, user-scalable=no');
+
+            //$(document)[0].requestFullscreen();
+
             $("#pages").pages({
                 pages: [
+                    
+                    {
+                        route: '#/tunein',
+                        view: 'views/tunein.html'
+                    },
                     {
                         route: '#/streams',
                         vm: 'streams',
@@ -45,6 +53,10 @@
                     {
                         route: '#/youtube',
                         view: 'views/youtube.html'
+                    },
+                    {
+                        route: '#/tunein',
+                        view: 'views/tunein.html'
                     }
 
                 ],
@@ -65,10 +77,11 @@
     <nav class="pushy pushy-left">
         <ul >
             <li><a href="#/list">List</a></li>
-            <li><a href="#/streams">Radio</a></li>
+            <li><a href="#/tunein">TuneIn</a></li>
             <li><a href="#/8tracks">8tracks</a></li>
             <li><a href="#/youtube">YouTube</a></li>
             <li><a href="#/settings">Optionen</a></li>
+            <li><a href="/logout">Logout</a></li>
         </ul>
     </nav>
 

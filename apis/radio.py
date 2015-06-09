@@ -48,8 +48,8 @@ def search(term):
     path = 'index/searchembeddedbroadcast'
     param = {
         'q': term.encode("utf-8"),
-        'start' : '0',
-        'rows' : 200
+        'start': '0',
+        'rows': 200
     }
     searchCache[term] = _call(path, param)
     return sorted(searchCache[term], key=lambda station: station["rank"])

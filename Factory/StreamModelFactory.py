@@ -1,5 +1,7 @@
 from Model.StreamModel import StreamModel
-from libs.pafy import pafy
+#from libs.pafy import pafy
+
+import pafy
 
 class StreamModelFactory:
 
@@ -42,6 +44,21 @@ class StreamModelFactory:
         model.Name = json["name"]
         model.Stream = json["stream"]
         model.Website = json["website"]
+        #model.Type = json["type"]
+        return model
+
+
+
+    def createFromStreamJson(self, json):
+        model = StreamModel()
+        model.Id = json["id"]
+        model.Description = json["description"]
+        model.Image = json["image"]
+        model.Format = json["format"]
+        model.Name = json["name"]
+        model.Stream = json["stream"]
+        if "website" in json:
+            model.Website = json["website"]
         #model.Type = json["type"]
         return model
 
@@ -95,4 +112,37 @@ class StreamModelFactory:
         model.Stream = streamURL
         model.Website = json["link"]
         model.Type = "radio"
+        return model
+
+    '''
+    {
+        "subtext": "Gravediggaz - Nowhere to Run, Nowhere to Hide", 
+        "item": "station", 
+        "URL": "http://opml.radiotime.com/Tune.ashx?id=s185202", 
+        "text": "RAPstation Radio", 
+        "image": "http://cdn-radiotime-logos.tunein.com/s185202q.png", 
+        "element": "outline", 
+        "guide_id": "s185202", 
+        "reliability": "95", 
+        "bitrate": "128", 
+        "playing_image": "http://cdn-albums.tunein.com/gn/0BNDBL9GKCd.jpg", 
+        "preset_id": "s185202", 
+        "formats": "mp3", 
+        "now_playing_id": "s185202", 
+        "type": "audio", 
+        "playing": "Gravediggaz - Nowhere to Run, Nowhere to Hide", 
+        "genre_id": "g128"}
+    '''
+    def createFromTunein(self, json):
+        model = StreamModel()
+        model.Id = json["guide_id"]
+        model.Description = json["subtext"]
+        model.Image = json["image"]
+        if "formats" in json:
+            model.Format = json["formats"]
+        model.Name = json["text"]
+        model.Stream = json["URL"]
+        if "playing" in json:
+            model.playing = json["playing"]
+        model.Type = "tunein"
         return model

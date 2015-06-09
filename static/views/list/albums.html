@@ -1,0 +1,24 @@
+<button data-bind="click: pagePrev">prev</button>
+<button data-bind="click: pageNext">next</button>
+
+<input placeholder="Enter Albumname" data-bind="value: albumSearch, event: {keyup: albumSearchChange}" />
+
+<div data-bind="foreach: albums">
+    <div>
+        
+        <div class="album" data-bind="click: toggleTracks">
+	        <img class="albumcover" data-bind="attr: {src: cover}" />
+	        <h2 class="albumtitle" data-bind="text: name"></h2>
+        </div>
+        
+        <ul class="albumtracks" data-bind="visible: showTracks, foreach: tracks">
+            <li>
+            	<div data-bind="click: $root.playTrack">
+            		<p data-bind="text: title"></p>
+            	</div>
+            </li>
+        </ul>
+
+        <div class="clearboth"></div>
+    </div>
+</div>

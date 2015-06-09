@@ -1,0 +1,35 @@
+
+<div class="currentMusicInfoPanel" data-bind="with: currentData">
+	<div class="currentMusicInfo" >
+
+        <img data-bind="attr: { src: Cover }" alt="" />
+	    <div data-bind="text: Album"></div>
+	    <div data-bind="text: Name"></div>
+	</div>
+</div>
+
+
+<div class="playControl backface-hidden">
+	<div class="tile" data-bind="click: prev">
+	    <i class="icon-backward"></i>
+	</div>
+	<div class="tile" data-bind="click: playpause">
+	    <i class="margin20 marginTop15 icon-pause" data-bind="css: { 'icon-play': showPlaying }"></i>
+	</div>
+	<div class="tile" data-bind="click: next">
+	    <i class="icon-forward"></i>
+	</div>
+	<div class="tile" data-bind="click: toggleRandom">
+	    <i class="icon-random" data-bind="css: { randomOff: randomOff }"></i>
+	</div>
+
+	<div class="tile" data-bind="click: volUp">
+	    <i class="icon-volume-up"></i>
+	</div>
+	<div class="tile" data-bind="click: volDown">
+	    <i class="icon-volume-down"></i>
+	</div>
+	<div data-bind="with: currentData">
+		Vol: <span data-bind="text: Volumn"></span>
+	</div>
+</div>

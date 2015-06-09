@@ -108,6 +108,22 @@ pages.service("api", [function(){
 
     api.radio = {};
 
+    api.radio.search = function(searchterm, success, error){
+        ajax({
+            url: "/api/music/radio/search?search=" + searchterm,
+        },true, // show loading
+        function(data) {
+            results = [];
+            if (data.result) {
+                data.result.forEach(function(item){
+                    results.push(new radioModel(item));
+                });
+            }
+            if(success) success(results);
+        },
+        error);
+    };
+
     api.radio.recommendations = function(success, error){
         ajax({
             url: '/api/music/radio/recommendations'
@@ -286,13 +302,60 @@ pages.service("api", [function(){
         ajax({
             url: "/api/youtube/related",
             data: {id: track.id}
-        }, false, done, error);
+        }, false, 
+            function(data){
+
+                var ytModels = [];
+                data.tracks.forEach(function(item){
+                    ytModels.push(new youtubeModel(item));
+                });
+                data.tracks = ytModels;
+                if(done) done(data);
+            }, error);
     };
 
     api.youtube.getPlaylist = function(done, error){
         ajax({
             url: "/api/youtube/playlist"
         }, false, done, error);
+    };
+
+    api.tunein = {};
+
+    api.tunein.search = function(searchterm, success, error){
+        ajax({
+            url: "/api/tunein/search?search=" + searchterm,
+        },true, // show loading
+        function(data) {
+            results = [];
+            if (data.result) {
+                data.result.forEach(function(item){
+                    results.push(new radioModel(item));
+                });
+            }
+            if(success) success(results);
+        },
+        error);
+    };
+
+    api.tunein.play = function(json, success, error){
+        ajax({
+            url: "/api/tunein/play",
+            data: "item= " + encodeURIComponent(json),
+            type: "POST"
+        },true, // show loading
+        function(data) {
+            if(success) success(data);
+        },
+        error);
+    };
+
+    api.tunein.saveRadio = function(json, success, error){
+        ajax({
+            url: "/api/tunein/save",
+            type: "POST",
+            data: "item="+encodeURIComponent(json)
+        },true,success,error);
     };
 
     var laut = "http://api.laut.fm";

@@ -630,10 +630,11 @@ var radioModel = (function(){
 	return function(station){
 		var self = this;
 		self.id = station.id;
-        self.image = station.pictureBaseURL + station.picture1Name;
+		self.description = station.description;
+		self.stream = station.stream;
+		self.format = station.format;
+        self.image = station.image;
         self.name = station.name;
-        self.genre = station.genresAndTopics;
-        self.rank = station.rank;
 	};
 })();;var youtubeModel = (function(){
 	return function(yt){
@@ -752,6 +753,22 @@ pages.service("api", [function(){
     };
 
     api.radio = {};
+
+    api.radio.search = function(searchterm, success, error){
+        ajax({
+            url: "/api/music/radio/search?search=" + searchterm,
+        },true, // show loading
+        function(data) {
+            results = [];
+            if (data.result) {
+                data.result.forEach(function(item){
+                    results.push(new radioModel(item));
+                });
+            }
+            if(success) success(results);
+        },
+        error);
+    };
 
     api.radio.recommendations = function(success, error){
         ajax({
@@ -931,13 +948,60 @@ pages.service("api", [function(){
         ajax({
             url: "/api/youtube/related",
             data: {id: track.id}
-        }, false, done, error);
+        }, false, 
+            function(data){
+
+                var ytModels = [];
+                data.tracks.forEach(function(item){
+                    ytModels.push(new youtubeModel(item));
+                });
+                data.tracks = ytModels;
+                if(done) done(data);
+            }, error);
     };
 
     api.youtube.getPlaylist = function(done, error){
         ajax({
             url: "/api/youtube/playlist"
         }, false, done, error);
+    };
+
+    api.tunein = {};
+
+    api.tunein.search = function(searchterm, success, error){
+        ajax({
+            url: "/api/tunein/search?search=" + searchterm,
+        },true, // show loading
+        function(data) {
+            results = [];
+            if (data.result) {
+                data.result.forEach(function(item){
+                    results.push(new radioModel(item));
+                });
+            }
+            if(success) success(results);
+        },
+        error);
+    };
+
+    api.tunein.play = function(json, success, error){
+        ajax({
+            url: "/api/tunein/play",
+            data: "item= " + encodeURIComponent(json),
+            type: "POST"
+        },true, // show loading
+        function(data) {
+            if(success) success(data);
+        },
+        error);
+    };
+
+    api.tunein.saveRadio = function(json, success, error){
+        ajax({
+            url: "/api/tunein/save",
+            type: "POST",
+            data: "item="+encodeURIComponent(json)
+        },true,success,error);
     };
 
     var laut = "http://api.laut.fm";
@@ -1008,8 +1072,8 @@ pages.service("background", function(){
 
 
     self.setCurrentInfo = function (data) {
-        
-        //background.setCover(data.cover);
+        //No data :/
+        if (!data) return;
 
         var album = data.album ? data.album : "-";
         var title = data.title ? data.title : "-";
@@ -1105,8 +1169,7 @@ pages.service("background", function(){
     self.activate = function(){
         self.LoadCurrentInfo();
     };
-}]);;//var tracksVM = ["api", "player", function (api, player) {
-pages.viewmodel("tracksVM", ["api", "player", function (api, player) {
+}]);;pages.viewmodel("tracksVM", ["api", "player", function (api, player) {
     var self = this;
     self.api = api;
     self.searchTerm = ko.observable();
@@ -1818,16 +1881,8 @@ pages.viewmodel("radioVM", ["api", "player", function (api, player) {
 
     self.searchRadio = function(){
         self.results([]);
-        self.api.get({
-            action: "radio/search",
-            params: "?search=" + self.searchterm(),
-            success: function(data) {
-                if (data.result) {
-                    data.result.forEach(function(item){
-                        self.results.push(new radioModel(item));
-                    });
-                }
-            }
+        self.api.radio.search(self.searchterm(), function(results){
+            self.results(results);
         });
     };
     
@@ -1846,7 +1901,7 @@ pages.viewmodel("radioVM", ["api", "player", function (api, player) {
     };
 
     self.loadRecommendations = function(){
-        self.api.raio.recommendations(function(data){
+        self.api.radio.recommendations(function(data){
             console.log("recommendations success");
         });
     };
@@ -1952,6 +2007,92 @@ pages.viewmodel("topVM", ["api", "player", function (api, player) {
     };
 
     self.loadTops();
+}]);;pages.viewmodel("tuneinFavoritesVM", ["api", "player", function (api, player) {
+    var self = this;
+    self.activated = false;
+    self.streams = ko.observableArray([]);
+    self.api = api;
+
+    self.play = function (item) {
+        player.playStream(item);
+    };
+
+    self.deleteStream = function (item) {
+        self.api.post("deleteStream", "item=" + ko.toJSON(item), function () {
+            self.streams.remove(item);
+        });
+    };
+
+    
+    self.removeRadio = function (item) {
+        api.post("removeStream", "id=" + item.id, function () {
+            self.streams.remove(item);
+        });
+    };
+
+    self.insertStreams = function (data) {
+        if (data && data.streams) {
+            self.streams([]);
+            $.each(data.streams, function (i, item) {
+                self.streams.push(item);
+            });
+        }
+    };
+
+    self.init = function () {
+        self.api.get({ action: "streams", 
+            params: "", 
+            showLoading: false,
+            success: self.insertStreams });
+    };
+
+    self.activate = function (scope) {
+        if(!self.activated){
+            self.init();
+        }
+        //ko.applyBindings(self, scope);
+    };
+}]);;pages.viewmodel("tuneinSearchVM", ["api", "player", function (api, player) {
+    var self = this;
+    self.listenPls = ko.observable();
+    self.searchterm = ko.observable();
+    self.results = ko.observableArray([]);
+    self.currentRadio = null;
+    self.api = api;
+
+    self.searchRadioOnEnter = function(vm, e) {
+        if (e.keyCode == 13) {
+            self.searchRadio();
+        }
+    };
+
+    self.searchRadio = function(){
+        self.results([]);
+        self.api.tunein.search(self.searchterm(), function(results){
+            self.results(results);
+        });
+    };
+    
+
+    self.playRadio = function(item){
+        self.api.tunein.play(ko.toJSON(item), player.setCurrentInfo);
+        self.currentRadio = item;
+    };
+
+    self.saveRadio = function (item) {
+        self.api.tunein.saveRadio(ko.toJSON(item));
+    };
+
+
+    self.loadRecommendations = function(){
+        self.api.radio.recommendations(function(data){
+            console.log("recommendations success");
+        });
+    };
+
+    self.activate = function () {
+        
+    };
 }]);;pages.viewmodel('youtube.playlistVM', ['api', 'player', function(api, player){
 	var self = this;
 	self.results = ko.observableArray();

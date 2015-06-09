@@ -19,6 +19,14 @@ class StreamModel(dict):
         self['description'] = value
 
     @property
+    def Playing(self):
+        return self['playing']
+
+    @Playing.setter
+    def Playing(self, value):
+        self['playing'] = value
+
+    @property
     def Image(self):
         return self['image']
 
@@ -74,3 +82,4 @@ class StreamModel(dict):
         self.Stream = ""
         self.Website = ""
         self.Type = ""
+        self.Playing = ""

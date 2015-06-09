@@ -2,6 +2,6 @@
 *.log
 public_angular/*
 libs
-node_modules
+node_modules/
 .idea/
-node_modules/*
+Streams/

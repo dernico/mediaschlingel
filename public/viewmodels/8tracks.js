@@ -1,4 +1,3 @@
-//var tracksVM = ["api", "player", function (api, player) {
 pages.viewmodel("tracksVM", ["api", "player", function (api, player) {
     var self = this;
     self.api = api;
