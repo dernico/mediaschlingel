@@ -69,12 +69,22 @@ tuneInUri = 'http://opml.radiotime.com/'
 tuneInBrowseUri = tuneInUri + 'Browse.ashx'
 
 
-def parse_m3u(data):
+def parse_m3u(url):
+
+    urls = []
+    m3u_content = Helper.downloadString(url)
+    for line in m3u_content.split("\n"):
+        if not line.startswith('#') \
+        and line.strip() \
+        and line.startswith("http"):
+            urls.append(line)
+    return urls
+
     # Copied from mopidy.audio.playlists
     # Mopidy version expects a header but it's not always present
-    for line in data.readlines():
-        if not line.startswith('#') and line.strip():
-            yield line.strip()
+    #for line in data.readlines():
+    #    if not line.startswith('#') and line.strip():
+    #        yield line.strip()
 
 
 def parse_pls(url):
@@ -305,6 +315,8 @@ class TuneIn(object):
             return [url]  # Catch these easy ones
         elif extension == '.pls':
             return parse_pls(url)
+        elif extension == '.m3u':
+            return parse_m3u(url)
         else:
             return [url]
 
