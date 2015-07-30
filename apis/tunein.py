@@ -121,6 +121,7 @@ def fix_asf_uri(uri):
 
 
 def parse_old_asx(data):
+    print("parse old asx")
     try:
         cp = configparser.RawConfigParser()
         cp.readfp(data)
@@ -136,6 +137,7 @@ def parse_old_asx(data):
 
 
 def parse_new_asx(data):
+    print("parse new asx")
     # Copied from mopidy.audio.playlists
     try:
         for event, element in elementtree.iterparse(data):
@@ -150,11 +152,25 @@ def parse_new_asx(data):
         yield fix_asf_uri(entry.get('href', '').strip())
 
 
-def parse_asx(data):
+def parse_asx(url):
+    urls = []
+    data = Helper.downloadString(url)
+
+    m = re.search(r'\<[Rr]ef.*\"(http.*)\"', data, re.I)
+    url = m.group(1)
+    print("Found asx url: " + url)
+    urls.append(url)
+
+    return urls
+
     if b'asx' in data.getvalue()[0:50].lower():
-        return parse_new_asx(data)
+        url = parse_new_asx(data)
+        urls.append(url)
     else:
-        return parse_old_asx(data)
+        url = parse_old_asx(data)
+        urls.append(url)
+
+    return urls
 
 '''
 def find_playlist_parser(extension, content_type):
@@ -317,6 +333,8 @@ class TuneIn(object):
             return parse_pls(url)
         elif extension == '.m3u':
             return parse_m3u(url)
+        #elif extension == '.asx':
+        #    return parse_asx(url)
         else:
             return [url]
 
@@ -373,7 +391,10 @@ class TuneIn(object):
         search_results = self._tunein('Search.ashx', args)
         results = []
         for item in self._flatten(search_results):
-            if item.get('type', '') == 'audio':
+            # use only audio and filter out wma
+            # wma is not playable from gstreamer
+            if item.get('type', '') == 'audio' \
+            and not 'wma' in item.get('formats',''):
                 # Only return stations
                 self._stations[item['guide_id']] = item
                 results.append(item)
