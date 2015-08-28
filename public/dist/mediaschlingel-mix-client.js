@@ -996,6 +996,30 @@ pages.service("api", [function(){
         error);
     };
 
+
+    api.tunein.categories = function(categorie, success, error){
+        ajax({
+            url: "/api/tunein/categories",
+            data: "categorie= " + categorie
+        },true, // show loading
+        function(data) {
+            if(success) success(data.result);
+        },
+        error);
+    };
+
+
+    api.tunein.stations = function(stationId, success, error){
+        ajax({
+            url: "/api/tunein/stations",
+            data: "station_id= " + stationId
+        },true, // show loading
+        function(data) {
+            if(success) success(data.result);
+        },
+        error);
+    };
+
     api.tunein.saveRadio = function(json, success, error){
         ajax({
             url: "/api/tunein/save",
@@ -2007,6 +2031,42 @@ pages.viewmodel("topVM", ["api", "player", function (api, player) {
     };
 
     self.loadTops();
+}]);;pages.viewmodel("tuneinCategoriesVM", ["api", "player", function (api, player) {
+    var self = this;
+    self.categories = ko.observableArray([]);
+    self.results = ko.observableArray([]);
+    self.currentRadio = null;
+    self.api = api;
+    self.player = player;
+
+    
+    self.opencategorie = function(item){
+
+        self.api.tunein.stations(item.guide_id, function(results){
+            self.results(results);
+        });
+
+    };
+    
+
+    self.playRadio = function(item){
+        self.api.tunein.play(ko.toJSON(item), player.setCurrentInfo);
+        self.currentRadio = item;
+    };
+
+    self.saveRadio = function (item) {
+        self.api.tunein.saveRadio(ko.toJSON(item));
+    };
+
+
+    self.activate = function () {
+        
+        self.categories([]);
+        self.api.tunein.categories("music", function(results){
+            self.categories(results);
+        });
+
+    };
 }]);;pages.viewmodel("tuneinFavoritesVM", ["api", "player", function (api, player) {
     var self = this;
     self.activated = false;

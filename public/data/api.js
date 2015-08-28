@@ -350,6 +350,30 @@ pages.service("api", [function(){
         error);
     };
 
+
+    api.tunein.categories = function(categorie, success, error){
+        ajax({
+            url: "/api/tunein/categories",
+            data: "categorie= " + categorie
+        },true, // show loading
+        function(data) {
+            if(success) success(data.result);
+        },
+        error);
+    };
+
+
+    api.tunein.stations = function(stationId, success, error){
+        ajax({
+            url: "/api/tunein/stations",
+            data: "station_id= " + stationId
+        },true, // show loading
+        function(data) {
+            if(success) success(data.result);
+        },
+        error);
+    };
+
     api.tunein.saveRadio = function(json, success, error){
         ajax({
             url: "/api/tunein/save",

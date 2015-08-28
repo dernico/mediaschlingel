@@ -41,7 +41,7 @@ def parsem3u(content):
     lines = content.split('\n')
     for line in lines:
         if line.startswith('http'):
-            stream = ""
+            stream = line.strip()
             if '.m3u' in line:
                 filecontent = downloadString(line)
                 stream = parsePls(filecontent)
@@ -58,10 +58,14 @@ def parsem3u(content):
 
 
 def parsePls(content):
-    lines = content.spint('\n')
+    lines = content.split('\n')
     for line in lines:
-        line = line.lowercase()
+        line = line.lower()
+        #print("line: " + line)
         if line.startswith('file'):
-            tmp = line.split('=')
-            if len(tmp) == 2:
-                return tmp[1]
+            index = line.index('=')
+            stream = line[index+1:]
+            #print("found stream : " + stream)
+            return stream
+            #if len(tmp) == 2:
+            #    return tmp[1]

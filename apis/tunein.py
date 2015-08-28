@@ -17,14 +17,25 @@ from apis import Streams
 import json
 #import Config
 
+def _make_stream_models(results):
 
-def search(searchterm):
-    result = singelton.search(searchterm);
     streams = []
-    for item in result:
+    for item in results:
         stream = StreamModelFactory.createFromTunein(item)
         streams.append(stream)
     return streams
+
+def search(searchterm):
+    results = singelton.search(searchterm);
+    return _make_stream_models(results)
+
+def categories(categorie):
+    results = singelton.categories(categorie)
+    return results
+    
+def stations(id):
+    results = singelton.stations(id)
+    return _make_stream_models(results)
 
 def play(item):
     model = StreamModelFactory.createFromStreamJson(item)
@@ -73,13 +84,11 @@ def parse_m3u(url):
 
     urls = []
     m3u_content = Helper.downloadString(url)
-    for line in m3u_content.split("\n"):
-        if not line.startswith('#') \
-        and line.strip() \
-        and line.startswith("http"):
-            urls.append(line)
+    
+    stream = Helper.parsem3u(m3u_content)
+    if stream:
+        urls.append(stream)
     return urls
-
     # Copied from mopidy.audio.playlists
     # Mopidy version expects a header but it's not always present
     #for line in data.readlines():
@@ -90,11 +99,12 @@ def parse_m3u(url):
 def parse_pls(url):
     urls = []
     pls_content = Helper.downloadString(url)
-    for line in pls_content.split("\n"):
-        if 'File' in line:
-            url = line.split("=")[1]
-            urls.append(url)
+    
+    stream = Helper.parsePls(pls_content)
+    if stream:
+        urls.append(stream)
     return urls
+
 '''
     # Copied from mopidy.audio.playlists
     try:

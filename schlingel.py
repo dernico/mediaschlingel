@@ -15,7 +15,7 @@ import tornado.web
 import tornado.websocket
 
 from aplayer import Player
-# from mpdplayer import APlayer
+#from mpdplayer import Player
 from apis import Streams
 from apis import eighttracks
 from apis import youtube
@@ -370,6 +370,28 @@ class HandleTuneinSearch(BaseHandler):
         self.flush()
 
 
+class HandleTuneinCategories(BaseHandler):
+    def get(self):
+        result = {}
+
+        term = self.get_argument('categorie', "")
+        result["result"] = tunein.categories(term)
+
+        self.write(result)
+        self.flush()
+
+
+class HandleTuneinStations(BaseHandler):
+    def get(self):
+        result = {}
+
+        term = self.get_argument('station_id', "")
+        result["result"] = tunein.stations(term)
+
+        self.write(result)
+        self.flush()
+
+
 class HandleTuneinSave(BaseHandler):
     def post(self):
         #station = self.get_argument('item', None)
@@ -611,6 +633,8 @@ def main():
 
             (r"/api/tunein/search", HandleTuneinSearch),
             (r"/api/tunein/play", HandleTuneinPlay),
+            (r"/api/tunein/categories", HandleTuneinCategories),
+            (r"/api/tunein/stations", HandleTuneinStations),
             (r"/api/tunein/save", HandleTuneinSave),
 
             (r"/api/8tracks/tags", HandleTracksTag),

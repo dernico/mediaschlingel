@@ -250,6 +250,8 @@ class APlayer(threading.Thread):
         }
 
 
+Player = APlayer()
+
 #play_uri('file:///home/nico/dev/python/schlingel/skit.mp3')
 #player = APlayer()
 #player.playStream()

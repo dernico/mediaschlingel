@@ -74,7 +74,8 @@ module.exports = function(grunt) {
     },
     watch: {
       files: ['scripts/Page.js', '<%= jshint.files %>', 'css/**/*.less'],
-      tasks: ['jshint', 'concat', 'less', 'uglify']
+      //tasks: ['jshint', 'concat', 'less', 'uglify']
+      tasks: ['jshint', 'concat', 'uglify']
     }
   });
 
@@ -83,7 +84,7 @@ module.exports = function(grunt) {
   //grunt.loadNpmTasks('grunt-contrib-qunit');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-less');
+  //grunt.loadNpmTasks('grunt-contrib-less');
 
 
   //grunt.registerTask('test', ['jshint', 'qunit']);
