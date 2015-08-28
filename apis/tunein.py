@@ -274,6 +274,9 @@ class TuneIn(object):
         if category in ('podcast', 'local'):
             # Flatten the results!
             results = self._filter_results(self._flatten(results))
+        elif category == 'trending':
+            results = self._filter_results(results)
+            results = _make_stream_models(results)
         elif category == '':
             trending = {'text': 'Trending',
                         'key': 'trending',
