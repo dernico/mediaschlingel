@@ -49,7 +49,7 @@ class MainHandler(BaseHandler):
         #if not self.current_user:
         #    self.redirect("/login")
         #    return
-        print("Hello " + self.current_user)
+        #print("Hello " + self.current_user)
         global publicpath
         f = open(publicpath + sep + 'index.html')
         self.index = f.read()
@@ -133,9 +133,11 @@ class MediaHandler(BaseHandler):
 
 class CoverHandler(BaseHandler):
     def get(self, cover):
+        print("test")
         coverpath = os.path.join(Player.walker.getCoverDir(), cover)
         if not os.path.exists(coverpath):
-            coverpath = os.path.join(curdir, publicpath, "schlingel.jpg")
+            print("cover not found: " + coverpath)
+            coverpath = os.path.join(curdir, publicpath, "nopic.jpg")
         print "Send Cover " + coverpath
         self.set_header("Content-Type", 'image/jpeg')
         with open(coverpath, 'rb') as cover:
@@ -208,14 +210,26 @@ class HandleVote(BaseHandler):
 
 
 class HandleNext(BaseHandler):
+    def get(self):
+        self.handle()
+
     def post(self):
+        self.handle()
+
+    def handle(self):
         files = Player.playNext()
         self.write(Player.getinfo())
         self.flush()
 
 
 class HandlePrev(BaseHandler):
+    def get(self):
+        self.handle()
+
     def post(self):
+        self.handle()
+
+    def handle(self):
         files = Player.playPrev()
         self.write(Player.getinfo())
         self.flush()
@@ -261,21 +275,30 @@ class HandlePlayStream(BaseHandler):
         self.play()
 
     def play(self):
-        print "Handle playStream"
+        #print "Handle playStream"
+        print("play stream was called")
         stream = self.get_argument('stream', None)
         if stream is not None:
+            print("now playing stream")
             Player.playStream(stream)
         else:
-            if not Player.playing():
-                Player.play()
-                print "Play"
+            print("stream was not set")
+            #if not Player.playing():
+            #    Player.play()
+            #    print "Play"
 
         self.write(Player.getinfo())
         self.flush()
 
 
 class HandlePause(BaseHandler):
+    def get(self):
+        self.handle()
+
     def post(self):
+        self.handle()
+
+    def handle(self):
         if Player.playing():
             Player.pausePlay()
             self.write(Player.getinfo())
@@ -300,16 +323,22 @@ class HandleToggleRandom(BaseHandler):
 class HandleSearch(BaseHandler):
     def get(self):
         term = self.path.split('/')[3]
-        print "Suche nach: " + term
+        #print "Suche nach: " + term
         term = urllib.unquote(term)
-        print "Umgeformt nach: " + term
+        #print "Umgeformt nach: " + term
         result = Player.search(term)
         self.write(result)
         self.flush()
 
 
 class HandleVolumeUp(BaseHandler):
+    def get(self):
+        self.handle()
+
     def post(self):
+        self.handle()
+
+    def handle(self):
         Player.volUp()
         info = Player.getinfo()
         self.write(info)
@@ -317,7 +346,13 @@ class HandleVolumeUp(BaseHandler):
 
 
 class HandleVolumeDown(BaseHandler):
+    def get(self):
+        self.handle()
+
     def post(self):
+        self.handle()
+
+    def handle(self):
         Player.volDown()
         info = Player.getinfo()
         self.write(info)
@@ -394,11 +429,6 @@ class HandleTuneinStations(BaseHandler):
 
 class HandleTuneinSave(BaseHandler):
     def post(self):
-        #station = self.get_argument('item', None)
-        #if station is not None:
-        #    stationJson = json.loads(station)
-        #Streams.saveLastRadioResult()
-
         item = self.get_argument('item', None)
         if item:
             tunein.save(item)
@@ -569,6 +599,22 @@ class HandleRestartSchlingel(BaseHandler):
         #os.execl(python, python, * sys.argv)
         os.execl(sys.executable, *([sys.executable] + sys.argv))
 
+class HandleUpload(BaseHandler):
+    def post(self):
+        fileinfo = self.request.files['nexttrack'][0]
+        print "fileinfo is", fileinfo['filename']
+        fname = fileinfo['filename']
+        #extn = os.path.splitext(fname)[1]
+        mediadir = getMediaDirs()[0]
+        filepath = mediadir + sep + fname
+        print "filepath is: " + filepath
+        fh = open(filepath, 'w')
+        fh.write(fileinfo['body'])
+        model = Player.walker.addFile(mediadir, fname, True, True)
+        Player.setNext(model.ID)
+        Player.playNext()
+        self.finish(fname + " is uploaded!! Check %s folder" %publicpath)
+
 
 class CustomStaticFileHandler(tornado.web.StaticFileHandler):
     global debugMode
@@ -576,7 +622,7 @@ class CustomStaticFileHandler(tornado.web.StaticFileHandler):
     def set_extra_headers(self, path):
         # Disable cache
         #if debugMode:
-        self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        self.set_header('Cache-Control', 'no-store, no-bcache, must-revalidate, max-age=0')
 
 
 def main():
@@ -610,6 +656,7 @@ def main():
             (r"/logout", LogoutHandler),
             (r"/Cover/([^/]+)", CoverHandler),
             (r"/mediafile/([^/]+)", MediaHandler),
+            (r"/api/music/upload", HandleUpload),
             (r"/api/music/playpause", HandlePlayPause),
             (r"/api/music/playStream", HandlePlayStream),
             (r"/api/music/play", HandlePlay),

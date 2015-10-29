@@ -90,14 +90,18 @@ class Walker:
                     self.addFile(path, filename, True)
 
 
-    def addFile(self, path, file, isLocal=False):
+    def addFile(self, path, file, isLocal=False, addId3=False):
         #print "Path: " + path + "   Datei: " + file
         name, ext = os.path.splitext(file)
 
         for extension in self.allowdFiles:
             if extension == ext:
                 model = self.mediafactory.createMediaModelFromFile(len(self.mediafiles), path, file, self.ipAdress, isLocal)
+                if(addId3):
+                    self.mediafactory.addId3Informations(model, self.ipAdress, self.getCoverDir())
                 self.appendMediaFile(model)
+                return model
+
 
     def appendMediaFile(self, mediafile):
         self.lock.acquire()

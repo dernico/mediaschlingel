@@ -1,6 +1,9 @@
 mediaschlingel
 ==============
 
+if pip is not installed:
+sudo apt-get install python-pip
+
 sudo apt-get install python-gst0.10 gstreamer0.10-plugins-good \
     gstreamer0.10-plugins-ugly
 
@@ -24,3 +27,13 @@ cd libs/pafy
 sudo python setup.py install
 (or)
 download latest pafy from github: https://github.com/np1/pafy
+
+#------------------#
+
+New Version 
+
+install Flask
+sudo pip install Flask
+
+install Flask-OAuth
+git clone git://github.com/lepture/flask-oauthlib.git

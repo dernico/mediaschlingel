@@ -162,10 +162,16 @@ class APlayer(Base_Player):
         self._set_property('uri', stream)
         s = Streams.getStream(stream)
         self.currentlyPlaying = {}
-        self.currentlyPlaying['webpath'] = s["stream"]
-        self.currentlyPlaying['title'] = s["format"]
-        self.currentlyPlaying['cover'] = s["image"]
-        self.currentlyPlaying['type'] = self.streamType
+        if s is None:
+            self.currentlyPlaying['webpath'] = stream
+            self.currentlyPlaying['title'] = "Unknown"
+            self.currentlyPlaying['cover'] = ""
+            self.currentlyPlaying['type'] = self.streamType  
+        else:
+            self.currentlyPlaying['webpath'] = s["stream"]
+            self.currentlyPlaying['title'] = s["format"]
+            self.currentlyPlaying['cover'] = s["image"]
+            self.currentlyPlaying['type'] = self.streamType
         self.play()
 
 
