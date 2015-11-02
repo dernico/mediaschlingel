@@ -613,7 +613,7 @@ class HandleUpload(BaseHandler):
         model = Player.walker.addFile(mediadir, fname, True, True)
         Player.setNext(model.ID)
         Player.playNext()
-        self.finish(fname + " is uploaded!! Check %s folder" %publicpath)
+        self.finish(Player.getinfo())
 
 
 class CustomStaticFileHandler(tornado.web.StaticFileHandler):
