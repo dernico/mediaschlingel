@@ -602,18 +602,42 @@ class HandleRestartSchlingel(BaseHandler):
 class HandleUpload(BaseHandler):
     def post(self):
         fileinfo = self.request.files['nexttrack'][0]
-        print "fileinfo is", fileinfo['filename']
+        
         fname = fileinfo['filename']
-        #extn = os.path.splitext(fname)[1]
         mediadir = getMediaDirs()[0]
-        filepath = mediadir + sep + fname
-        print "filepath is: " + filepath
-        fh = open(filepath, 'w')
-        fh.write(fileinfo['body'])
-        model = Player.walker.addFile(mediadir, fname, True, True)
+        filepath = os.path.join(mediadir, fname)
+        
+        model = None
+        if not os.path.exists(filepath):
+            fh = open(filepath, 'w')
+            fh.write(fileinfo['body'])
+            model = Player.walker.addFile(mediadir, fname, True, True)
+        else:
+            model = Player.walker.filterMedia(filepath)
         Player.setNext(model.ID)
         Player.playNext()
         self.finish(Player.getinfo())
+
+
+class CheckAndPlayFile(BaseHandler):
+    def get(self):
+        filename = self.get_argument("filename", None)
+        if filename:
+            mediadir = getMediaDirs()[0]
+            filepath = os.path.join(mediadir, filename)
+
+            model = None
+            result = Player.walker.filterMedia(filepath)
+            if len(result) > 0:
+                model = result[0]
+            if model:
+                print "filename - " + filepath + " - exists."
+                Player.setNext(model.ID)
+                Player.playNext()
+                self.finish(Player.getinfo())
+            else:
+                print "filename - " + filepath + " - does not exist"
+                self.finish("false")
 
 
 class CustomStaticFileHandler(tornado.web.StaticFileHandler):
@@ -657,6 +681,7 @@ def main():
             (r"/Cover/([^/]+)", CoverHandler),
             (r"/mediafile/([^/]+)", MediaHandler),
             (r"/api/music/upload", HandleUpload),
+            (r"/api/music/checkandplay", CheckAndPlayFile),
             (r"/api/music/playpause", HandlePlayPause),
             (r"/api/music/playStream", HandlePlayStream),
             (r"/api/music/play", HandlePlay),
