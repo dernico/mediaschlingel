@@ -35,13 +35,21 @@ def createFromUrl(id, url):
 def createFromJson(id, json):
     model = StreamModel()
     model.Id = id
-    model.Description = json["description"]
-    model.Image = json["image"]
-    model.Format = json["format"]
+    if "description" in json:
+        model.Description = json["description"]
+
+    if "image" in json:
+        model.Image = json["image"]
+    
+    if "format" in json:
+        model.Format = json["format"]
+    
     model.Name = json["name"]
     model.Stream = json["stream"]
-    model.Website = json["website"]
-    #model.Type = json["type"]
+    
+    if "website" in json:
+        model.Website = json["website"]
+
     return model
 
 
@@ -49,11 +57,17 @@ def createFromJson(id, json):
 def createFromStreamJson(json):
     model = StreamModel()
     model.Id = json["id"]
-    model.Description = json["description"]
+    if "description" in json:
+        model.Description = json["description"]
+    
     model.Image = json["image"]
-    model.Format = json["format"]
+    
+    if "format" in json:
+        model.Format = json["format"]
+
     model.Name = json["name"]
     model.Stream = json["stream"]
+    
     if "website" in json:
         model.Website = json["website"]
     #model.Type = json["type"]

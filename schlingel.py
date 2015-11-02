@@ -385,7 +385,7 @@ class HandleDiscover(BaseHandler):
         
 
 class HandleTuneinPlay(BaseHandler):
-    def post(self, ):
+    def post(self):
         item = self.get_argument('item', None)
         if not item is None:
             item = json.loads(item)
