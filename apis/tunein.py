@@ -55,7 +55,7 @@ def _play(s):
     Player.currentlyPlaying = {}
     Player.currentlyPlaying['webpath'] = s.Stream
     Player.currentlyPlaying['name'] = s.Name
-    Player.currentlyPlaying['title'] = s.Format
+    Player.currentlyPlaying['title'] = s.Name
     Player.currentlyPlaying['cover'] = s.Image
     Player.currentlyPlaying['type'] = Player.streamType
     Player.playPath(s.Stream)

@@ -169,7 +169,7 @@ class APlayer(Base_Player):
             self.currentlyPlaying['type'] = self.streamType  
         else:
             self.currentlyPlaying['webpath'] = s["stream"]
-            self.currentlyPlaying['title'] = s["format"]
+            self.currentlyPlaying['title'] = s["name"]
             self.currentlyPlaying['cover'] = s["image"]
             self.currentlyPlaying['type'] = self.streamType
         self.play()
@@ -183,7 +183,7 @@ class APlayer(Base_Player):
         self.currentlyPlaying = {}
         self.currentlyPlaying['webpath'] = s.Stream
         self.currentlyPlaying['name'] = s.Name
-        self.currentlyPlaying['title'] = s.Format
+        self.currentlyPlaying['title'] = s.Name
         self.currentlyPlaying['cover'] = s.Image
         self.currentlyPlaying['type'] = self.streamType
         self.play()
