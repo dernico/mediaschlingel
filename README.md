@@ -1,6 +1,14 @@
 mediaschlingel
 ==============
 
+mediaschlingel is a music server that plays music from local networks, 8tracks, tunein and youtube (thanks to pafy). If everythink works you can just run "python schlingel.py" in your command line. After that you can connect to server with your mobile browser/desktop browser on port 8000 (example: http://192.168.0.12:8000 if 192.168.0.12 is the ip adress from the computer the server runs on)
+
+because there is not much spare time available some thinks might not work.
+
+==============
+How to install
+=============
+
 if pip is not installed:
 sudo apt-get install python-pip
 
