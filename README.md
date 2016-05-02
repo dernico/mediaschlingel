@@ -36,6 +36,9 @@ sudo python setup.py install
 (or)
 download latest pafy from github: https://github.com/np1/pafy
 
+Install youtube-dl
+pip install youtube-dl
+
 #------------------#
 
 New Version 

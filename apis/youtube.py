@@ -12,6 +12,7 @@ yt_key = Config.getYoutubeApiKey()
 playlist = []
 playnext = []
 currentSearch = ''
+currentTracks = {}
 
 def search(q, pageToken):
     global currentSearch
@@ -32,6 +33,7 @@ def search(q, pageToken):
 
 def get_tracks(yt_result):
     global currentSearch
+    global currentTracks
 
     currentTracks = {}
     currentTracks["q"] = currentSearch
@@ -84,8 +86,13 @@ def get_stream_model(id):
 
 
 def play(id):
-    youtubeStream = get_stream_model(id)
-    _play(youtubeStream)
+    global currentTracks
+
+    for track in currentTracks["tracks"]:
+        if track["id"] == id:
+            youtubeStream = get_stream_model(track)
+            _play(youtubeStream)
+
 
 
 def _play(s):
@@ -144,10 +151,10 @@ def on_next():
             playlist = playlist[1:]
             # Make sure playlist is not empty
             if len(playlist) == 0:
-                get_related_songs(nexttrack["id"])
+                get_related_songs(nexttrack)
 
     if nexttrack:
-        nexttrack = get_stream_model(nexttrack["id"])
+        nexttrack = get_stream_model(nexttrack)
         _play(nexttrack)
 
 def on_prev():

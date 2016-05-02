@@ -1,23 +1,38 @@
 from Model.StreamModel import StreamModel
+from subprocess import Popen, PIPE
 
 import pafy
 
-def createFromYouTube(id):
-    video = pafy.new(id)
-    audio = video.getbestaudio()
-    if not audio:
-        audio = video.getbest()
-        print("video: " + audio.title + " " + audio.mediatype)
+
+def createFromYouTube(track):
+    id = track["id"]
+    p = Popen("youtube-dl -f 'mp3/m4a/mp4/ogg' --simulate --get-url https://www.youtube.com/watch?v="+id, stdout=PIPE, shell=True, stderr=None)
+    streamurl, err = p.communicate()
+    rc = p.returncode
+
     model = StreamModel()
-    model.Id = id,
-    model.Description = video.description
-    model.Name = video.title
-    model.Format = video.title
-    image = video.thumb
-    if video.bigthumb:
-        image = video.bigthumb
-    model.Image = image
-    model.Stream = audio.url
+    model.Stream = streamurl
+    model.Description = track["description"]
+    model.Name = track["title"]
+    model.Format = "-"
+    model.Image = track["thumbnail"]
+
+    
+    #video = pafy.new(id)
+    #audio = video.getbestaudio()
+    #if not audio:
+    #    audio = video.getbest()
+    #    print("video: " + audio.title + " " + audio.mediatype)
+    #model.Id = id,
+    #model.Description = video.description
+    #model.Name = video.title
+    #model.Format = video.title
+    #image = video.thumb
+    #if video.bigthumb:
+    #    image = video.bigthumb
+    #model.Image = image
+    #model.Stream = audio.url
+    
     return model
 
 def createFromUrl(id, url):

@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: pafy
-Version: 0.3.74
+Version: 0.5.0
 Summary: Retrieve YouTube content and metadata
 Home-page: http://np1.github.io/pafy/
 Author: np1
@@ -9,16 +9,16 @@ License: LGPLv3
 Download-URL: https://github.com/np1/pafy/tarball/master
 Description: .. image:: https://img.shields.io/pypi/v/Pafy.svg
             :target: https://pypi.python.org/pypi/pafy
-        .. image:: https://pypip.in/d/pafy/badge.png
+        .. image:: https://img.shields.io/pypi/dm/Pafy.svg
             :target: https://pypi.python.org/pypi/pafy
         .. image:: https://img.shields.io/coveralls/np1/pafy/develop.svg
             :target: https://coveralls.io/r/np1/pafy?branch=develop
-        .. image:: https://landscape.io/github/np1/pafy/develop/landscape.svg
-            :target: https://landscape.io/github/np1/pafy/develop
+        .. image:: https://landscape.io/github/mps-youtube/pafy/develop/landscape.svg
+            :target: https://landscape.io/github/mps-youtube/pafy/develop
             :alt: Code Health
-        .. image:: https://travis-ci.org/np1/pafy.svg?branch=develop
-            :target: https://travis-ci.org/np1/pafy
-        .. image:: https://pypip.in/wheel/pafy/badge.png
+        .. image:: https://travis-ci.org/mps-youtube/pafy.svg?branch=develop
+            :target: https://travis-ci.org/mps-youtube/pafy
+        .. image:: https://img.shields.io/pypi/wheel/Pafy.svg
             :target: http://pythonwheels.com/
             :alt: Wheel Status
         
@@ -36,7 +36,7 @@ Description: .. image:: https://img.shields.io/pypi/v/Pafy.svg
         - Download audio only (no video) in ogg or m4a format
         - Retreive playlists and playlist metadata
         - Works with Python 2.6+ and 3.3+
-        - No dependencies
+        - Optionally depends on youtube-dl (recommended; more stable)
         
         
         Documentation
@@ -331,6 +331,11 @@ Description: .. image:: https://img.shields.io/pypi/v/Pafy.svg
         .. code-block:: bash
         
             $ ytdl -n10 cyMHZVT91Dw
+        
+        IRC
+        ---
+        
+        The mps-youtube irc channel (`#mps-youtube` on Freenode) can be used for discussion of pafy.
         
 Keywords: pafy,API,YouTube,youtube,download,video
 Platform: UNKNOWN

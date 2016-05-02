@@ -39,7 +39,8 @@ class Base_Player(threading.Thread):
         try:
             self.pipeline = gst.Pipeline
             self.player = gst.element_factory_make("playbin2", "player")
-            #pulse = gst.element_factory_make("pulsesink", "pulse")
+            #self.player = gst.element_factory_make("playbin", "player")
+            #self.player = gst.element_factory_make("pulsesink", "pulse")
             #fakesink = gst.element_factory_make("fakesink", "fakesink")
 
             bus = self.player.get_bus()
