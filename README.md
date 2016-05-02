@@ -41,7 +41,7 @@ pip install youtube-dl
 
 #------------------#
 
-New Version 
+New Version (not working atm)
 
 install Flask
 sudo pip install Flask
