@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 *.pyc
 *.log
 public_angular/*
@@ -21,4 +20,3 @@ dev/
 .pypi
 vi.py
 __pycache__
->>>>>>> c8f3ba2c9e24a44f86a7c30ba3f98618cfc2f813
