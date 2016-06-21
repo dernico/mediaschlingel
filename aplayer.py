@@ -252,7 +252,7 @@ class APlayer(Base_Player):
             nextid = self.nextId[0]
             self.nextId = self.nextId[1:]
         elif self.isRandom:
-            nextid = choice(self.walker.getMedia())["id"]
+            nextid = choice(self.walker.getFiltered())["id"]
         else:
             nextid = self.currentlyPlaying["id"] + 1
 

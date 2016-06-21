@@ -12,6 +12,7 @@ class Walker:
         self.player = None
         self.allowdFiles = ['.mp3', '.m4a', '.wma', '.ogg']
         self.mediafiles = []
+        self.currentFiltered = []
         self.media_albums = None
         self.mediafactory = MediaModelFactory()
         self.ipAdress = Helper.getIpAdress()
@@ -171,6 +172,9 @@ class Walker:
     def getMedia(self):
         return self.mediafiles
 
+    def getFiltered(self):
+        return self.currentFiltered
+
     def containsMediaWebPath(self, webpath):
         self.lock.acquire()
         found = False
@@ -212,6 +216,7 @@ class Walker:
 
                 result.append(media)
 
+        self.currentFiltered = result
         return result
 
 
