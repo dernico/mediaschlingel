@@ -12,6 +12,7 @@ class Walker:
         self.player = None
         self.allowdFiles = ['.mp3', '.m4a', '.wma', '.ogg']
         self.mediafiles = []
+        self.currentId = 0
         self.currentFiltered = []
         self.media_albums = None
         self.mediafactory = MediaModelFactory()
@@ -172,8 +173,20 @@ class Walker:
     def getMedia(self):
         return self.mediafiles
 
+    def getById(self, id):
+        self.currentId = id
+        return self.mediafiles[id]
+
     def getFiltered(self):
         return self.currentFiltered
+
+    def getNextId(self):
+        if len(self.currentFiltered) > 0:
+            self.currentFiltered = self.currentFiltered[1:]
+            self.currentId = self.currentFiltered[0]["id"]
+            return self.currentId
+        else:
+            return self.currentId + 1
 
     def containsMediaWebPath(self, webpath):
         self.lock.acquire()

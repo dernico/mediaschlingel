@@ -144,7 +144,7 @@ class APlayer(Base_Player):
     def playId(self, id):
         print "Try play id " + str(id)
         self.setDefaultMediaHandling()
-        media = self.walker.getMedia()[id]
+        media = self.walker.getById(id)
         self._set_state_NULL()
         if media.IsLocal:
             self._set_property('uri', 'file://' + media.Path)
@@ -254,7 +254,7 @@ class APlayer(Base_Player):
         elif self.isRandom:
             nextid = choice(self.walker.getFiltered())["id"]
         else:
-            nextid = self.currentlyPlaying["id"] + 1
+            nextid = self.walker.getNextId()
 
         if nextid >= len(self.walker.getMedia()):
             nextid = 0
