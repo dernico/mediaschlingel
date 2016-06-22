@@ -199,6 +199,7 @@ class Walker:
 
     def filterMedia(self, term):
         if term == "":
+            self.currentFiltered = []
             return self.mediafiles
 
         terms = term.lower().split(" ")
