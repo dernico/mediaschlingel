@@ -252,7 +252,10 @@ class APlayer(Base_Player):
             nextid = self.nextId[0]
             self.nextId = self.nextId[1:]
         elif self.isRandom:
-            nextid = choice(self.walker.getFiltered())["id"]
+            if len(self.walker.getFiltered()) > 0:
+                nextid = choice(self.walker.getFiltered())["id"]
+            else:
+                nextid = choice(self.walker.getMedia())["id"]
         else:
             nextid = self.walker.getNextId()
 
