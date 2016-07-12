@@ -31,21 +31,11 @@ sudo python setup.py install
 download latest mutagen somewhere
 
 Install Pafy
-cd libs/pafy
-sudo python setup.py install
-(or)
-download latest pafy from github: https://github.com/np1/pafy
+pip install --upgrade pafy
 
 Install youtube-dl
-pip install youtube-dl
+pip install --upgrade youtube-dl
 
-for raspberry yotube-dl is to slow :/ So I switched to use vlc.
-
-if it is not working try updating the lua script
-
-sudo rm /usr/lib/vlc/lua/playlist/youtube.*
-
-sudo curl "http://git.videolan.org/?p=vlc.git;a=blob_plain;f=share/lua/playlist/youtube.lua;hb=HEAD" -o /usr/lib/vlc/lua/playlist/youtube.lua
 
 #------------------#
 
