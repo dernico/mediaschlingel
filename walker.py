@@ -21,7 +21,7 @@ class Walker:
         self.init()
 
     def init(self):
-        
+        self.mediafiles = []
 
         t = Thread(target = self.walkMusicfolder)
         t.start()

@@ -37,6 +37,11 @@ debugMode = False
 
 
 class BaseHandler(tornado.web.RequestHandler):
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+
     def get_current_user(self):
         return ""
         #return self.get_secure_cookie("user")
@@ -85,7 +90,7 @@ class MediaHandler(BaseHandler):
     def streamFile(self, id):
         id = int(id)
         media = Player.walker.getMedia()[id]
-        
+
         if (media):
 
             self.set_header("Content-Type", 'audio/mpeg')
@@ -101,9 +106,9 @@ class MediaHandler(BaseHandler):
                 '''
                 range = self.request.headers.get('range', None)
                 if range:
-                    parts = range.replace("bytes=", "").split("-"); 
-                    partialstart = parts[0]; 
-                    partialend = parts[1]; 
+                    parts = range.replace("bytes=", "").split("-");
+                    partialstart = parts[0];
+                    partialend = parts[1];
 
                     total = os.path.getsize(media.Path)
                     start = int(partialstart)
@@ -381,8 +386,8 @@ class HandleRemoveStream(BaseHandler):
 
 class HandleDiscover(BaseHandler):
     def get(self):
-        Player.walker.discoverSchlingel()
-        
+        Player.walker.init()
+
 
 class HandleTuneinPlay(BaseHandler):
     def post(self):
@@ -602,11 +607,11 @@ class HandleRestartSchlingel(BaseHandler):
 class HandleUpload(BaseHandler):
     def post(self):
         fileinfo = self.request.files['nexttrack'][0]
-        
+
         fname = fileinfo['filename']
         mediadir = getMediaDirs()[0]
         filepath = os.path.join(mediadir, fname)
-        
+
         model = None
         if not os.path.exists(filepath):
             fh = open(filepath, 'w')
@@ -701,7 +706,7 @@ def main():
             (r"/api/music/removeStream", HandleRemoveStream),
             (r"/api/music/grabcover", CoverGrabberHandler),
             (r"/api/music/discover", HandleDiscover),
-           
+
 
             (r"/api/tunein/search", HandleTuneinSearch),
             (r"/api/tunein/play", HandleTuneinPlay),
@@ -720,7 +725,7 @@ def main():
             (r"/api/youtube/addplaylist", HandleYoutTubeAddToPlaylist),
             (r"/api/youtube/related", HandleYouTubeRelated),
             (r"/api/youtube/playlist", HandleYouTubePlaylist),
-            
+
             (r"/api/restartSchlingel", HandleRestartSchlingel),
             (r"/websocket", HandleWebSocket),
             (r"/(.*)", CustomStaticFileHandler, dict(path=publicpath))
