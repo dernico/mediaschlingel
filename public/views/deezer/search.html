@@ -1,0 +1,27 @@
+<input type="text" data-bind="value: query, event: { keyup: searchOnEnter }"></input>
+<br />
+<div class="button" data-bind="click: search">Suche</div>
+
+<br />
+<br />
+<br />
+
+
+
+<div class="list clearboth" data-bind="foreach: searchResults">
+    <div class="list-item">
+        
+        <div class="image">
+            <img data-bind="attr: { src: album.cover }" alt="" />    
+        </div>
+        
+        <div class="content">
+            <div data-bind="text: title"></div>
+            <div data-bind="text: artist.name"></div>
+            <div data-bind="text: album.name"></div>
+            <div>
+                <div class="button" data-bind="click: $parent.play">Play</div>
+            </div>
+        </div>
+    </div>
+</div>

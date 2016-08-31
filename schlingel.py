@@ -20,6 +20,7 @@ from apis import Streams
 from apis import eighttracks
 from apis import youtube
 from apis import tunein
+from apis import deezer
 from Factory import TracksModelFactory
 from Factory import StreamModelFactory
 
@@ -575,6 +576,32 @@ class HandleYouTubeRelated(BaseHandler):
             self.write(result)
         self.flush()
 
+class HandleDeezerSearch(BaseHandler):
+    def get(self):
+        q = self.get_argument("q", None)
+        #pageToken = self.get_argument("pageToken", None)
+        if q:
+            result = {}
+            result = deezer.search(q)
+            self.write(result)
+            self.flush()
+
+class HandleDeezerPlay(BaseHandler):
+    def get(self):
+        self.play()
+
+    def post(self):
+        self.play()
+
+    def play(self):
+        id = self.get_argument("id", None)
+        print("try play deezer")
+        if id:
+            result = {}
+            deezer.play(id)
+            self.write(result)
+            self.flush()
+
 
 class HandleWebSocket(tornado.websocket.WebSocketHandler):
     def open(self):
@@ -725,6 +752,9 @@ def main():
             (r"/api/youtube/addplaylist", HandleYoutTubeAddToPlaylist),
             (r"/api/youtube/related", HandleYouTubeRelated),
             (r"/api/youtube/playlist", HandleYouTubePlaylist),
+
+            (r"/api/deezer/search", HandleDeezerSearch),
+            (r"/api/deezer/play", HandleDeezerPlay),
 
             (r"/api/restartSchlingel", HandleRestartSchlingel),
             (r"/websocket", HandleWebSocket),

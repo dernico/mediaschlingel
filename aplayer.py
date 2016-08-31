@@ -189,8 +189,6 @@ class APlayer(Base_Player):
         self.currentlyPlaying['type'] = self.streamType
         self.play()
 
-
-
     def getinfo(self):
         self.currentlyPlaying['IsPlaying'] = self.isPlaying
         self.currentlyPlaying['IsRandom'] = self.isRandom
@@ -346,11 +344,5 @@ class APlayer(Base_Player):
             'count': count,
             'list': media
         }
-
-#play_uri('file:///home/nico/dev/python/schlingel/skit.mp3')
-#player = APlayer()
-#player.playStream()
-
-
 
 Player = APlayer()

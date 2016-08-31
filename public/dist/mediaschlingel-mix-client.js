@@ -1028,6 +1028,21 @@ pages.service("api", [function(){
         },true,success,error);
     };
 
+    api.deezer = {};
+
+    api.deezer.search = function(query, success, error){
+        ajax({
+            url: "api/deezer/search?q=" + encodeURIComponent(query)
+        }, true, success, error);
+    };
+
+    api.deezer.play = function(id, success, error){
+        ajax({
+            url: "api/deezer/play?id=" + id,
+            type: "POST"
+        }, true, success, error);
+    };
+
     var laut = "http://api.laut.fm";
     api.laut = api.laut ? api.laut : {};
     api.laut.search = function(term, success, error){
@@ -1347,6 +1362,36 @@ pages.viewmodel("backgroundVM", ['background',function(backgroundService){
 	var self = this;
 	self.Cover = backgroundService.Cover;
 	backgroundService.setCover();
+}]);;
+pages.viewmodel("deezerSearchVM", ["api", "player", function (api, player) {
+    var self = this;
+    self.api = api;
+
+    self.query = ko.observable();
+    self.searchResults = ko.observableArray([]);
+
+    self.searchOnEnter = function(vm, e) {
+        if (e.keyCode == 13) {
+            self.search();
+        }
+    };
+
+    self.search = function(){
+        var query = self.query();
+        api.deezer.search(query, handleSearchResult);
+    };
+
+    function handleSearchResult(result){
+        self.searchResults(result.tracks);
+    }
+
+    self.play = function(item){
+        //api.deezer.play(ko.toJSON(item));
+        api.deezer.play(item.id, function(){
+            alert("play");
+        });
+    };
+
 }]);;
 pages.viewmodel("albumsVM", ["api", "player", function(data, player) {
 

@@ -28,4 +28,7 @@ def getYoutubeApiKey():
 def get_shares():
     return Config["shares"]
 
+def get_deezer_key():
+    return Config["deezerKey"]
+
 loadConfig()

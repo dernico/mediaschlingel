@@ -382,6 +382,21 @@ pages.service("api", [function(){
         },true,success,error);
     };
 
+    api.deezer = {};
+
+    api.deezer.search = function(query, success, error){
+        ajax({
+            url: "api/deezer/search?q=" + encodeURIComponent(query)
+        }, true, success, error);
+    };
+
+    api.deezer.play = function(id, success, error){
+        ajax({
+            url: "api/deezer/play?id=" + id,
+            type: "POST"
+        }, true, success, error);
+    };
+
     var laut = "http://api.laut.fm";
     api.laut = api.laut ? api.laut : {};
     api.laut.search = function(term, success, error){
