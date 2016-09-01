@@ -595,7 +595,6 @@ class HandleDeezerPlay(BaseHandler):
 
     def play(self):
         id = self.get_argument("id", None)
-        print("try play deezer")
         if id:
             result = {}
             deezer.play(id)

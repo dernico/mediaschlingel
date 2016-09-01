@@ -14,13 +14,11 @@ class DezzerPlayer():
             line, err = self._process.communicate('h')
             print("result from process: " + str(line))
 
-        #if self._callback:
-        #    self._callback()
-
     def play(self, dz_track_uri, callback):
+        self.stop()
         self._callback = callback
         #command = "./NanoPlayer dz_track dzmedia:///track/85509044"
-        command = "./NanoPlayer dz_track dzmedia:///track/" + dz_track_uri
+        command = "./Player/NanoPlayer dz_track dzmedia:///track/" + dz_track_uri
         self.popenAndCall(self._callback, command)
 
     def popenAndCall(self, onExit, command):
