@@ -390,9 +390,10 @@ pages.service("api", [function(){
         }, true, success, error);
     };
 
-    api.deezer.play = function(id, success, error){
+    api.deezer.play = function(item, success, error){
         ajax({
-            url: "api/deezer/play?id=" + id,
+            url: "api/deezer/play",
+            data: "item="+encodeURIComponent(item),
             type: "POST"
         }, true, success, error);
     };

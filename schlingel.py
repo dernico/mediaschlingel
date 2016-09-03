@@ -594,11 +594,10 @@ class HandleDeezerPlay(BaseHandler):
         self.play()
 
     def play(self):
-        id = self.get_argument("id", None)
-        if id:
-            result = {}
-            deezer.play(id)
-            self.write(result)
+        item = self.get_argument("item", None)
+        if item:
+            deezer.play(json.loads(item))
+            self.write(Player.getinfo())
             self.flush()
 
 

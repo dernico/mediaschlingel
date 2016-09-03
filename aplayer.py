@@ -21,6 +21,7 @@ class Base_Player(threading.Thread):
     play_next = None
     play_prev = None
     on_pause = None
+    on_play = None
 
     def __init__(self):
 
@@ -139,6 +140,7 @@ class APlayer(Base_Player):
         self.play_next = self._playNext
         self.play_prev = self._playPrev
         self.on_pause = self._on_pause
+        self.on_play = self._play
 
 
     def playId(self, id):
@@ -202,6 +204,10 @@ class APlayer(Base_Player):
             self.isRandom = True
 
     def play(self):
+        if self.on_play:
+            self._play()
+            
+    def _play(self):
         if self.currentlyPlaying is not None \
              and self.currentlyPlaying['type'] is self.streamType \
              and self.currentlyPlaying['webpath'] is not None:

@@ -11,7 +11,17 @@ class DezzerPlayer():
     def stop(self):
         print("stopping thread now ...")
         if self._process:
-            line, err = self._process.communicate('h')
+            line, err = self._process.communicate('exit')
+            print("result from process: " + str(line))
+
+    def pause(self):
+        if self._process:
+            line, err = self._process.communicate('pause')
+            print("result from process: " + str(line))
+
+    def resume(self):
+        if self._process:
+            line, err = self._process.communicate('resume')
             print("result from process: " + str(line))
 
     def play(self, dz_track_uri, callback):
