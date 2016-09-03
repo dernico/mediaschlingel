@@ -294,44 +294,34 @@ class APlayer(Base_Player):
     #    return 10 * self.player.get_property('volume')
 
     def setVolume(self, vol):
-        vol = vol / 10
+        #vol = vol / 10
+        vol = vol * 10
         print "Volume: " + str(vol)
-        self._set_property('volume', vol)
+        #self._set_property('volume', vol)
+
+        if (vol <= 100) and (vol >= 0):
+            subprocess.call(["amixer", "-qD", "pulse", "sset", "Master", str(vol)+"%"])
 
     def volUp(self):
         if self.volume < 10:
-            if self.volume < 1:
-                self.volume += 0.1
-            else:
-                self.volume += 1
-
+            #if self.volume < 1:
+            #    self.volume += 0.1
+            #else:
+            #    self.volume += 1
+            self.volume += 0.2
             self.volume = float("{0:.2f}".format(self.volume))
             self.setVolume(self.volume)
 
     def volDown(self):
         if self.volume > 0.0:
-            if self.volume <= 1:
-                self.volume -= 0.1
-            else:
-                self.volume -= 1
+            #if self.volume <= 1:
+            #    self.volume -= 0.1
+            #else:
+            #    self.volume -= 1
+            self.volume -= 0.2
             self.volume = float("{0:.2f}".format(self.volume))
             self.setVolume(self.volume)
 
-    def get_master_volume(self):
-        proc = subprocess.Popen('/usr/bin/amixer sget Master', shell=True, stdout=subprocess.PIPE)
-        amixer_stdout = proc.communicate()[0].split('\n')[4]
-        proc.wait()
-
-        find_start = amixer_stdout.find('[') + 1
-        find_end = amixer_stdout.find('%]', find_start)
-
-        return float(amixer_stdout[find_start:find_end])
-
-    def set_master_volume(self, volume):
-        val = float(int(volume))
-
-        proc = subprocess.Popen('/usr/bin/amixer sset Master ' + str(val) + '%', shell=True, stdout=subprocess.PIPE)
-        proc.wait()
 
     def filterMedia(self, term, start, end):
         media = self.walker.filterMedia(term)
