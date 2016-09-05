@@ -9,6 +9,8 @@ import json
 deezer_key = Config.get_deezer_key()
 Base_Url = "http://api.deezer.com"
 playlist = []
+currentTrack = {}
+nextTrack = None
 
 
 def search(query):
@@ -55,6 +57,9 @@ def get_tracks(query, dz_result):
     return currentTracks
 
 def play(dz_track):
+    global currentTrack
+    global nextTrack
+
     Player.stop()
     #Player.on_media_end = on_media_end
     Player.play_next = on_next
@@ -62,6 +67,7 @@ def play(dz_track):
     Player.on_pause = on_pause
     Player.on_play = on_resume
 
+    Player.isPlaying = True
     Player.currentlyPlaying = {}
     Player.currentlyPlaying['webpath'] = ""
     Player.currentlyPlaying['name'] = dz_track["artist"]["name"]
@@ -69,27 +75,59 @@ def play(dz_track):
     Player.currentlyPlaying['cover'] = dz_track["album"]["cover"]
     Player.currentlyPlaying['type'] = "deezer"
     
-    dz_id = str(dz_track["id"])
-    dz_player.play(dz_id, on_next)
+    nextTrack = dz_track
 
-def on_media_end(player):
+    dz_id = dz_track["id"]
+    currentTrack = dz_track
+    dz_player.play(dz_id, on_media_end)
+
+def on_media_end():
+    global nextTrack
     print("Media End")
-    on_next()
+
+    #if nextTrack:
+    #    nextTrack = None
+    #    return
+
+    #if nextTrack:
+    #    dz_player.play(nextTrack["id"], on_media_end)
+    #    nextTrack = None
+
+    #print("okay it is not due a a new track selected, so play next from list.")
+    play_next()
 
 
 def on_next():
+    # stop automatically calls on_media_end which calls play_next :)
+    dz_player.stop()
+
+def play_next():
     global playlist
+    global currentTrack
+    global nextTrack
+
     print("Play next deezer track")
+
     nexttrack = None
 
-    if len(playlist) > 0:
-        nexttrack = playlist[0]
-        playlist = playlist[1:]
+    print("laenge der playlist: " + str(len(playlist)))
+
+    if nexttrack is None and len(playlist) > 0:
+        count = 0
+        for track in playlist:
+            if str(track["id"]) == str(currentTrack["id"]):
+                if count + 1 <= len(playlist):
+                    nexttrack = playlist[count+1]
+            count = count + 1
+        
+        #nexttrack = playlist[0]
+        #playlist = playlist[1:]
         # Make sure playlist is not empty
         #if len(playlist) == 0:
         #    get_related_songs(nexttrack)
 
     if nexttrack:
+        print("nexttrack is not null")
         play(nexttrack)
 
 def on_prev():
@@ -98,9 +136,11 @@ def on_prev():
 
 
 def on_pause():
+    Player.isPlaying = False
     dz_player.pause()
 
 def on_resume():
+    Player.isPlaying = True
     dz_player.resume()
 
 def _call(path, param=None):

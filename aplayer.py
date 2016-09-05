@@ -34,7 +34,7 @@ class Base_Player(threading.Thread):
         self.walker = Walker()
         self.currentlyPlaying = {}
         self.nextId = []
-        self.setVolume(self.volume)
+        #self.setVolume(self.volume)
         self.setDefaultMediaHandling()
 
         try:
@@ -205,8 +205,8 @@ class APlayer(Base_Player):
 
     def play(self):
         if self.on_play:
-            self._play()
-            
+            self.on_play()
+
     def _play(self):
         if self.currentlyPlaying is not None \
              and self.currentlyPlaying['type'] is self.streamType \

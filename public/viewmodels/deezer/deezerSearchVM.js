@@ -23,8 +23,7 @@ pages.viewmodel("deezerSearchVM", ["api", "player", function (api, player) {
 
     self.play = function(item){
         //api.deezer.play(ko.toJSON(item));
-        api.deezer.play(item.id, function(){
-            alert("play");
+        api.deezer.play(ko.toJSON(item), function(){
         });
     };
 
