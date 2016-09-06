@@ -40,7 +40,7 @@ class DezzerPlayer():
             stderr = ''
             is_stdout_failed = True
             is_stderr_failed = True
-            sleep = 0.5
+            sleep = 0.2
             error_count = 0
             while True:
                 # Read from stdout

@@ -72,28 +72,16 @@ def play(dz_track):
     Player.currentlyPlaying['webpath'] = ""
     Player.currentlyPlaying['name'] = dz_track["artist"]["name"]
     Player.currentlyPlaying['title'] = dz_track["title"]
+    Player.currentlyPlaying['album'] = dz_track["album"]["title"]
     Player.currentlyPlaying['cover'] = dz_track["album"]["cover"]
     Player.currentlyPlaying['type'] = "deezer"
     
-    nextTrack = dz_track
-
     dz_id = dz_track["id"]
     currentTrack = dz_track
     dz_player.play(dz_id, on_media_end)
 
 def on_media_end():
-    global nextTrack
     print("Media End")
-
-    #if nextTrack:
-    #    nextTrack = None
-    #    return
-
-    #if nextTrack:
-    #    dz_player.play(nextTrack["id"], on_media_end)
-    #    nextTrack = None
-
-    #print("okay it is not due a a new track selected, so play next from list.")
     play_next()
 
 
@@ -104,13 +92,8 @@ def on_next():
 def play_next():
     global playlist
     global currentTrack
-    global nextTrack
-
-    print("Play next deezer track")
 
     nexttrack = None
-
-    print("laenge der playlist: " + str(len(playlist)))
 
     if nexttrack is None and len(playlist) > 0:
         count = 0
@@ -119,15 +102,8 @@ def play_next():
                 if count + 1 <= len(playlist):
                     nexttrack = playlist[count+1]
             count = count + 1
-        
-        #nexttrack = playlist[0]
-        #playlist = playlist[1:]
-        # Make sure playlist is not empty
-        #if len(playlist) == 0:
-        #    get_related_songs(nexttrack)
 
     if nexttrack:
-        print("nexttrack is not null")
         play(nexttrack)
 
 def on_prev():
