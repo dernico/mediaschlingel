@@ -10,7 +10,10 @@ class DezzerPlayer():
         self._process = None
         self._callback = None
         self._thread = None
-        self.callCallback = True
+
+    def exit(self):
+        self._callback = None
+        self.stop()
     
     def stop(self):
         print("stopping thread now ...")
@@ -73,34 +76,26 @@ class DezzerPlayer():
             #print("stderr from process: " + str(stderr))
 
     def play(self, dz_track_uri, callback):
-        #self.stop()
+        self.exit()
         self._callback = callback
         dz_track_uri = str(dz_track_uri)
         #command = "./NanoPlayer dz_track dzmedia:///track/85509044"
         command = "./Player/NanoPlayer dz_track dzmedia:///track/" + dz_track_uri
         print(command)
         
-        self.popenAndCall(self._callback, command.split())
+        self.popenAndCall(command)
 
-    def popenAndCall(self, onExit, command):
+    def popenAndCall(self, command):
         """
         Runs the given args in a subprocess.Popen, and then calls the function
         onExit when the subprocess completes.
         onExit is a callable object, and popenArgs is a list/tuple of args that 
         would give to subprocess.Popen.
         """
-
-        self.callCallback = True
-        # if there is already a process running i dont want to start a new one
-        #if self._process:
-            #print("There is already a process running ... dont start a new one ..")
-            #self.callCallback = False
-            #self._process.terminate()
-            #return
         
-        def runInThread(onExit, command):
+        def runInThread(command, nothing):
 
-            self._process = subprocess.Popen(command
+            self._process = subprocess.Popen(command.split()
                 ,stdin=subprocess.PIPE
                 ,stdout=subprocess.PIPE
                 ,stderr=subprocess.PIPE
@@ -112,13 +107,13 @@ class DezzerPlayer():
 
             self._process.wait()
             
-            if onExit:
-                onExit()
+            if self._callback:
+                self._callback()
                 #print("callback was called. terminate process and set to null.")
             #self._process = None
             return
 
-        thread = threading.Thread(target=runInThread, args=(onExit, command))
+        thread = threading.Thread(target=runInThread, args=(command, None))
         thread.start()
         # returns immediately after the thread starts
         return thread

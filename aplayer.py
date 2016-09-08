@@ -1,8 +1,10 @@
 try:
-    import pygst
-    pygst.require('0.10')
-    import gst
-    import gobject
+    import gi
+    gi.require_version('Gst', '1.0')
+    #import gst
+    #import gobject
+    from gi.repository import GObject,Gtk
+    from gi.repository import Gst as gst
 except Exception:
     print "Could not load pygst"
 
@@ -11,6 +13,8 @@ import threading
 from random import choice
 from apis import Streams
 import subprocess
+
+from Player.DeezerPlayer import Player as dz_player
 
 
 class Base_Player(threading.Thread):
@@ -38,20 +42,41 @@ class Base_Player(threading.Thread):
         self.setDefaultMediaHandling()
 
         try:
-            self.pipeline = gst.Pipeline
-            self.player = gst.element_factory_make("playbin2", "player")
+            #self.pipeline = gst.Pipeline
+            #self.player = gst.element_factory_make("playbin2", "player")
             #self.player = gst.element_factory_make("playbin", "player")
-            #self.player = gst.element_factory_make("pulsesink", "pulse")
+            #self.player = gst.element_factory_make("pulsesink", "player")
             #fakesink = gst.element_factory_make("fakesink", "fakesink")
 
-            bus = self.player.get_bus()
-            bus.add_signal_watch_full(1)
-            bus.connect("message", self.on_message)
+            #bus = self.player.get_bus()
+            #bus.add_signal_watch_full(1)
+            #bus.connect("message", self.on_message)
             #output = gst.parse_bin_from_description("alsasink", ghost_unconnected_pads=True)
             #self.player.set_property("audio-sink", pulse)
             #self.player.set_property("video-sink", fakesink)
 
-            self.mainloop = gobject.MainLoop()
+            self.mainloop = GObject.MainLoop()
+
+
+            #GObject.threads_init()
+            gst.init(None)
+            self.pipeline = gst.Pipeline()
+            #self.player = gst.ElementFactory.make('autoaudiosink', 'audio_sink')
+
+            #self.pipeline.add(self.player)
+            
+            #bus = self.pipeline.get_bus()
+            #bus.add_signal_watch_full(1)
+            #bus.connect("message", self.on_message)
+
+            self.player = gst.ElementFactory.make("playbin", "player")
+            fakesink = gst.ElementFactory.make("fakesink","fakesink")
+            self.player.set_property("video-sink",fakesink)
+            bus = self.player.get_bus()
+            #bus.add_signal_watch()
+            bus.add_signal_watch_full(1)
+            bus.connect("message",self.on_message)
+
         except Exception, e:
             print "Could not set any off the gstreamer stuff and also no mainloop :/"
             print "Error: {0}".format(str(e))
@@ -70,36 +95,39 @@ class Base_Player(threading.Thread):
     def _set_state(self, state):
         try:
             self.player.set_state(state)
+            #self.pipeline.set_state(state)
         except Exception, e:
             print "Could not set state {0}. Err {1}".format(state, str(e))
 
     def _set_property(self, prop, val):
         try:
             self.player.set_property(prop, val)
+            #self.pipeline.set_property(prop, val)
         except:
             print "Could not set property {0} to {1}".format(prop,val)
 
     def _set_state_NULL(self):
         try:
-            self._set_state(gst.STATE_NULL)
+            self._set_state(gst.State.NULL)
         except Exception, e:
             print "Set State NULL not possible: {0}".format(str(e))
 
     def _set_state_Playing(self):
         try:
-            self._set_state(gst.STATE_PLAYING)
+            self._set_state(gst.State.PLAYING)
         except Exception, e:
             print "Set State Playing not possible: {0}".format(str(e))
 
     def _set_state_Paused(self):
         try:
-            self._set_state(gst.STATE_PAUSED)
+            self._set_state(gst.State.PAUSED)
+            #self._set_state(gst.STATE_PAUSED)
         except Exception, e:
             print "Set State Pause not possible: {0}".format(str(e))
 
     def stop(self):
         self._set_state_NULL()
-        self._stop.set()
+        #self._stop.set()
 
     def run(self):
         print "Start Mainloop"
@@ -118,16 +146,15 @@ class APlayer(Base_Player):
 
     def on_message(self, bus, message):
         t = message.type
-        if t == gst.MESSAGE_EOS:
+        if t == gst.MessageType.EOS:
             #print("Player got message MESSAGE_EOS")
             if self.on_media_end:
                 self.on_media_end(self)
 
-        elif t == gst.MESSAGE_ERROR:
+        elif t == gst.MessageType.ERROR:
             err, debug = message.parse_error()
             print "Error: {0} {1}".format(err, debug)
             self.playNext()
-        return self.isPlaying
 
     def playing(self):
         return self.isPlaying
@@ -136,6 +163,7 @@ class APlayer(Base_Player):
         self.nextId.append(int(nextid))
 
     def setDefaultMediaHandling(self):
+        dz_player.exit()
         self.on_media_end = self.default_media_end
         self.play_next = self._playNext
         self.play_prev = self._playPrev
@@ -216,6 +244,7 @@ class APlayer(Base_Player):
             self._set_state_NULL()
             self._set_property('uri', self.currentlyPlaying['webpath'])
 
+        self._set_property('volume', 1.0)
         self._set_state_Playing()
         self.isPlaying = True
 
